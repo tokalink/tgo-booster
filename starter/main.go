@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/tokalink/tgo/pkg/app"
 	"github.com/tokalink/tgo-booster"
@@ -66,6 +67,11 @@ func main() {
 
 	// 5. Mount Booster Dashboard to /admin
 	admin.Mount(application.Server(), "/admin")
+
+	// 6. Redirect root / to /admin
+	application.Server().Register("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+	}))
 
 	log.Println("=========================================================")
 	log.Println("⚡ [TGo Booster Starter] Server running on http://localhost:8080")
