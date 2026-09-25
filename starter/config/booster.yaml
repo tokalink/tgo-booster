@@ -1,0 +1,5 @@
+app:
+  name: "TGo Booster Admin"
+  env: "development"
+  port: "8080"
+  admin_path: "/admin"

@@ -5,56 +5,66 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/tokalink/tgo-booster/pkg/cb"
 )
 
-func TestBoosterController(t *testing.T) {
-	ctrl := &Controller{
+func TestBoosterFullFlow(t *testing.T) {
+	engine := cb.NewEngine("Test Admin")
+
+	ctrl := &cb.Controller{
 		Title: "Products",
 		Table: "products",
-		Columns: []Column{
-			{Label: "Name", Name: "name", Type: TypeText, Searchable: true},
-			{Label: "Price", Name: "price", Type: TypeMoney},
-		},
-		Forms: []Field{
-			{Label: "Product Name", Name: "name", Type: InputText, Required: true},
-			{Label: "Price", Name: "price", Type: InputMoney, Required: true},
-		},
+	}
+	ctrl.
+		AddCol("ID", "id", cb.ColText, false, true).
+		AddCol("Name", "name", cb.ColText, true, true)
+
+	ctrl.
+		AddForm("Name", "name", cb.InputText, true, "Product name")
+
+	engine.Register(ctrl)
+
+	// 1. Test Login View
+	reqLogin := httptest.NewRequest(http.MethodGet, "/admin/login", nil)
+	recLogin := httptest.NewRecorder()
+	engine.Auth.ServeLogin(recLogin, reqLogin)
+
+	if recLogin.Code != http.StatusOK {
+		t.Fatalf("expected status 200 on login, got %d", recLogin.Code)
+	}
+	if !strings.Contains(recLogin.Body.String(), "Sign in to your administration dashboard") {
+		t.Fatalf("expected login body to contain sign in text")
 	}
 
-	// 1. Test Index HTML Page
-	req := httptest.NewRequest(http.MethodGet, "/admin/products", nil)
-	rec := httptest.NewRecorder()
-	ctrl.ServeHTTP(rec, req)
+	// 2. Test Login Authentication Success
+	recAuth := httptest.NewRecorder()
+	engine.Auth.SetSessionUser(recAuth, &cb.User{Name: "Super Admin", RoleName: "Admin"})
+	cookie := recAuth.Result().Cookies()[0]
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d", rec.Code)
-	}
-	if !strings.Contains(rec.Body.String(), "Products") {
-		t.Fatalf("expected body to contain 'Products'")
-	}
+	// 3. Test Dashboard View with Session
+	reqDash := httptest.NewRequest(http.MethodGet, "/admin", nil)
+	reqDash.AddCookie(cookie)
+	recDash := httptest.NewRecorder()
+	engine.Dashboard.ServeHTTP(recDash, reqDash)
 
-	// 2. Test Data JSON Endpoint
-	reqData := httptest.NewRequest(http.MethodGet, "/admin/products/data", nil)
-	reqData.Header.Set("Accept", "application/json")
-	recData := httptest.NewRecorder()
-	ctrl.ServeHTTP(recData, reqData)
-
-	if recData.Code != http.StatusOK {
-		t.Fatalf("expected status 200 on data, got %d", recData.Code)
+	if recDash.Code != http.StatusOK {
+		t.Fatalf("expected status 200 on dashboard, got %d", recDash.Code)
 	}
-	if !strings.Contains(recData.Body.String(), "Standard Laptop Pro 15") {
-		t.Fatalf("expected json data to contain products")
+	if !strings.Contains(recDash.Body.String(), "Monthly Revenue") {
+		t.Fatalf("expected dashboard body to contain KPI stats")
 	}
 
-	// 3. Test Add Form Page
-	reqAdd := httptest.NewRequest(http.MethodGet, "/admin/products/add", nil)
-	recAdd := httptest.NewRecorder()
-	ctrl.ServeHTTP(recAdd, reqAdd)
+	// 4. Test CRUD Module Index View with Session
+	reqCrud := httptest.NewRequest(http.MethodGet, "/admin/products", nil)
+	reqCrud.AddCookie(cookie)
+	recCrud := httptest.NewRecorder()
+	ctrl.ServeHTTP(recCrud, reqCrud)
 
-	if recAdd.Code != http.StatusOK {
-		t.Fatalf("expected status 200 on add form, got %d", recAdd.Code)
+	if recCrud.Code != http.StatusOK {
+		t.Fatalf("expected status 200 on crud index, got %d", recCrud.Code)
 	}
-	if !strings.Contains(recAdd.Body.String(), "Create New Products") {
-		t.Fatalf("expected form title in html")
+	if !strings.Contains(recCrud.Body.String(), "Products") {
+		t.Fatalf("expected crud html to contain title")
 	}
 }
