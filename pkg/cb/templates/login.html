@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Sign In • {{.AppName}}</title>
+  <style>
+    {{.ThemeCSS}}
+  </style>
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+
+  <div class="login-container">
+    <div class="login-card">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem;">
+        <div class="cb-brand-logo" style="width: 54px; height: 54px; font-size: 1.8rem; margin-bottom: 1rem; border-radius: 14px;">⚡</div>
+        <h1 style="font-size: 1.55rem; font-weight: 800; color: #fff; letter-spacing: -0.5px;">{{.AppName}}</h1>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">Sign in to access your administrative control plane</p>
+      </div>
+
+      {{if .Error}}
+      <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--danger); padding: 0.85rem 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+        <span>⚠️</span>
+        <span>{{.Error}}</span>
+      </div>
+      {{end}}
+
+      <form method="POST" action="{{.AdminPath}}/login">
+        <div class="cb-form-group">
+          <label class="cb-form-label">Email Address</label>
+          <input type="email" name="email" id="loginEmail" class="cb-input" placeholder="admin@tgo.io" value="admin@tgo.io" required autofocus>
+        </div>
+
+        <div class="cb-form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="cb-form-label">Password</label>
+            <a href="#" style="font-size: 0.75rem; color: var(--accent); text-decoration: none;">Forgot?</a>
+          </div>
+          <input type="password" name="password" id="loginPass" class="cb-input" placeholder="••••••••" value="admin123" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1.5rem; padding: 0.85rem;">
+          Sign In to Control Center →
+        </button>
+      </form>
+
+      <!-- 1-CLICK DEMO BUTTON -->
+      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); text-align: center;">
+        <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.75rem;">Quick Access Credentials</span>
+        <button type="button" onclick="fillDemo()" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;">
+          ⚡ Use Demo Account (admin@tgo.io / admin123)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillDemo() {
+      document.getElementById('loginEmail').value = 'admin@tgo.io';
+      document.getElementById('loginPass').value = 'admin123';
+    }
+  </script>
+</body>
+</html>

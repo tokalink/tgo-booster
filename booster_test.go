@@ -33,7 +33,7 @@ func TestBoosterFullFlow(t *testing.T) {
 	if recLogin.Code != http.StatusOK {
 		t.Fatalf("expected status 200 on login, got %d", recLogin.Code)
 	}
-	if !strings.Contains(recLogin.Body.String(), "Sign in to your administration dashboard") {
+	if !strings.Contains(recLogin.Body.String(), "Sign in to access your administrative control plane") {
 		t.Fatalf("expected login body to contain sign in text")
 	}
 
@@ -49,9 +49,9 @@ func TestBoosterFullFlow(t *testing.T) {
 	engine.Dashboard.ServeHTTP(recDash, reqDash)
 
 	if recDash.Code != http.StatusOK {
-		t.Fatalf("expected status 200 on dashboard, got %d", recDash.Code)
+		t.Fatalf("expected status 200 on dashboard, got %d: %s", recDash.Code, recDash.Body.String())
 	}
-	if !strings.Contains(recDash.Body.String(), "Monthly Revenue") {
+	if !strings.Contains(recDash.Body.String(), "Gross Revenue") {
 		t.Fatalf("expected dashboard body to contain KPI stats")
 	}
 

@@ -3,7 +3,6 @@ package cb
 import (
 	"encoding/base64"
 	"encoding/json"
-	"html/template"
 	"net/http"
 	"strings"
 	"time"
@@ -77,15 +76,20 @@ func (a *AuthManager) ServeLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AuthManager) renderLogin(w http.ResponseWriter, errMsg, defaultEmail string) {
-	tmpl, _ := template.New("login").Parse(LoginHTML)
 	data := map[string]interface{}{
 		"AppName":      a.AppName,
+		"AdminPath":    a.AdminPath,
 		"LoginAction":  a.AdminPath + "/login",
 		"Error":        errMsg,
 		"DefaultEmail": defaultEmail,
 	}
+	htmlBytes, err := RenderLoginTemplate(data)
+	if err != nil {
+		http.Error(w, "Failed to render login: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = tmpl.Execute(w, data)
+	_, _ = w.Write(htmlBytes)
 }
 
 // SetSessionUser issues a signed session cookie

@@ -1,0 +1,49 @@
+{{define "sidebar"}}
+<aside class="cb-sidebar">
+  <a href="{{.AdminPath}}" class="cb-brand">
+    <div class="cb-brand-logo">⚡</div>
+    <span class="cb-brand-text">{{.AppName}}</span>
+    <span class="cb-brand-badge">v5.6</span>
+  </a>
+
+  <nav class="cb-nav">
+    <div class="cb-nav-heading">MAIN MENU</div>
+    <a href="{{.AdminPath}}" class="cb-nav-item {{if eq .ActivePath .AdminPath}}active{{end}}">
+      <span class="cb-nav-icon">📊</span>
+      <span>Dashboard</span>
+    </a>
+
+    <div class="cb-nav-heading">MODULES & CRUD</div>
+    {{range .MenuItems}}
+    <a href="{{.Path}}" class="cb-nav-item {{if .IsActive}}active{{end}}">
+      <span class="cb-nav-icon">{{.Icon}}</span>
+      <span>{{.Title}}</span>
+      {{if .Badge}}
+        <span class="cb-nav-badge cb-badge-primary">{{.Badge}}</span>
+      {{end}}
+    </a>
+    {{end}}
+
+    <div class="cb-nav-heading">SYSTEM & SECURITY</div>
+    <a href="{{.AdminPath}}/users" class="cb-nav-item">
+      <span class="cb-nav-icon">🛡️</span>
+      <span>User Management</span>
+    </a>
+    <a href="{{.AdminPath}}/logs" class="cb-nav-item">
+      <span class="cb-nav-icon">📋</span>
+      <span>CBLogs Audit</span>
+    </a>
+  </nav>
+
+  <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="cb-avatar">{{.UserInitials}}</div>
+      <div class="cb-user-info">
+        <span class="cb-user-name">{{.User.Name}}</span>
+        <span class="cb-user-role">{{.User.RoleName}}</span>
+      </div>
+    </div>
+    <a href="{{.AdminPath}}/logout" class="btn-logout" title="Sign out">⎋</a>
+  </div>
+</aside>
+{{end}}

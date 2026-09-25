@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.PageTitle}} • {{.AppName}}</title>
+  <style>
+    {{.ThemeCSS}}
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR COMPONENT -->
+  {{template "sidebar" .}}
+
+  <!-- MAIN VIEWPORT -->
+  <main class="cb-main">
+    <!-- TOPBAR COMPONENT -->
+    {{template "topbar" .}}
+
+    <!-- CONTENT WRAPPER -->
+    <div class="cb-content">
+      {{.Content}}
+    </div>
+  </main>
+
+  <script>
+    // Live client-side table filter
+    function filterTable() {
+      const query = document.getElementById('tableSearch')?.value?.toLowerCase() || '';
+      const rows = document.querySelectorAll('.cb-table tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

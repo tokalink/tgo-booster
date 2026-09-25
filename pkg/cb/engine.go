@@ -119,7 +119,6 @@ func (e *Engine) RenderLayout(w http.ResponseWriter, r *http.Request, pageTitle 
 		}
 	}
 
-	tmpl, _ := template.New("master").Parse(MasterHTML)
 	data := map[string]interface{}{
 		"AppName":      e.AppName,
 		"AdminPath":    e.AdminPath,
@@ -131,6 +130,12 @@ func (e *Engine) RenderLayout(w http.ResponseWriter, r *http.Request, pageTitle 
 		"Content":      content,
 	}
 
+	htmlBytes, err := RenderMasterLayout(data)
+	if err != nil {
+		http.Error(w, "Failed to render layout: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = tmpl.Execute(w, data)
+	_, _ = w.Write(htmlBytes)
 }
