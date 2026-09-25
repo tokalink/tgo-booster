@@ -13,6 +13,8 @@ var (
 	ThemeCSS        template.CSS
 	masterTemplates *template.Template
 	loginTemplate   *template.Template
+	tableTemplate   *template.Template
+	formTemplate    *template.Template
 )
 
 func init() {
@@ -41,6 +43,22 @@ func init() {
 	if parseErr != nil {
 		panic("failed to parse loginTemplate: " + parseErr.Error())
 	}
+
+	// 4. Parse table template
+	tableTemplate, parseErr = template.New("table.html").ParseFS(boosterFS,
+		"templates/table.html",
+	)
+	if parseErr != nil {
+		panic("failed to parse tableTemplate: " + parseErr.Error())
+	}
+
+	// 5. Parse form template
+	formTemplate, parseErr = template.New("form.html").ParseFS(boosterFS,
+		"templates/form.html",
+	)
+	if parseErr != nil {
+		panic("failed to parse formTemplate: " + parseErr.Error())
+	}
 }
 
 // RenderMasterLayout executes the master layout with components and injected page content
@@ -57,4 +75,18 @@ func RenderLoginTemplate(data map[string]interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	err := loginTemplate.ExecuteTemplate(&buf, "login.html", data)
 	return buf.Bytes(), err
+}
+
+// RenderTableContent executes the responsive CRUD data grid template
+func RenderTableContent(data map[string]interface{}) (template.HTML, error) {
+	var buf bytes.Buffer
+	err := tableTemplate.Execute(&buf, data)
+	return template.HTML(buf.String()), err
+}
+
+// RenderFormContent executes the form builder template
+func RenderFormContent(data map[string]interface{}) (template.HTML, error) {
+	var buf bytes.Buffer
+	err := formTemplate.Execute(&buf, data)
+	return template.HTML(buf.String()), err
 }

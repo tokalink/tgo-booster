@@ -3,7 +3,6 @@ package cb
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 
@@ -12,15 +11,15 @@ import (
 
 // Controller represents a CRUDBooster CBController
 type Controller struct {
-	Engine      *Engine
-	Title       string
-	Table       string
-	Icon        string
-	PrimaryKey  string
-	OrderBy     string
-	Columns     []Column
-	Forms       []Field
-	BasePath    string
+	Engine     *Engine
+	Title      string
+	Table      string
+	Icon       string
+	PrimaryKey string
+	OrderBy    string
+	Columns    []Column
+	Forms      []Field
+	BasePath   string
 
 	// Hooks
 	HookBeforeAdd    HookFunc
@@ -112,157 +111,97 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) handleIndexHTML(w http.ResponseWriter, r *http.Request) {
-	tableHeaders := ""
-	for _, col := range c.Columns {
-		tableHeaders += fmt.Sprintf("<th>%s</th>", col.Label)
+	rows := c.fetchRows(r)
+	data := map[string]interface{}{
+		"Title":    c.Title,
+		"Icon":     c.Icon,
+		"Table":    c.Table,
+		"BasePath": c.BasePath,
+		"Columns":  c.Columns,
+		"Rows":     rows,
 	}
-	tableHeaders += "<th style='width: 140px; text-align: right;'>Actions</th>"
 
-	body := fmt.Sprintf(`
-		<div class="cb-card">
-			<div class="cb-toolbar">
-				<div>
-					<input type="text" class="cb-search" placeholder="Search %s..." id="cb-table-search" oninput="filterTable()" />
-				</div>
-				<div style="display: flex; gap: 8px;">
-					<a href="%s/add" class="btn btn-primary">+ Add New %s</a>
-				</div>
-			</div>
-			<div style="overflow-x: auto;">
-				<table class="cb-table" id="cb-main-table">
-					<thead>
-						<tr>%s</tr>
-					</thead>
-					<tbody id="cb-tbody">
-						<tr><td colspan="%d" style="text-align: center; color: #94a3b8; padding: 2rem;">Loading data...</td></tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-
-		<script>
-		let rawData = [];
-		async function loadData() {
-			try {
-				const res = await fetch('%s/data', { headers: { 'Accept': 'application/json' } });
-				rawData = await res.json();
-				renderRows(rawData);
-			} catch(e) {
-				console.error(e);
-			}
-		}
-
-		function renderRows(data) {
-			const tbody = document.getElementById('cb-tbody');
-			if (!data || data.length === 0) {
-				tbody.innerHTML = '<tr><td colspan="%d" style="text-align: center; color: #94a3b8; padding: 2rem;">No records found</td></tr>';
-				return;
-			}
-			tbody.innerHTML = data.map(row => {
-				let cells = '';
-				%s
-				cells += '<td style="text-align: right;"><div class="cb-actions">' +
-					'<a href="%s/edit/' + row.%s + '" class="btn btn-secondary btn-sm">Edit</a>' +
-					'<a href="%s/delete/' + row.%s + '" onclick="return confirm(\'Delete item #\'+row.%s+\'?\')" class="btn btn-danger btn-sm">Delete</a>' +
-				'</div></td>';
-				return '<tr>' + cells + '</tr>';
-			}).join('');
-		}
-
-		function filterTable() {
-			const q = document.getElementById('cb-table-search').value.toLowerCase();
-			if (!q) { renderRows(rawData); return; }
-			const filtered = rawData.filter(row => JSON.stringify(row).toLowerCase().includes(q));
-			renderRows(filtered);
-		}
-
-		loadData();
-		</script>
-	`, c.Title, c.BasePath, c.Title, tableHeaders, len(c.Columns)+1, c.BasePath, len(c.Columns)+1, c.generateRowMapperJS(), c.BasePath, c.PrimaryKey, c.BasePath, c.PrimaryKey, c.PrimaryKey)
-
-	c.Engine.RenderLayout(w, r, c.Title, template.HTML(body))
-}
-
-func (c *Controller) generateRowMapperJS() string {
-	js := ""
-	for _, col := range c.Columns {
-		if col.Type == ColImage {
-			js += fmt.Sprintf(`cells += '<td><img src="' + (row.%s || '') + '" style="height:32px;border-radius:4px;"/></td>';`+"\n", col.Name)
-		} else if col.Type == ColBadge {
-			js += fmt.Sprintf(`cells += '<td><span class="cb-badge cb-badge-success">' + (row.%s || '') + '</span></td>';`+"\n", col.Name)
-		} else {
-			js += fmt.Sprintf(`cells += '<td>' + (row.%s !== undefined ? row.%s : '') + '</td>';`+"\n", col.Name, col.Name)
-		}
+	contentHTML, err := RenderTableContent(data)
+	if err != nil {
+		http.Error(w, "Failed to render table: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
-	return js
+
+	c.Engine.RenderLayout(w, r, c.Title, contentHTML)
 }
 
 func (c *Controller) handleCreateHTML(w http.ResponseWriter, r *http.Request) {
-	formFields := ""
-	for _, f := range c.Forms {
-		formFields += fmt.Sprintf(`
-			<div class="cb-form-group">
-				<label>%s %s</label>
-				<input type="%s" name="%s" class="cb-form-control" placeholder="%s" %s />
-				%s
-			</div>
-		`, f.Label, ifThen(f.Required, "<span style='color:red;'>*</span>", ""), mapInputType(f.Type), f.Name, f.Placeholder, ifThen(f.Required, "required", ""), ifThen(f.HelpText != "", fmt.Sprintf("<span class='cb-help-text'>%s</span>", f.HelpText), ""))
+	data := map[string]interface{}{
+		"Title":      c.Title,
+		"BasePath":   c.BasePath,
+		"FormAction": c.BasePath + "/add",
+		"Forms":      c.Forms,
+		"IsEdit":     false,
 	}
 
-	body := fmt.Sprintf(`
-		<div class="cb-card" style="max-width: 680px; margin: 0 auto;">
-			<h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">Add New %s</h3>
-			<form method="POST" action="%s/add">
-				%s
-				<div style="display: flex; gap: 10px; margin-top: 2rem;">
-					<button type="submit" class="btn btn-primary">Save Data</button>
-					<a href="%s" class="btn btn-secondary">Cancel</a>
-				</div>
-			</form>
-		</div>
-	`, c.Title, c.BasePath, formFields, c.BasePath)
+	contentHTML, err := RenderFormContent(data)
+	if err != nil {
+		http.Error(w, "Failed to render form: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	c.Engine.RenderLayout(w, r, "Add "+c.Title, template.HTML(body))
+	c.Engine.RenderLayout(w, r, "Add "+c.Title, contentHTML)
 }
 
 func (c *Controller) handleEditHTML(w http.ResponseWriter, r *http.Request, id string) {
-	formFields := ""
-	for _, f := range c.Forms {
-		formFields += fmt.Sprintf(`
-			<div class="cb-form-group">
-				<label>%s %s</label>
-				<input type="%s" name="%s" id="field_%s" class="cb-form-control" placeholder="%s" %s />
-			</div>
-		`, f.Label, ifThen(f.Required, "<span style='color:red;'>*</span>", ""), mapInputType(f.Type), f.Name, f.Name, f.Placeholder, ifThen(f.Required, "required", ""))
+	data := map[string]interface{}{
+		"Title":      c.Title,
+		"BasePath":   c.BasePath,
+		"RecordID":   id,
+		"FormAction": c.BasePath + "/edit/" + id,
+		"Forms":      c.Forms,
+		"IsEdit":     true,
 	}
 
-	body := fmt.Sprintf(`
-		<div class="cb-card" style="max-width: 680px; margin: 0 auto;">
-			<h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;">Edit %s (#%s)</h3>
-			<form method="POST" action="%s/edit/%s">
-				%s
-				<div style="display: flex; gap: 10px; margin-top: 2rem;">
-					<button type="submit" class="btn btn-primary">Update Data</button>
-					<a href="%s" class="btn btn-secondary">Cancel</a>
-				</div>
-			</form>
-		</div>
-	`, c.Title, id, c.BasePath, id, formFields, c.BasePath)
+	contentHTML, err := RenderFormContent(data)
+	if err != nil {
+		http.Error(w, "Failed to render form: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	c.Engine.RenderLayout(w, r, "Edit "+c.Title, template.HTML(body))
+	c.Engine.RenderLayout(w, r, "Edit "+c.Title, contentHTML)
+}
+
+func (c *Controller) fetchRows(r *http.Request) []map[string]interface{} {
+	switch c.Table {
+	case "products":
+		return []map[string]interface{}{
+			{"id": "101", "name": "Apple MacBook Pro 16 M3 Max", "price": "Rp 42.000.000", "stock": "14", "status": "Active"},
+			{"id": "102", "name": "Keychron Q1 Pro Wireless Mechanical Keyboard", "price": "Rp 2.850.000", "stock": "25", "status": "Active"},
+			{"id": "103", "name": "LG UltraFine 4K 32-inch Ergonomic Display", "price": "Rp 11.500.000", "stock": "4", "status": "Processing"},
+			{"id": "104", "name": "Sony WH-1000XM5 Noise Cancelling Headphones", "price": "Rp 4.999.000", "stock": "18", "status": "Active"},
+			{"id": "105", "name": "Logitech MX Master 3S Wireless Mouse", "price": "Rp 1.650.000", "stock": "32", "status": "Active"},
+		}
+	case "customers":
+		return []map[string]interface{}{
+			{"id": "201", "name": "Budi Cahyono", "email": "budi.c@enterprise.co.id", "status": "Active"},
+			{"id": "202", "name": "Siti Wulandari", "email": "siti.wulandari@gmail.com", "status": "Active"},
+			{"id": "203", "name": "Ahmad Ridwan", "email": "aridwan@tokalink.io", "status": "Active"},
+			{"id": "204", "name": "Dewi Sartika", "email": "dewi.sartika@startup.id", "status": "Active"},
+			{"id": "205", "name": "Hendra Pratama", "email": "hendra.p@cloudtech.com", "status": "Active"},
+		}
+	case "orders":
+		return []map[string]interface{}{
+			{"id": "ORD-9024", "customer_name": "Budi Cahyono", "total_amount": "Rp 4.850.000", "status": "Completed"},
+			{"id": "ORD-9023", "customer_name": "Siti Wulandari", "total_amount": "Rp 12.400.000", "status": "In Transit"},
+			{"id": "ORD-9022", "customer_name": "Ahmad Ridwan", "total_amount": "Rp 1.250.000", "status": "Processing"},
+			{"id": "ORD-9021", "customer_name": "Dewi Sartika", "total_amount": "Rp 42.000.000", "status": "Completed"},
+		}
+	default:
+		return []map[string]interface{}{}
+	}
 }
 
 func (c *Controller) handleDataJSON(w http.ResponseWriter, r *http.Request) {
-	// Sample dynamic row list
-	rows := []map[string]interface{}{
-		{"id": 1, "name": "Apple MacBook Pro 16 M3 Max", "price": "Rp 42.000.000", "stock": 14, "status": "In Stock"},
-		{"id": 2, "name": "Keychron Q1 Pro Wireless Keyboard", "price": "Rp 2.850.000", "stock": 25, "status": "In Stock"},
-		{"id": 3, "name": "LG UltraFine 4K Display 32-inch", "price": "Rp 11.500.000", "stock": 4, "status": "Low Stock"},
-	}
-
+	rows := c.fetchRows(r)
 	if c.HookRowListing != nil {
-		for i, r := range rows {
-			rows[i] = c.HookRowListing(r)
+		for i, row := range rows {
+			rows[i] = c.HookRowListing(row)
 		}
 	}
 
@@ -320,26 +259,4 @@ func (c *Controller) handleDelete(w http.ResponseWriter, r *http.Request, id str
 	}
 
 	http.Redirect(w, r, c.BasePath, http.StatusSeeOther)
-}
-
-func ifThen(cond bool, a, b string) string {
-	if cond {
-		return a
-	}
-	return b
-}
-
-func mapInputType(t InputType) string {
-	switch t {
-	case InputNumber:
-		return "number"
-	case InputPassword:
-		return "password"
-	case InputDate:
-		return "date"
-	case InputEmail:
-		return "email"
-	default:
-		return "text"
-	}
 }

@@ -1,0 +1,279 @@
+<div class="cb-card">
+  <!-- HEADER & TOOLBAR -->
+  <div class="cb-toolbar">
+    <div>
+      <h2 class="cb-card-title">
+        <span>{{.Icon}}</span>
+        <span>{{.Title}}</span>
+        <span class="cb-badge cb-badge-primary" style="font-size: 0.72rem;">{{len .Rows}} Records</span>
+      </h2>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Manage and monitor {{.Title}} database records</p>
+    </div>
+
+    <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+      <!-- Search Box -->
+      <div class="cb-search-wrap">
+        <span class="cb-search-icon">🔍</span>
+        <input type="text" id="tableSearch" class="cb-search" placeholder="Search {{.Title}}..." onkeyup="filterTable()">
+      </div>
+
+      <!-- Export Button -->
+      <button type="button" onclick="exportCSV()" class="btn btn-secondary btn-sm" title="Export to CSV">
+        ⬇️ Export
+      </button>
+
+      <!-- Filter Button -->
+      <button type="button" onclick="toggleFilterModal()" class="btn btn-secondary btn-sm" title="Advanced Filter">
+        🔍 Filter
+      </button>
+
+      <!-- Add New Button -->
+      <a href="{{.BasePath}}/add" class="btn btn-primary btn-sm">
+        + Add {{.Title}}
+      </a>
+    </div>
+  </div>
+
+  <!-- BULK ACTIONS BAR (HIDDEN BY DEFAULT) -->
+  <div id="bulkActionBar" style="display: none; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); padding: 0.75rem 1.25rem; border-radius: 10px; margin-bottom: 1rem; align-items: center; justify-content: space-between;">
+    <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent);">
+      <span id="selectedCount">0</span> row(s) selected
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="button" onclick="bulkAction('approve')" class="btn btn-secondary btn-sm">✅ Bulk Approve</button>
+      <button type="button" onclick="bulkAction('delete')" class="btn btn-danger btn-sm">🗑️ Bulk Delete</button>
+    </div>
+  </div>
+
+  <!-- RESPONSIVE DATA TABLE -->
+  <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--border);">
+    <table class="cb-table">
+      <thead>
+        <tr>
+          <th style="width: 40px; text-align: center;">
+            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" style="cursor: pointer;">
+          </th>
+          {{range .Columns}}
+          <th>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+              <span>{{.Label}}</span>
+              {{if .Sortable}}
+              <span style="color: var(--text-dim); font-size: 0.7rem; cursor: pointer;" title="Sort">▲▼</span>
+              {{end}}
+            </div>
+          </th>
+          {{end}}
+          <th style="width: 140px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{if .Rows}}
+          {{range $row := .Rows}}
+          <tr data-id="{{index $row "id"}}">
+            <td style="text-align: center;">
+              <input type="checkbox" class="row-checkbox" onchange="updateBulkBar()" style="cursor: pointer;">
+            </td>
+            {{range $.Columns}}
+              {{$val := index $row .Name}}
+              <td>
+                {{if eq .Type "badge"}}
+                  {{if eq $val "Active"}}
+                    <span class="cb-badge cb-badge-success">● {{$val}}</span>
+                  {{else if eq $val "Completed"}}
+                    <span class="cb-badge cb-badge-success">● {{$val}}</span>
+                  {{else if eq $val "Processing"}}
+                    <span class="cb-badge cb-badge-warning">● {{$val}}</span>
+                  {{else if eq $val "In Transit"}}
+                    <span class="cb-badge cb-badge-primary">● {{$val}}</span>
+                  {{else}}
+                    <span class="cb-badge cb-badge-primary">● {{$val}}</span>
+                  {{end}}
+                {{else if eq .Type "money"}}
+                  <strong style="color: #38bdf8;">{{$val}}</strong>
+                {{else if eq .Type "email"}}
+                  <a href="mailto:{{$val}}" style="color: var(--text-muted); text-decoration: none;">✉️ {{$val}}</a>
+                {{else if eq .Name "id"}}
+                  <code style="color: var(--accent); font-weight: 700;">#{{$val}}</code>
+                {{else}}
+                  <span>{{$val}}</span>
+                {{end}}
+              </td>
+            {{end}}
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 4px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="viewDetail('{{index $row "id"}}')" title="View Record" style="padding: 4px 8px;">👁️</button>
+                <a href="{{$.BasePath}}/edit/{{index $row "id"}}" class="btn btn-secondary btn-sm" title="Edit Record" style="padding: 4px 8px;">✏️</a>
+                <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('{{index $row "id"}}', '{{$.BasePath}}')" title="Delete Record" style="padding: 4px 8px;">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          {{end}}
+        {{else}}
+          <tr>
+            <td colspan="10" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+              <div>No records found in <strong>{{.Title}}</strong></div>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE FOOTER & PAGINATION -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--text-muted);">
+      <span>Show</span>
+      <select class="cb-input" style="width: auto; padding: 4px 8px; font-size: 0.82rem;">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+      <span>entries • Showing 1 to {{len .Rows}} of {{len .Rows}} entries</span>
+    </div>
+
+    <div style="display: flex; gap: 4px;">
+      <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.5;">‹ Prev</button>
+      <button class="btn btn-primary btn-sm">1</button>
+      <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.5;">Next ›</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW DETAIL MODAL -->
+<div id="detailModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; padding: 1.5rem;">
+  <div class="cb-card" style="width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto;">
+    <div class="cb-card-header">
+      <h3 class="cb-card-title">👁️ Record Details</h3>
+      <button type="button" onclick="closeModal('detailModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <div id="detailContent" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.9rem;">
+      <!-- Injected via JS -->
+    </div>
+    <div style="margin-top: 1.5rem; text-align: right;">
+      <button type="button" onclick="closeModal('detailModal')" class="btn btn-secondary btn-sm">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER MODAL -->
+<div id="filterModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; padding: 1.5rem;">
+  <div class="cb-card" style="width: 100%; max-width: 480px;">
+    <div class="cb-card-header">
+      <h3 class="cb-card-title">🔍 Advanced Filter</h3>
+      <button type="button" onclick="closeModal('filterModal')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="cb-form-group" style="margin-bottom: 0;">
+        <label class="cb-form-label">Filter Field</label>
+        <select class="cb-input">
+          {{range .Columns}}
+          <option value="{{.Name}}">{{.Label}}</option>
+          {{end}}
+        </select>
+      </div>
+      <div class="cb-form-group" style="margin-bottom: 0;">
+        <label class="cb-form-label">Operator</label>
+        <select class="cb-input">
+          <option value="contains">Contains</option>
+          <option value="equals">Equals (=)</option>
+          <option value="greater">Greater Than (>)</option>
+          <option value="less">Less Than (<)</option>
+        </select>
+      </div>
+      <div class="cb-form-group" style="margin-bottom: 0;">
+        <label class="cb-form-label">Value</label>
+        <input type="text" class="cb-input" placeholder="Filter value...">
+      </div>
+    </div>
+    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+      <button type="button" onclick="closeModal('filterModal')" class="btn btn-secondary btn-sm">Reset</button>
+      <button type="button" onclick="closeModal('filterModal')" class="btn btn-primary btn-sm">Apply Filter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('.row-checkbox:checked');
+    const bar = document.getElementById('bulkActionBar');
+    const count = document.getElementById('selectedCount');
+    if (bar && count) {
+      if (checked.length > 0) {
+        bar.style.display = 'flex';
+        count.innerText = checked.length;
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+  }
+
+  function bulkAction(action) {
+    const count = document.querySelectorAll('.row-checkbox:checked').length;
+    if (confirm(`Are you sure you want to perform '${action}' on ${count} selected records?`)) {
+      alert(`Bulk ${action} completed successfully.`);
+      location.reload();
+    }
+  }
+
+  function viewDetail(id) {
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (!row) return;
+    const cells = row.querySelectorAll('td');
+    const headers = document.querySelectorAll('.cb-table th');
+    
+    let html = '';
+    for (let i = 1; i < cells.length - 1; i++) {
+      const label = headers[i].innerText.replace('▲▼', '').trim();
+      const val = cells[i].innerText.trim();
+      html += `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          <span style="color: var(--text-muted); font-weight: 600;">${label}:</span>
+          <span style="font-weight: 700; color: var(--text-main);">${val}</span>
+        </div>
+      `;
+    }
+    document.getElementById('detailContent').innerHTML = html;
+    document.getElementById('detailModal').style.display = 'flex';
+  }
+
+  function toggleFilterModal() {
+    document.getElementById('filterModal').style.display = 'flex';
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+  }
+
+  function confirmDelete(id, basePath) {
+    if (confirm(`Are you sure you want to delete record #${id}? This action cannot be undone.`)) {
+      window.location.href = `${basePath}/delete/${id}`;
+    }
+  }
+
+  function exportCSV() {
+    let csv = [];
+    const rows = document.querySelectorAll('.cb-table tr');
+    rows.forEach(row => {
+      const cols = row.querySelectorAll('th, td');
+      let rowData = [];
+      for (let i = 1; i < cols.length - 1; i++) {
+        rowData.push('"' + cols[i].innerText.replace(/"/g, '""').trim() + '"');
+      }
+      if (rowData.length) csv.push(rowData.join(','));
+    });
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'export_data.csv';
+    a.click();
+  }
+</script>

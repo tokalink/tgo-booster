@@ -2,7 +2,10 @@
 <aside class="cb-sidebar">
   <a href="{{.AdminPath}}" class="cb-brand">
     <div class="cb-brand-logo">⚡</div>
-    <span class="cb-brand-text">{{.AppName}}</span>
+    <div style="display: flex; flex-direction: column;">
+      <span class="cb-brand-text">{{.AppName}}</span>
+      <span style="font-size: 0.65rem; color: var(--text-dim); font-weight: 700; letter-spacing: 0.5px;">CRUDBOOSTER GO</span>
+    </div>
     <span class="cb-brand-badge">v5.6</span>
   </a>
 
@@ -13,7 +16,7 @@
       <span>Dashboard</span>
     </a>
 
-    <div class="cb-nav-heading">MODULES & CRUD</div>
+    <div class="cb-nav-heading">BUSINESS MODULES</div>
     {{range .MenuItems}}
     <a href="{{.Path}}" class="cb-nav-item {{if .IsActive}}active{{end}}">
       <span class="cb-nav-icon">{{.Icon}}</span>
@@ -24,18 +27,43 @@
     </a>
     {{end}}
 
-    <div class="cb-nav-heading">SYSTEM & SECURITY</div>
-    <a href="{{.AdminPath}}/users" class="cb-nav-item">
+    <div class="cb-nav-heading">CRUDBOOSTER TOOLS</div>
+    <a href="{{.AdminPath}}/module_generator" class="cb-nav-item {{if eq .ActivePath (printf "%s/module_generator" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">⚡</span>
+      <span>Module Generator</span>
+      <span class="cb-nav-badge cb-badge-success">PRO</span>
+    </a>
+    <a href="{{.AdminPath}}/menus" class="cb-nav-item {{if eq .ActivePath (printf "%s/menus" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">📑</span>
+      <span>Menu Management</span>
+    </a>
+    <a href="{{.AdminPath}}/privileges" class="cb-nav-item {{if eq .ActivePath (printf "%s/privileges" .AdminPath)}}active{{end}}">
       <span class="cb-nav-icon">🛡️</span>
+      <span>Privileges & Roles</span>
+    </a>
+    <a href="{{.AdminPath}}/users" class="cb-nav-item {{if eq .ActivePath (printf "%s/users" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">👥</span>
       <span>User Management</span>
     </a>
-    <a href="{{.AdminPath}}/logs" class="cb-nav-item">
+    <a href="{{.AdminPath}}/api_generator" class="cb-nav-item {{if eq .ActivePath (printf "%s/api_generator" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">🔑</span>
+      <span>API Generator</span>
+    </a>
+    <a href="{{.AdminPath}}/email_templates" class="cb-nav-item {{if eq .ActivePath (printf "%s/email_templates" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">✉️</span>
+      <span>Email Templates</span>
+    </a>
+    <a href="{{.AdminPath}}/logs" class="cb-nav-item {{if eq .ActivePath (printf "%s/logs" .AdminPath)}}active{{end}}">
       <span class="cb-nav-icon">📋</span>
-      <span>CBLogs Audit</span>
+      <span>CBLogs (Audit Trail)</span>
+    </a>
+    <a href="{{.AdminPath}}/settings" class="cb-nav-item {{if eq .ActivePath (printf "%s/settings" .AdminPath)}}active{{end}}">
+      <span class="cb-nav-icon">⚙️</span>
+      <span>Settings</span>
     </a>
   </nav>
 
-  <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+  <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2);">
     <div style="display: flex; align-items: center; gap: 10px;">
       <div class="cb-avatar">{{.UserInitials}}</div>
       <div class="cb-user-info">
