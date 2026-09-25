@@ -1,0 +1,14 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+tmp/
+*.db
+*.sqlite
+.env
+.env.local
+.idea/
+.vscode/
