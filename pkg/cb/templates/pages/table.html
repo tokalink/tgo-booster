@@ -1,0 +1,755 @@
+{{if .PreIndexHTML}}
+<div class="cb-pre-html" style="margin-bottom: 1.25rem;">
+  {{.PreIndexHTML}}
+</div>
+{{end}}
+
+{{if .Widgets}}
+<div class="cb-stats-grid" style="margin-bottom: 1.25rem;">
+  {{range .Widgets}}
+  <div class="cb-stat-card {{.GetSizeClass}}" style="grid-column: span {{.GetColSpan}}; {{if .Style}}{{.Style}}{{end}}">
+    <div class="stat-card-header">
+      <div class="cb-stat-icon stat-{{if .Color}}{{.Color}}{{else}}blue{{end}}">
+        {{if .Icon}}{{.Icon | safeHTML}}{{else}}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>{{end}}
+      </div>
+      {{if .Trend}}
+      <span class="cb-trend-badge {{if .TrendType}}{{.TrendType}}{{else}}positive{{end}}">{{.Trend}}</span>
+      {{end}}
+    </div>
+    <div class="cb-stat-info">
+      <span class="cb-stat-title">{{.Title}}</span>
+      <span class="cb-stat-value">{{.Value}}</span>
+      {{if .Subtext}}<span style="font-size: 0.75rem; color: var(--text-dim);">{{.Subtext}}</span>{{end}}
+    </div>
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+<div class="cb-card">
+  <!-- HEADER & TOOLBAR -->
+  <div class="cb-toolbar">
+    <div class="cb-toolbar-left">
+      <div class="cb-module-title-wrap">
+        <h2 class="cb-card-title">
+          <span>{{.Title}}</span>
+        </h2>
+        <span class="cb-badge cb-badge-count">{{len .Rows}} Records</span>
+      </div>
+      <p class="cb-card-sub">Manage, filter, and export {{.Title}} database records</p>
+    </div>
+
+    <div class="cb-toolbar-right">
+      <!-- Search Box -->
+      <div class="cb-search-wrap">
+        <svg class="cb-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="tableSearch" class="cb-search" placeholder="Filter {{.Title}}..." onkeyup="filterTable()">
+      </div>
+
+      <!-- Export Button -->
+      <button type="button" onclick="exportCSV()" class="btn btn-secondary btn-sm" title="Export to CSV">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+        <span>Export</span>
+      </button>
+
+      <!-- Import Button -->
+      <button type="button" onclick="openImportModal()" class="btn btn-secondary btn-sm" title="Batch Import CSV">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+        <span>Import</span>
+      </button>
+
+      <!-- Advanced Filter -->
+      <button type="button" onclick="toggleFilterDrawer(true)" class="btn btn-secondary btn-sm" title="Filter Records">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <span>Filter</span>
+      </button>
+
+      <!-- Custom Top Actions (index_button) -->
+      {{range .TopActions}}
+      <a href="{{if .URL}}{{.URL}}{{else}}javascript:void(0){{end}}" {{if .OnClick}}onclick="{{.OnClick}}"{{end}} {{if .Target}}target="{{.Target}}"{{end}} class="btn {{if .Class}}{{.Class}}{{else}}btn-secondary{{end}} btn-sm">
+        {{if .Icon}}{{.Icon | safeHTML}}{{end}}
+        <span>{{.Label}}</span>
+      </a>
+      {{end}}
+
+      <!-- Add Record Button -->
+      <a href="{{.BasePath}}/add" class="btn btn-primary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Add {{.Title}}</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- BULK ACTIONS BAR (HIDDEN BY DEFAULT) -->
+  <div id="bulkActionBar" class="bulk-bar" style="display: none;">
+    <div class="bulk-bar-info">
+      <span id="selectedCount">0</span> selected
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="button" onclick="bulkAction('approve')" class="btn btn-secondary btn-sm">Bulk Approve</button>
+      <button type="button" onclick="bulkAction('delete')" class="btn btn-danger btn-sm">Bulk Delete</button>
+    </div>
+  </div>
+
+  <!-- DATA TABLE -->
+  <div class="cb-table-container">
+    <table class="cb-table" id="mainDataTable">
+      <thead>
+        <tr>
+          <th style="width: 44px; text-align: center;">
+            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="cb-checkbox">
+          </th>
+          {{range $idx, $col := .Columns}}
+          <th {{if .Sortable}}onclick="sortTable({{$idx}})" style="cursor: pointer;" title="Click to sort by {{.Label}}"{{end}}>
+            <div class="th-content">
+              <span>{{.Label}}</span>
+              {{if .Sortable}}
+              <span class="sort-icon" id="sortIcon_{{$idx}}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+              </span>
+              {{end}}
+            </div>
+          </th>
+          {{end}}
+          <th style="width: 120px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        {{if .Rows}}
+          {{$pk := $.PrimaryKey}}
+          {{range $row := .Rows}}
+          {{$rowID := index $row $pk}}
+          {{if not $rowID}}{{$rowID = index $row "id"}}{{end}}
+          <tr data-id="{{$rowID}}">
+            <td style="text-align: center;">
+              <input type="checkbox" class="row-checkbox cb-checkbox" value="{{$rowID}}" onchange="updateBulkBar()">
+            </td>
+            {{range $.Columns}}
+              {{$val := index $row .Name}}
+              <td>
+                {{if or (eq .Type "image") (eq .Type "upload")}}
+                  {{if $val}}
+                    <img src="{{$val}}" alt="Thumb" class="cb-table-thumb" onclick="openLightbox('{{$val}}')" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/></svg>'">
+                  {{else}}
+                    <span class="cb-table-no-img">No Image</span>
+                  {{end}}
+                {{else if eq .Type "url"}}
+                  <a href="{{$val}}" target="_blank" class="cell-link">{{$val}} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+                {{else if eq .Type "badge"}}
+                  {{if or (eq $val "Active") (eq $val "Completed") (eq $val "Enabled")}}
+                    <span class="cb-badge cb-badge-success"><span class="badge-dot"></span> {{$val}}</span>
+                  {{else if eq $val "Processing"}}
+                    <span class="cb-badge cb-badge-warning"><span class="badge-dot"></span> {{$val}}</span>
+                  {{else if eq $val "In Transit"}}
+                    <span class="cb-badge cb-badge-primary"><span class="badge-dot"></span> {{$val}}</span>
+                  {{else}}
+                    <span class="cb-badge cb-badge-neutral"><span class="badge-dot"></span> {{$val}}</span>
+                  {{end}}
+                {{else if eq .Type "money"}}
+                  <span class="cell-money">{{$val}}</span>
+                {{else if eq .Type "email"}}
+                  <a href="mailto:{{$val}}" class="cell-email">{{$val}}</a>
+                {{else if or (eq .Name "id") (eq .Name $pk)}}
+                  <span class="cell-id">#{{$val}}</span>
+                {{else}}
+                  <span class="cell-text">{{$val}}</span>
+                {{end}}
+              </td>
+            {{end}}
+            <td style="text-align: right;">
+              <div class="row-actions">
+                <button type="button" class="btn-action btn-action-view" onclick="viewDetail('{{$rowID}}')" title="View Record Details">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <a href="{{$.BasePath}}/edit/{{$rowID}}" class="btn-action btn-action-edit" title="Edit Record">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                </a>
+                <button type="button" class="btn-action btn-action-delete" onclick="confirmDelete('{{$rowID}}', '{{$.BasePath}}')" title="Delete Record">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                </button>
+                <!-- Custom Row Actions (addaction) -->
+                {{range $.RowActions}}
+                  <a href="{{if .URL}}{{printf .URL $rowID}}{{else}}javascript:void(0){{end}}" {{if .OnClick}}onclick="{{printf .OnClick $rowID}}"{{end}} {{if .Target}}target="{{.Target}}"{{end}} class="btn-action {{if .Color}}btn-action-{{.Color}}{{end}}" title="{{.Label}}">
+                    {{if .Icon}}{{.Icon | safeHTML}}{{else}}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>{{end}}
+                  </a>
+                {{end}}
+              </div>
+            </td>
+          </tr>
+          {{end}}
+          <tr id="tableNoMatchesRow" class="empty-state-row" style="display: none;">
+            <td colspan="20" class="empty-cell" style="text-align: center !important; vertical-align: middle !important; padding: 4rem 1.5rem !important;">
+              <div class="empty-state-inner" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; max-width: 440px; margin: 0 auto; text-align: center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <div class="empty-title">No matching records found</div>
+                <div class="empty-desc">Try refining your search keyword or clearing the search filter</div>
+              </div>
+            </td>
+          </tr>
+        {{else}}
+          <tr class="empty-state-row">
+            <td colspan="20" class="empty-cell" style="text-align: center !important; vertical-align: middle !important; padding: 4.5rem 1.5rem !important;">
+              <div class="empty-state-inner" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; max-width: 460px; margin: 0 auto; text-align: center;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--bg-subtle, rgba(255,255,255,0.05)); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 4px; border: 1px solid var(--border);">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon" style="margin-bottom: 0; color: var(--text-dim);"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                </div>
+                <div class="empty-title" style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">No records in {{.Title}}</div>
+                <div class="empty-desc" style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.5;">Click "+ Add {{.Title}}" to create your first database entry</div>
+                <a href="{{.BasePath}}/add" class="btn btn-primary btn-sm" style="margin-top: 6px; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Add {{.Title}}</span>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE FOOTER & DYNAMIC PAGINATION -->
+  <div class="cb-table-footer">
+    <div class="pagination-info">
+      <span>Show</span>
+      <select class="cb-select-compact" id="pageSizeSelect" onchange="changePageSize(this.value)">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+      <span>entries • Showing <span id="pageStart">1</span> to <span id="pageEnd">{{len .Rows}}</span> of <span id="pageTotal">{{len .Rows}}</span> entries</span>
+    </div>
+
+    <div class="pagination-controls" id="paginationControls">
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPrevPage" onclick="changePage(currentPage - 1)">Previous</button>
+      <div id="pageNumbers" style="display: inline-flex; gap: 4px;"></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnNextPage" onclick="changePage(currentPage + 1)">Next</button>
+    </div>
+  </div>
+</div>
+
+{{if .PostIndexHTML}}
+<div class="cb-post-html" style="margin-top: 1.25rem;">
+  {{.PostIndexHTML}}
+</div>
+{{end}}
+
+<!-- ADVANCED FILTER SLIDE-OVER DRAWER -->
+<div id="filterDrawerBackdrop" class="filter-backdrop" style="display: none;" onclick="if(event.target===this) toggleFilterDrawer(false)">
+  <div class="filter-drawer">
+    <div class="filter-drawer-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main);">Filter Records</h3>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="toggleFilterDrawer(false)">✕</button>
+    </div>
+    <div class="filter-drawer-body">
+      <div class="cb-form-group">
+        <label class="cb-form-label">Keyword Search</label>
+        <input type="text" id="filterKeyword" class="cb-input" placeholder="Search across all fields..." onkeyup="if(event.key==='Enter') applyFilter()">
+      </div>
+      <div class="cb-form-group">
+        <label class="cb-form-label">Filter by Status</label>
+        <select id="filterStatus" class="cb-input">
+          <option value="">All Statuses</option>
+          <option value="Active">Active</option>
+          <option value="Processing">Processing</option>
+          <option value="In Transit">In Transit</option>
+          <option value="Completed">Completed</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-drawer-footer">
+      <button type="button" class="btn btn-secondary" onclick="resetFilter()">Reset</button>
+      <button type="button" class="btn btn-primary" onclick="applyFilter()">Apply Filters</button>
+    </div>
+  </div>
+</div>
+
+<!-- BATCH IMPORT CSV MODAL -->
+<div id="importModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeImportModal()">
+  <div class="modal-card" style="max-width: 580px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Batch Import {{.Title}}</h3>
+        <p class="modal-sub">Upload CSV dataset to import records</p>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeImportModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cb-upload-zone" style="margin-bottom: 1rem;">
+        <input type="file" id="csvFileInput" accept=".csv" class="cb-file-input" onchange="handleCSVFileSelect(this)">
+        <div class="cb-upload-placeholder" onclick="document.getElementById('csvFileInput').click()">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span class="cb-upload-title" id="csvFileLabel">Click or drag CSV file here</span>
+          <span class="cb-upload-hint">Format: Comma-separated UTF-8 CSV</span>
+        </div>
+      </div>
+      <div id="csvPreviewArea" style="display: none;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dim); margin-bottom: 6px;">Parsed Preview (<span id="csvRowCount">0</span> rows found):</div>
+        <div style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.78rem;">
+          <table class="cb-table" id="csvPreviewTable"></table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="downloadSampleCSV()">Download Sample CSV</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeImportModal()">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnSubmitImport" onclick="submitImportCSV()" disabled>Confirm Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD DETAIL MODAL -->
+<div id="detailModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeDetailModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title">Record Details</h3>
+        <p class="modal-sub" id="modalRecordID">ID: #---</p>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="detail-table" id="detailContentTable">
+        <!-- Injected via JavaScript -->
+      </table>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+      <a id="detailEditBtn" href="#" class="btn btn-primary btn-sm">Edit Record</a>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeDetailModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+  let currentPage = 1;
+  let pageSize = 10;
+  let sortColumnIndex = -1;
+  let sortAscending = true;
+
+  // 1. Pagination & Page sizing
+  function getAllRows() {
+    return Array.from(document.querySelectorAll('#tableBody tr:not(.empty-state-row)'));
+  }
+
+  function getMatchingRows() {
+    return getAllRows().filter(row => row.dataset.filtered !== 'true');
+  }
+
+  function renderPagination() {
+    const matching = getMatchingRows();
+    const total = matching.length;
+    const totalPages = Math.ceil(total / pageSize) || 1;
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+
+    // Show/hide based on pagination and filter
+    matching.forEach((row, idx) => {
+      if (idx >= startIdx && idx < endIdx) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Hidden by filter
+    getAllRows().forEach(row => {
+      if (row.dataset.filtered === 'true') {
+        row.style.display = 'none';
+      }
+    });
+
+    const pageStartElem = document.getElementById('pageStart');
+    const pageEndElem = document.getElementById('pageEnd');
+    const pageTotalElem = document.getElementById('pageTotal');
+    if (pageStartElem) pageStartElem.innerText = total > 0 ? (startIdx + 1) : 0;
+    if (pageEndElem) pageEndElem.innerText = Math.min(endIdx, total);
+    if (pageTotalElem) pageTotalElem.innerText = total;
+
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+    if (btnPrev) btnPrev.disabled = (currentPage <= 1);
+    if (btnNext) btnNext.disabled = (currentPage >= totalPages);
+
+    const pageNumbers = document.getElementById('pageNumbers');
+    if (pageNumbers) {
+      pageNumbers.innerHTML = '';
+      for (let p = 1; p <= totalPages; p++) {
+        if (totalPages > 7 && Math.abs(p - currentPage) > 2 && p !== 1 && p !== totalPages) {
+          if (p === 2 || p === totalPages - 1) {
+            const dots = document.createElement('span');
+            dots.innerText = '...';
+            dots.style.padding = '4px 6px';
+            dots.style.color = 'var(--text-dim)';
+            pageNumbers.appendChild(dots);
+          }
+          continue;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = (p === currentPage) ? 'btn btn-primary btn-sm page-active' : 'btn btn-secondary btn-sm';
+        btn.innerText = p;
+        btn.onclick = () => changePage(p);
+        pageNumbers.appendChild(btn);
+      }
+    }
+
+    const emptyRow = document.getElementById('tableNoMatchesRow');
+    if (emptyRow) {
+      emptyRow.style.display = (getAllRows().length > 0 && total === 0) ? '' : 'none';
+    }
+  }
+
+  function changePage(page) {
+    currentPage = page;
+    renderPagination();
+  }
+
+  function changePageSize(size) {
+    pageSize = parseInt(size, 10) || 10;
+    currentPage = 1;
+    renderPagination();
+  }
+
+  // 2. Real Column Sorting
+  function sortTable(colIndex) {
+    const table = document.getElementById('mainDataTable');
+    if (!table) return;
+    const tbody = document.getElementById('tableBody');
+    const rows = getAllRows();
+
+    if (sortColumnIndex === colIndex) {
+      sortAscending = !sortAscending;
+    } else {
+      sortColumnIndex = colIndex;
+      sortAscending = true;
+    }
+
+    // Reset sort icons
+    document.querySelectorAll('.sort-icon').forEach(icon => {
+      icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>';
+      icon.classList.remove('th-sort-asc', 'th-sort-desc');
+    });
+
+    const activeIcon = document.getElementById('sortIcon_' + colIndex);
+    if (activeIcon) {
+      activeIcon.classList.add(sortAscending ? 'th-sort-asc' : 'th-sort-desc');
+      activeIcon.innerHTML = sortAscending 
+        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
+        : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>';
+    }
+
+    // Sort column index corresponds to table cells (+1 for checkbox column)
+    const cellIdx = colIndex + 1;
+    rows.sort((a, b) => {
+      const aCell = a.children[cellIdx]?.innerText.trim() || '';
+      const bCell = b.children[cellIdx]?.innerText.trim() || '';
+
+      // Clean numeric / currency strings (e.g. "Rp 42.000.000", "#101", "14")
+      const aClean = aCell.replace(/[^0-9.-]+/g, '');
+      const bClean = bCell.replace(/[^0-9.-]+/g, '');
+      const aNum = parseFloat(aClean);
+      const bNum = parseFloat(bClean);
+
+      if (!isNaN(aNum) && !isNaN(bNum) && aClean !== '' && bClean !== '') {
+        return sortAscending ? (aNum - bNum) : (bNum - aNum);
+      }
+      return sortAscending ? aCell.localeCompare(bCell) : bCell.localeCompare(aCell);
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+    renderPagination();
+  }
+
+  // 3. Search and Advanced Filter
+  function filterTable() {
+    const query = document.getElementById('tableSearch')?.value?.toLowerCase() || '';
+    getAllRows().forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.dataset.filtered = text.includes(query) ? 'false' : 'true';
+    });
+    currentPage = 1;
+    renderPagination();
+  }
+
+  function toggleFilterDrawer(show) {
+    const drawer = document.getElementById('filterDrawerBackdrop');
+    if (!drawer) return;
+    if (typeof show === 'boolean') {
+      drawer.style.display = show ? 'flex' : 'none';
+    } else {
+      drawer.style.display = (drawer.style.display === 'none') ? 'flex' : 'none';
+    }
+  }
+
+  function applyFilter() {
+    const kw = document.getElementById('filterKeyword')?.value?.toLowerCase() || '';
+    const status = document.getElementById('filterStatus')?.value?.toLowerCase() || '';
+
+    getAllRows().forEach(row => {
+      const text = row.innerText.toLowerCase();
+      const matchKw = !kw || text.includes(kw);
+      const matchStatus = !status || text.includes(status);
+      row.dataset.filtered = (matchKw && matchStatus) ? 'false' : 'true';
+    });
+
+    toggleFilterDrawer(false);
+    currentPage = 1;
+    renderPagination();
+    if (window.showToast) {
+      showToast('Filters applied successfully.', 'info');
+    }
+  }
+
+  function resetFilter() {
+    const kwInput = document.getElementById('filterKeyword');
+    const stSelect = document.getElementById('filterStatus');
+    if (kwInput) kwInput.value = '';
+    if (stSelect) stSelect.value = '';
+    getAllRows().forEach(row => row.dataset.filtered = 'false');
+    toggleFilterDrawer(false);
+    currentPage = 1;
+    renderPagination();
+    if (window.showToast) {
+      showToast('Filter reset to default.', 'info');
+    }
+  }
+
+  // 4. Checkbox & Bulk Actions
+  function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const selected = document.querySelectorAll('.row-checkbox:checked').length;
+    const bar = document.getElementById('bulkActionBar');
+    const count = document.getElementById('selectedCount');
+    if (bar && count) {
+      count.innerText = selected;
+      bar.style.display = selected > 0 ? 'flex' : 'none';
+    }
+  }
+
+  function bulkAction(action) {
+    const selectedCheckboxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
+    const ids = selectedCheckboxes.map(cb => cb.value || cb.closest('tr')?.dataset.id).filter(Boolean);
+    if (ids.length === 0) return;
+
+    if (confirm('Execute ' + action + ' on ' + ids.length + ' selected item(s)?')) {
+      // Send real bulk action request
+      fetch('{{.BasePath}}/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: 'action=' + encodeURIComponent(action) + '&ids=' + encodeURIComponent(ids.join(','))
+      }).then(res => {
+        // Remove rows from DOM
+        if (action === 'delete') {
+          selectedCheckboxes.forEach(cb => cb.closest('tr')?.remove());
+          if (window.showToast) showToast(ids.length + ' records deleted successfully.', 'success');
+        } else {
+          if (window.showToast) showToast('Bulk action ' + action + ' completed.', 'success');
+        }
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        const master = document.getElementById('selectAllCheckbox');
+        if (master) master.checked = false;
+        updateBulkBar();
+        renderPagination();
+      }).catch(err => {
+        if (window.showToast) showToast('Bulk action failed: ' + err, 'error');
+      });
+    }
+  }
+
+  function confirmDelete(id, basePath) {
+    if (confirm('Are you sure you want to permanently delete record #' + id + '?')) {
+      window.location.href = basePath + '/delete/' + id;
+    }
+  }
+
+  // 5. Details Modal
+  function viewDetail(id) {
+    const row = document.querySelector('tr[data-id="' + id + '"]');
+    if (!row) return;
+
+    document.getElementById('modalRecordID').innerText = 'Record ID: #' + id;
+    const table = document.getElementById('detailContentTable');
+    table.innerHTML = '';
+
+    const headers = document.querySelectorAll('.cb-table thead th:not(:first-child):not(:last-child)');
+    const cells = row.querySelectorAll('td:not(:first-child):not(:last-child)');
+
+    headers.forEach((th, i) => {
+      const tr = document.createElement('tr');
+      const thLabel = th.innerText.replace(/[\n▲▼]/g, '').trim();
+      const val = cells[i] ? cells[i].innerHTML : '-';
+      tr.innerHTML = '<td class="dt-label">' + thLabel + '</td><td class="dt-val">' + val + '</td>';
+      table.appendChild(tr);
+    });
+
+    const editBtn = document.getElementById('detailEditBtn');
+    if (editBtn) editBtn.href = '{{.BasePath}}/edit/' + id;
+
+    document.getElementById('detailModal').style.display = 'flex';
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+  }
+
+  // 6. CSV Export
+  function exportCSV() {
+    const rows = document.querySelectorAll('.cb-table tr');
+    let csv = [];
+    rows.forEach(row => {
+      let cols = row.querySelectorAll('th:not(:first-child):not(:last-child), td:not(:first-child):not(:last-child)');
+      let rowData = [];
+      cols.forEach(col => rowData.push('"' + col.innerText.replace(/"/g, '""').replace(/[\n▲▼]/g, '').trim() + '"'));
+      if (rowData.length > 0) csv.push(rowData.join(','));
+    });
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'export_' + new Date().toISOString().slice(0, 10) + '.csv';
+    link.click();
+    if (window.showToast) showToast('CSV dataset exported successfully.', 'success');
+  }
+
+  // 7. CSV Import Modal
+  let parsedImportRows = [];
+  let parsedImportHeaders = [];
+
+  function openImportModal() {
+    const modal = document.getElementById('importModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeImportModal() {
+    const modal = document.getElementById('importModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function handleCSVFileSelect(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    document.getElementById('csvFileLabel').innerText = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+      if (lines.length < 2) {
+        alert('CSV file must have a header row and at least one data row.');
+        return;
+      }
+
+      const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+      parsedImportHeaders = headers;
+      parsedImportRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, '').trim());
+        if (values.length === headers.length) {
+          parsedImportRows.push(values);
+        }
+      }
+
+      const countElem = document.getElementById('csvRowCount');
+      if (countElem) countElem.innerText = parsedImportRows.length;
+
+      const previewTable = document.getElementById('csvPreviewTable');
+      if (previewTable) {
+        previewTable.innerHTML = '<thead><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead>' +
+          '<tbody>' + parsedImportRows.slice(0, 5).map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody>';
+      }
+
+      document.getElementById('csvPreviewArea').style.display = 'block';
+      document.getElementById('btnSubmitImport').disabled = (parsedImportRows.length === 0);
+    };
+    reader.readAsText(file);
+  }
+
+  function downloadSampleCSV() {
+    const headers = Array.from(document.querySelectorAll('.cb-table thead th:not(:first-child):not(:last-child)')).map(th => th.innerText.replace(/[\n▲▼]/g, '').trim());
+    const csvContent = headers.join(',') + '\n';
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'sample_{{.Title}}.csv';
+    link.click();
+  }
+
+  function submitImportCSV() {
+    if (parsedImportRows.length === 0) return;
+
+    const mappedRows = parsedImportRows.map(row => {
+      const obj = {};
+      parsedImportHeaders.forEach((h, idx) => {
+        const colKey = h.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        obj[colKey] = row[idx] || '';
+      });
+      return obj;
+    });
+
+    const submitBtn = document.getElementById('btnSubmitImport');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Importing...';
+    }
+
+    if (window.showToast) {
+      showToast('Importing ' + mappedRows.length + ' records into {{.Title}}...', 'info');
+    }
+
+    fetch('{{.BasePath}}/import-csv', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ rows: mappedRows })
+    })
+    .then(r => r.json())
+    .then(data => {
+      closeImportModal();
+      if (data.success) {
+        if (window.showToast) {
+          showToast(data.message || (data.count + ' records imported successfully!'), 'success');
+        }
+        setTimeout(() => { window.location.reload(); }, 800);
+      } else {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'Import Records';
+        }
+        if (window.showToast) {
+          showToast('Import failed: ' + (data.error || 'Server error'), 'error');
+        }
+      }
+    })
+    .catch(err => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Import Records';
+      }
+      if (window.showToast) {
+        showToast('Import failed: ' + err.message, 'error');
+      }
+    });
+  }
+
+  // Initialize pagination upon DOM load
+  document.addEventListener('DOMContentLoaded', function() {
+    renderPagination();
+  });
+</script>

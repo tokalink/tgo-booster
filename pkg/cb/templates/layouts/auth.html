@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Sign In • {{.AppName}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    {{.ThemeCSS}}
+  </style>
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('tgo_booster_theme');
+        if (savedTheme) {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+        var savedSkin = localStorage.getItem('tgo_booster_skin');
+        if (savedSkin && savedSkin !== 'obsidian') {
+          document.documentElement.setAttribute('data-skin', savedSkin);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="login-body">
+
+  <!-- THEME TOGGLE IN CORNER -->
+  <div style="position: fixed; top: 1.25rem; right: 1.25rem; z-index: 50;">
+    <button type="button" class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Light / Dark mode" aria-label="Toggle theme">
+      <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="theme-icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-brand-logo">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <h1 class="login-title">{{.AppName}}</h1>
+        <p class="login-sub">Sign in to access your administrative control plane</p>
+      </div>
+
+      {{if .Error}}
+      <div class="login-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        <span>{{.Error}}</span>
+      </div>
+      {{end}}
+
+      <form method="POST" action="{{.AdminPath}}/login" class="login-form">
+        <div class="cb-form-group">
+          <label class="cb-form-label">Email Address</label>
+          <input type="email" name="email" id="loginEmail" class="cb-input" placeholder="admin@tgo.io" value="admin@tgo.io" required autofocus>
+        </div>
+
+        <div class="cb-form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="cb-form-label" style="margin-bottom: 0;">Password</label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <input type="password" name="password" id="loginPass" class="cb-input" placeholder="••••••••" value="admin123" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-login">
+          <span>Sign In to Dashboard</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <!-- 1-CLICK DEMO ACCESS BUTTON -->
+      <div class="login-demo-box">
+        <span class="demo-box-label">Quick Demo Access</span>
+        <button type="button" onclick="fillDemo()" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Use Default Admin (admin@tgo.io / admin123)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function fillDemo() {
+      document.getElementById('loginEmail').value = 'admin@tgo.io';
+      document.getElementById('loginPass').value = 'admin123';
+    }
+
+    // Theme & Skin Switcher System
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('tgo_booster_theme', next);
+      } catch (e) {}
+    }
+  </script>
+</body>
+</html>

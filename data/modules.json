@@ -1,0 +1,68 @@
+[
+  {
+    "title": "Orders2",
+    "table": "orders",
+    "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"\u003e\u003cline x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\"/\u003e\u003cpath d=\"M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/\u003e\u003c/svg\u003e",
+    "primary_key": "id",
+    "order_by": "id DESC",
+    "columns": [
+      {
+        "label": "ID",
+        "name": "id",
+        "type": "text",
+        "searchable": false,
+        "sortable": true,
+        "width": "80px"
+      },
+      {
+        "label": "Name",
+        "name": "name",
+        "type": "text",
+        "searchable": true,
+        "sortable": true
+      },
+      {
+        "label": "Status",
+        "name": "status",
+        "type": "badge",
+        "searchable": false,
+        "sortable": false
+      },
+      {
+        "label": "Created At",
+        "name": "created_at",
+        "type": "datetime",
+        "searchable": false,
+        "sortable": true
+      }
+    ],
+    "forms": [
+      {
+        "label": "Name",
+        "name": "name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Enter name..."
+      },
+      {
+        "label": "Status",
+        "name": "status",
+        "type": "select",
+        "required": true,
+        "placeholder": "Select status...",
+        "datatable": "Active:Active, Inactive:Inactive"
+      }
+    ],
+    "provider_type": "sql",
+    "widgets": [
+      {
+        "title": "Active Records",
+        "value": "Healthy Flow",
+        "trend": "Optimal",
+        "trend_type": "positive",
+        "color": "blue",
+        "col_span": 4
+      }
+    ]
+  }
+]

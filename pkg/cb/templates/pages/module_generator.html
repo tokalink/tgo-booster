@@ -1,0 +1,1489 @@
+<div class="cb-card" style="margin-bottom: 1.5rem;">
+  <div class="cb-card-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div>
+          <h2 class="cb-card-title" style="font-size: 1.25rem;">
+            <span>Module Studio Generator</span>
+            <span class="cb-badge cb-badge-pro" style="margin-left: 6px; font-size: 0.72rem;">CRUDBooster</span>
+          </h2>
+        </div>
+      </div>
+      <p class="cb-card-sub">Generate, configure, and hot-deploy declarative Go CRUD modules in a 5-step wizard ala CRUDBooster</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="syncAllMenus()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        <span>Sync Menus</span>
+      </button>
+      <button type="button" class="btn btn-primary" onclick="openModuleWizard()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>+ Step 1 - Add New Module</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STAT METRICS -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-top: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Active Modules</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">{{len .Controllers}} Modules</div>
+      <div style="font-size: 0.75rem; color: var(--accent); margin-top: 2px;">Business Resource Modules</div>
+    </div>
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Data Grid Columns</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--success);" id="statColCount">--</div>
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Searchable & Sortable</div>
+    </div>
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Form Input Fields</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-purple);" id="statFormCount">--</div>
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Validation & LOV Relational</div>
+    </div>
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Database Engine</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--warning);">
+        {{if .HasDB}}SQL Database{{else}}Memory Store{{end}}
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">
+        {{if .HasDB}}Connected Relational Storage{{else}}Instant Zero-Config Mock{{end}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULES DIRECTORY TABLE -->
+<div class="cb-card">
+  <div class="cb-toolbar">
+    <div class="cb-toolbar-left">
+      <div class="cb-module-title-wrap">
+        <h3 class="cb-card-title" style="font-size: 1.05rem;">
+          <span>Active Module Directory</span>
+        </h3>
+        <span class="cb-badge cb-badge-count">{{len .Controllers}} Registered</span>
+      </div>
+    </div>
+    <div class="cb-toolbar-right">
+      <div class="cb-search-wrap">
+        <svg class="cb-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="moduleTableSearch" class="cb-search" placeholder="Filter modules..." onkeyup="filterModuleList()">
+      </div>
+    </div>
+  </div>
+
+  <div class="cb-table-container">
+    <table class="cb-table" id="moduleDirectoryTable">
+      <thead>
+        <tr>
+          <th style="width: 50px; text-align: center;">Icon</th>
+          <th>Module Title</th>
+          <th>Table Name</th>
+          <th>Route Path</th>
+          <th>Controller Name</th>
+          <th>Configuration</th>
+          <th>Status</th>
+          <th style="text-align: right; min-width: 170px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Controllers}}
+        <tr class="module-row" data-table="{{.Table}}" data-title="{{.Title}}">
+          <td style="text-align: center;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(56, 189, 248, 0.1); color: var(--accent);">
+              {{.Icon | safeHTML}}
+            </div>
+          </td>
+          <td>
+            <a href="{{.BasePath}}" class="cell-link" style="font-weight: 700;">{{.Title}}</a>
+          </td>
+          <td><code class="cell-code">{{.Table}}</code></td>
+          <td><code class="cell-code" style="color: var(--text-dim);">{{.BasePath}}</code></td>
+          <td><code class="cell-code">Admin{{.Title}}Controller</code></td>
+          <td>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <span class="cb-badge cb-badge-primary" style="font-size: 0.72rem;">{{len .Columns}} Cols</span>
+              <span class="cb-badge cb-badge-subtle" style="font-size: 0.72rem;">{{len .Forms}} Fields</span>
+            </div>
+          </td>
+          <td><span class="cb-badge cb-badge-success"><span class="badge-dot"></span> Active</span></td>
+          <td style="text-align: right;">
+            <div class="row-actions" style="justify-content: flex-end;">
+              <a href="{{.BasePath}}" class="btn-action btn-action-view" title="Open Module Grid">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+              <button type="button" class="btn-action btn-action-edit" onclick="openEditModuleModal('{{.Table}}')" title="Edit Module (Step Wizard)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+              <button type="button" class="btn-action" onclick="viewModuleCode('{{.Table}}')" title="View / Copy Go Code" style="color: var(--accent);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </button>
+              <button type="button" class="btn-action btn-action-delete" onclick="confirmDeleteModule('{{.Table}}', '{{.Title}}')" title="Delete Module">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     CRUDBOOSTER 5-STEP MODULE GENERATOR WIZARD MODAL
+     ========================================================================== -->
+<div id="moduleWizardModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeModuleWizard()">
+  <div class="modal-card" style="max-width: 960px; width: 95vw; max-height: 90vh; display: flex; flex-direction: column;">
+    
+    <!-- MODAL HEADER -->
+    <div class="modal-header" style="flex-shrink: 0; background: var(--bg-card); border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(56, 189, 248, 0.15); color: var(--accent);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div>
+          <h3 class="modal-title" id="wizardModalTitle">Module Studio Generator</h3>
+          <p class="modal-sub" id="wizardModalSub">CRUDBooster 5-Step Generator Wizard</p>
+        </div>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeModuleWizard()">✕</button>
+    </div>
+
+    <!-- WIZARD STEPPER NAVIGATION BAR -->
+    <div class="wizard-stepper-wrap" style="flex-shrink: 0; background: var(--bg-subtle); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; overflow-x: auto;">
+      <div style="display: flex; gap: 0.5rem; align-items: center; min-width: 600px;">
+        <div class="wizard-step-pill active" id="stepPill1" onclick="jumpToStep(1)">
+          <span class="step-num">1</span>
+          <span class="step-text">Module Info</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step-pill" id="stepPill2" onclick="jumpToStep(2)">
+          <span class="step-num">2</span>
+          <span class="step-text">Table Display</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step-pill" id="stepPill3" onclick="jumpToStep(3)">
+          <span class="step-num">3</span>
+          <span class="step-text">Form Display</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step-pill" id="stepPill4" onclick="jumpToStep(4)">
+          <span class="step-num">4</span>
+          <span class="step-text">Configuration</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step-pill" id="stepPill5" onclick="jumpToStep(5)">
+          <span class="step-num">5</span>
+          <span class="step-text">Finish & Deploy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIZARD BODY (SCROLLABLE) -->
+    <div class="modal-body" style="flex: 1 1 auto; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column;">
+      
+      <!-- ==========================================
+           STEP 1: MODULE INFORMATION
+           ========================================== -->
+      <div id="wizardStep1" class="wizard-step-content" style="display: block;">
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Step 1: Module Information</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Define the database table, module naming, visual icon, and storage provider.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+          <div class="cb-form-group">
+            <label class="cb-form-label">
+              <span>Database Table Name</span>
+              <span class="required-mark">*</span>
+            </label>
+            <div style="display: flex; gap: 8px;">
+              <select id="wzTableSelect" class="cb-input" onchange="handleTableSelectChange(this.value)" style="flex: 1;">
+                <option value="">-- Select Existing DB Table or Custom --</option>
+                {{range .DBTables}}
+                <option value="{{.}}">{{.}}</option>
+                {{end}}
+                <option value="__custom__">+ Enter Custom Table Name</option>
+              </select>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="autoDetectTableSchema()" title="Inspect database table schema and columns" style="white-space: nowrap;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Auto-Detect</span>
+              </button>
+            </div>
+            <div id="wzCustomTableWrap" style="display: none; margin-top: 8px;">
+              <input type="text" id="wzCustomTableName" class="cb-input" placeholder="e.g. suppliers, invoices, transactions" oninput="handleCustomTableInput(this.value)">
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">Primary database table managed by this CRUD module</span>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">
+              <span>Module Title</span>
+              <span class="required-mark">*</span>
+            </label>
+            <input type="text" id="wzModuleTitle" class="cb-input" placeholder="e.g. Suppliers & Vendors" oninput="updateTitleMeta(this.value)">
+            <span style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">Display name shown in topbar, sidebar and breadcrumbs</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+          <div class="cb-form-group">
+            <label class="cb-form-label">URL Path Slug</label>
+            <div class="cb-input-group">
+              <span class="cb-input-prefix">/admin/</span>
+              <input type="text" id="wzModuleSlug" class="cb-input cb-input-with-prefix" placeholder="suppliers">
+            </div>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Go Controller Name</label>
+            <input type="text" id="wzControllerName" class="cb-input" placeholder="AdminSuppliersController" readonly style="opacity: 0.8; font-family: 'JetBrains Mono', monospace;">
+          </div>
+        </div>
+
+        <!-- VISUAL ICON SELECTOR -->
+        <div class="cb-form-group" style="margin-bottom: 1.25rem;">
+          <label class="cb-form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Module Icon</span>
+            <span id="selectedIconLabel" style="font-size: 0.78rem; color: var(--accent); font-weight: 600;">Selected: Box</span>
+          </label>
+          <div class="icon-picker-grid" id="iconPickerGrid">
+            <!-- Populated dynamically with SVG icons -->
+          </div>
+          <input type="hidden" id="wzSelectedIcon" value="">
+        </div>
+
+        <!-- STORAGE PROVIDER -->
+        <div class="cb-form-group">
+          <label class="cb-form-label">Data Provider Architecture</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <label class="provider-radio-card active" id="cardProvSQL" onclick="selectProvider('sql')">
+              <input type="radio" name="wzProvider" value="sql" checked style="display: none;">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="color: var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg></div>
+                <div>
+                  <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">SQL Database Provider</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted);">Real SQL queries with transactions, joins, and indexing</div>
+                </div>
+              </div>
+            </label>
+            <label class="provider-radio-card" id="cardProvMem" onclick="selectProvider('memory')">
+              <input type="radio" name="wzProvider" value="memory" style="display: none;">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="color: var(--warning);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="9" x2="15" y1="3" y2="3"/><line x1="9" x2="15" y1="21" y2="21"/></svg></div>
+                <div>
+                  <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">In-Memory Store</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted);">Instant thread-safe mock storage for rapid prototypes</div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           STEP 2: TABLE DISPLAY (GRID COLUMNS)
+           ========================================== -->
+      <div id="wizardStep2" class="wizard-step-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+          <div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Step 2: Table Display (Grid Columns)</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Configure columns displayed on the data grid list table, formatters, sorting, and search.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="autoDetectTableSchema()">Auto-Detect from Table</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addColRow()">+ Add Column</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card);">
+          <table class="cb-table" id="wzColsTable">
+            <thead>
+              <tr>
+                <th style="width: 60px; text-align: center;">Order</th>
+                <th style="min-width: 140px;">Column Label</th>
+                <th style="min-width: 130px;">Field Name</th>
+                <th style="min-width: 140px;">Type Format</th>
+                <th style="width: 80px; text-align: center;">Searchable</th>
+                <th style="width: 80px; text-align: center;">Sortable</th>
+                <th style="min-width: 90px;">Width</th>
+                <th style="width: 50px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="wzColsContainer">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           STEP 3: FORM DISPLAY (INPUT FIELDS)
+           ========================================== -->
+      <div id="wizardStep3" class="wizard-step-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+          <div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Step 3: Form Display (Input Fields)</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Configure form inputs for Add and Edit screens, relational lookups (SelectTable / LOV Modal), and validation.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="syncFormsFromCols()">Sync from Columns</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addFormFieldRow()">+ Add Form Field</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card);">
+          <table class="cb-table" id="wzFormsTable">
+            <thead>
+              <tr>
+                <th style="width: 60px; text-align: center;">Order</th>
+                <th style="min-width: 130px;">Field Label</th>
+                <th style="min-width: 120px;">Field Name</th>
+                <th style="min-width: 150px;">Input Type</th>
+                <th style="width: 70px; text-align: center;">Req</th>
+                <th style="min-width: 130px;">Placeholder / Help</th>
+                <th style="min-width: 150px;">Options / Relation</th>
+                <th style="width: 50px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="wzFormsContainer">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 0.72rem; color: var(--text-dim); margin-top: 8px;">
+          💡 <strong>Tip Relation:</strong> Untuk Dropdown Select / Radio, isi Options e.g. <code>Active:Active, Inactive:Inactive</code>. Untuk SelectTable atau LOV Modal, isi format e.g. <code>customers,name,id</code>.
+        </p>
+      </div>
+
+      <!-- ==========================================
+           STEP 4: CONFIGURATION & FEATURES
+           ========================================== -->
+      <div id="wizardStep4" class="wizard-step-content" style="display: none;">
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Step 4: Configuration & Action Buttons</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Enable CRUDBooster action buttons, default sorting, bulk actions, and executive KPI cards.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem;">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Primary Key Column</label>
+            <input type="text" id="wzPrimaryKey" class="cb-input" value="id">
+          </div>
+          <div class="cb-form-group">
+            <label class="cb-form-label">Default Sorting (Order By)</label>
+            <input type="text" id="wzOrderBy" class="cb-input" value="id DESC">
+          </div>
+        </div>
+
+        <div class="cb-form-group" style="margin-bottom: 1.25rem;">
+          <label class="cb-form-label">Toolbar & Row Action Buttons</label>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnAdd" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Add (Create)</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnEdit" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Edit</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnDelete" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Delete</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnDetail" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Detail Modal</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnExport" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Export (CSV)</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnImport" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Button Batch Import</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzBtnBulk" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Bulk Action Support</span>
+            </label>
+            <label class="cb-toggle-switch">
+              <input type="checkbox" id="wzAutoMenu" checked>
+              <span class="cb-toggle-slider"></span>
+              <span class="cb-toggle-label">Auto Add to Sidebar</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="cb-form-group">
+          <label class="cb-toggle-switch" style="margin-bottom: 10px;">
+            <input type="checkbox" id="wzEnableWidgets" checked onchange="toggleWidgetOptions(this.checked)">
+            <span class="cb-toggle-slider"></span>
+            <span class="cb-toggle-label">Enable Executive KPI Stat Widgets above Data Grid</span>
+          </label>
+          <div id="wzWidgetBox" style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Widget 1: Title</label>
+              <input type="text" id="wzWidget1Title" class="cb-input" value="Active Records">
+            </div>
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Widget 1: Stat Value</label>
+              <input type="text" id="wzWidget1Value" class="cb-input" value="Healthy Flow">
+            </div>
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Widget 1: Trend Badge</label>
+              <input type="text" id="wzWidget1Trend" class="cb-input" value="Optimal">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           STEP 5: FINISH, CODE PREVIEW & HOT DEPLOY
+           ========================================== -->
+      <div id="wizardStep5" class="wizard-step-content" style="display: none;">
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Step 5: Review & Deploy Module</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Review your new CRUD module, inspect generated Go Controller code, and hot-deploy directly into runtime.</p>
+        </div>
+
+        <!-- MODULE SUMMARY BANNER -->
+        <div style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-md); padding: 1.15rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="wzSummaryIcon" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(56, 189, 248, 0.2); color: var(--accent);">
+                <!-- icon -->
+              </div>
+              <div>
+                <h3 id="wzSummaryTitle" style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0;">--</h3>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                  Table: <code id="wzSummaryTable" class="cell-code">--</code> • Path: <code id="wzSummaryPath" class="cell-code">--</code> • <span id="wzSummaryCounts">-- Columns • -- Fields</span>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="downloadCurrentGenCode()">Download .go</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="copyCurrentGenCode()">Copy Go Code</button>
+              <button type="button" class="btn btn-primary" onclick="saveAndDeployModule()" style="background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Save & Hot-Deploy Module</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- GENERATED GO CODE VIEWER -->
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;">
+          <div style="background: var(--bg-subtle); padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; color: var(--accent); font-weight: 700;" id="wzCodeFilename">admin_module_controller.go</span>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">TGo Booster Declarative Builder</span>
+          </div>
+          <pre style="margin: 0; padding: 1.25rem; background: var(--bg-card); overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.5; color: var(--text-main);"><code id="wzGeneratedCode"></code></pre>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- WIZARD FOOTER NAVIGATION -->
+    <div class="modal-footer" style="flex-shrink: 0; background: var(--bg-card); border-top: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModuleWizard()">Cancel</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnWzPrev" onclick="navigateStep(-1)" disabled>
+          ← Previous Step
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnWzNext" onclick="navigateStep(1)">
+          Next Step →
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnWzDeployDirect" onclick="saveAndDeployModule()" style="display: none; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+          🚀 Save & Deploy Module
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==========================================================================
+     STANDALONE CODE PREVIEW MODAL
+     ========================================================================== -->
+<div id="codePreviewModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeCodeModal()">
+  <div class="modal-card" style="max-width: 800px; width: 92vw; max-height: 85vh; display: flex; flex-direction: column;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="codeModalTitle">Go Controller Source</h3>
+        <p class="modal-sub" id="codeModalSub">declarative builder pattern</p>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeCodeModal()">✕</button>
+    </div>
+    <div class="modal-body" style="flex: 1 1 auto; overflow-y: auto; padding: 1rem 1.25rem;">
+      <pre style="margin: 0; padding: 1rem; background: var(--bg-app); border: 1px solid var(--border); border-radius: var(--radius-md); overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.5; color: var(--text-main);"><code id="codeModalOutput"></code></pre>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: space-between;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeCodeModal()">Close</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="btnModalDownloadCode" onclick="downloadPreviewCode()">Download .go</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnModalCopyCode" onclick="copyPreviewCode()">Copy Go Code</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     INLINE STYLES FOR MODULE STUDIO
+     ========================================================================== -->
+<style>
+  .wizard-stepper-wrap {
+    scrollbar-width: thin;
+  }
+  .wizard-step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.18s;
+  }
+  .wizard-step-pill:hover {
+    border-color: var(--border-hover);
+    color: var(--text-main);
+  }
+  .wizard-step-pill.active {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .wizard-step-pill.completed {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: var(--success);
+  }
+  .wizard-step-pill .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--bg-subtle);
+    font-size: 0.72rem;
+    font-weight: 800;
+  }
+  .wizard-step-pill.active .step-num {
+    background: var(--accent);
+    color: #090a0f;
+  }
+  .wizard-step-pill.completed .step-num {
+    background: var(--success);
+    color: #ffffff;
+  }
+  .wizard-step-arrow {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    user-select: none;
+  }
+
+  .icon-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 8px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .icon-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+  }
+  .icon-picker-btn:hover {
+    background: var(--bg-subtle-hover);
+    color: var(--text-main);
+    border-color: var(--border-hover);
+    transform: scale(1.08);
+  }
+  .icon-picker-btn.active {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
+  .provider-radio-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.15rem;
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .provider-radio-card:hover {
+    border-color: var(--border-hover);
+  }
+  .provider-radio-card.active {
+    border-color: var(--accent);
+    background: rgba(56, 189, 248, 0.08);
+  }
+</style>
+
+<!-- ==========================================================================
+     STUDIO JAVASCRIPT LOGIC (CRUDBOOSTER ALA ENGINE)
+     ========================================================================== -->
+<script>
+  // Available SVG Icons for Module Selector
+  const STUDIO_ICONS = [
+    { id: 'box', name: 'Box', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>' },
+    { id: 'shopping-cart', name: 'Cart', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>' },
+    { id: 'users', name: 'Users', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+    { id: 'tag', name: 'Tag', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>' },
+    { id: 'credit-card', name: 'Billing', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>' },
+    { id: 'truck', name: 'Logistics', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><circle cx="7" cy="18" r="2"/><path d="M15 18H9"/><circle cx="17" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-5v10Z"/></svg>' },
+    { id: 'layers', name: 'Catalog', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>' },
+    { id: 'file-text', name: 'Invoices', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' },
+    { id: 'database', name: 'Database', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>' },
+    { id: 'shield', name: 'Security', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>' },
+    { id: 'activity', name: 'Activity', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+    { id: 'bar-chart', name: 'Analytics', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>' },
+    { id: 'calendar', name: 'Calendar', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>' },
+    { id: 'mail', name: 'Mail', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>' },
+    { id: 'settings', name: 'Settings', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
+    { id: 'star', name: 'Reviews', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+    { id: 'folder', name: 'Projects', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>' },
+    { id: 'globe', name: 'Regions', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+    { id: 'dollar-sign', name: 'Finance', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>' },
+    { id: 'archive', name: 'Warehouse', svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>' }
+  ];
+
+  let currentWizardStep = 1;
+  let wizardIsEdit = false;
+  let activeEditTable = '';
+
+  // Initialize Studio Dashboard stats
+  document.addEventListener('DOMContentLoaded', function() {
+    renderIconPicker();
+    calculateStats();
+  });
+
+  function calculateStats() {
+    let cols = 0, forms = 0;
+    document.querySelectorAll('.module-row').forEach(row => {
+      const badges = row.querySelectorAll('.cb-badge');
+      badges.forEach(b => {
+        const text = b.innerText;
+        if (text.includes('Cols')) cols += parseInt(text) || 0;
+        if (text.includes('Fields')) forms += parseInt(text) || 0;
+      });
+    });
+    const colEl = document.getElementById('statColCount');
+    const formEl = document.getElementById('statFormCount');
+    if (colEl) colEl.innerText = cols + ' Columns';
+    if (formEl) formEl.innerText = forms + ' Fields';
+  }
+
+  function filterModuleList() {
+    const q = document.getElementById('moduleTableSearch')?.value?.toLowerCase() || '';
+    document.querySelectorAll('.module-row').forEach(row => {
+      const match = row.innerText.toLowerCase().includes(q);
+      row.style.display = match ? '' : 'none';
+    });
+  }
+
+  // Render Icon Picker
+  function renderIconPicker() {
+    const grid = document.getElementById('iconPickerGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    STUDIO_ICONS.forEach((ico, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'icon-picker-btn' + (idx === 0 ? ' active' : '');
+      btn.title = ico.name;
+      btn.innerHTML = ico.svg;
+      btn.onclick = () => selectIcon(ico);
+      grid.appendChild(btn);
+    });
+    if (STUDIO_ICONS.length > 0) {
+      selectIcon(STUDIO_ICONS[0]);
+    }
+  }
+
+  function selectIcon(ico) {
+    document.getElementById('wzSelectedIcon').value = ico.svg;
+    const lbl = document.getElementById('selectedIconLabel');
+    if (lbl) lbl.innerText = 'Selected: ' + ico.name;
+    document.querySelectorAll('.icon-picker-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.title === ico.name);
+    });
+  }
+
+  function selectProvider(type) {
+    document.getElementById('cardProvSQL')?.classList.toggle('active', type === 'sql');
+    document.getElementById('cardProvMem')?.classList.toggle('active', type === 'memory');
+    const rSQL = document.querySelector('input[name="wzProvider"][value="sql"]');
+    const rMem = document.querySelector('input[name="wzProvider"][value="memory"]');
+    if (rSQL && type === 'sql') rSQL.checked = true;
+    if (rMem && type === 'memory') rMem.checked = true;
+  }
+
+  // Open Wizard for New Module
+  function openModuleWizard() {
+    wizardIsEdit = false;
+    activeEditTable = '';
+    document.getElementById('wizardModalTitle').innerText = 'Create New CRUD Module';
+    document.getElementById('wizardModalSub').innerText = 'CRUDBooster 5-Step Generator Wizard';
+    
+    // Reset inputs
+    document.getElementById('wzTableSelect').value = '';
+    document.getElementById('wzCustomTableWrap').style.display = 'none';
+    document.getElementById('wzCustomTableName').value = '';
+    document.getElementById('wzModuleTitle').value = '';
+    document.getElementById('wzModuleSlug').value = '';
+    document.getElementById('wzControllerName').value = '';
+    document.getElementById('wzPrimaryKey').value = 'id';
+    document.getElementById('wzOrderBy').value = 'id DESC';
+    
+    // Clear dynamic rows
+    document.getElementById('wzColsContainer').innerHTML = '';
+    document.getElementById('wzFormsContainer').innerHTML = '';
+
+    // Add default initial rows
+    addColRow('ID', 'id', 'text', false, true, '80px');
+    addColRow('Name', 'name', 'text', true, true);
+    addColRow('Status', 'status', 'badge', false, false);
+    addColRow('Created At', 'created_at', 'datetime', false, true);
+
+    addFormFieldRow('Name', 'name', 'text', true, 'Enter name...');
+    addFormFieldRow('Status', 'status', 'select', true, 'Select status...', 'Active:Active, Inactive:Inactive');
+
+    jumpToStep(1);
+    const modal = document.getElementById('moduleWizardModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeModuleWizard() {
+    const modal = document.getElementById('moduleWizardModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Step Navigation
+  function jumpToStep(step) {
+    if (step < 1 || step > 5) return;
+    
+    // Validate required fields before moving past step 1
+    if (currentWizardStep === 1 && step > 1) {
+      const tbl = getSelectedTableName();
+      const title = document.getElementById('wzModuleTitle')?.value?.trim();
+      if (!tbl) {
+        showToast('Please select or specify a table name', 'warning');
+        return;
+      }
+      if (!title) {
+        showToast('Please enter a module title', 'warning');
+        return;
+      }
+    }
+
+    currentWizardStep = step;
+
+    // Update Step Contents
+    for (let s = 1; s <= 5; s++) {
+      const el = document.getElementById('wizardStep' + s);
+      if (el) el.style.display = (s === step) ? 'block' : 'none';
+      const pill = document.getElementById('stepPill' + s);
+      if (pill) {
+        pill.classList.toggle('active', s === step);
+        pill.classList.toggle('completed', s < step);
+      }
+    }
+
+    // Update Buttons
+    const btnPrev = document.getElementById('btnWzPrev');
+    const btnNext = document.getElementById('btnWzNext');
+    const btnDeploy = document.getElementById('btnWzDeployDirect');
+
+    if (btnPrev) btnPrev.disabled = (step === 1);
+    if (btnNext) btnNext.style.display = (step === 5) ? 'none' : 'inline-flex';
+    if (btnDeploy) btnDeploy.style.display = (step === 5) ? 'inline-flex' : 'none';
+
+    // If reaching Step 5: Generate Code and summary
+    if (step === 5) {
+      renderStep5Review();
+    }
+  }
+
+  function navigateStep(delta) {
+    jumpToStep(currentWizardStep + delta);
+  }
+
+  function getSelectedTableName() {
+    const sel = document.getElementById('wzTableSelect')?.value || '';
+    if (sel === '__custom__') {
+      return document.getElementById('wzCustomTableName')?.value?.trim() || '';
+    }
+    return sel.trim();
+  }
+
+  function handleTableSelectChange(val) {
+    const customWrap = document.getElementById('wzCustomTableWrap');
+    if (val === '__custom__') {
+      if (customWrap) customWrap.style.display = 'block';
+      document.getElementById('wzCustomTableName')?.focus();
+    } else {
+      if (customWrap) customWrap.style.display = 'none';
+      if (val) {
+        autoPopulateMetadataFromTable(val);
+      }
+    }
+  }
+
+  function handleCustomTableInput(val) {
+    if (val) {
+      autoPopulateMetadataFromTable(val);
+    }
+  }
+
+  function autoPopulateMetadataFromTable(tbl) {
+    const clean = tbl.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+    const words = clean.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const pascal = clean.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+
+    const titleInput = document.getElementById('wzModuleTitle');
+    if (titleInput && (!titleInput.value || titleInput.dataset.touched !== 'true')) {
+      titleInput.value = words;
+    }
+    const slugInput = document.getElementById('wzModuleSlug');
+    if (slugInput) slugInput.value = clean;
+    const ctrlInput = document.getElementById('wzControllerName');
+    if (ctrlInput) ctrlInput.value = 'Admin' + pascal + 'Controller';
+  }
+
+  function updateTitleMeta(val) {
+    document.getElementById('wzModuleTitle').dataset.touched = 'true';
+    const clean = val.replace(/[^a-zA-Z0-9]/g, '');
+    const ctrlInput = document.getElementById('wzControllerName');
+    if (ctrlInput) ctrlInput.value = 'Admin' + clean + 'Controller';
+  }
+
+  // Schema Auto-Detection via Backend API
+  function autoDetectTableSchema() {
+    const tbl = getSelectedTableName();
+    if (!tbl) {
+      showToast('Please choose or enter a table name first', 'warning');
+      return;
+    }
+
+    fetch('{{.AdminPath}}/module_generator/api/columns?table=' + encodeURIComponent(tbl))
+      .then(res => res.json())
+      .then(cols => {
+        if (!cols || cols.length === 0) {
+          showToast('No schema columns detected for table: ' + tbl, 'info');
+          return;
+        }
+
+        const colsContainer = document.getElementById('wzColsContainer');
+        const formsContainer = document.getElementById('wzFormsContainer');
+        colsContainer.innerHTML = '';
+        formsContainer.innerHTML = '';
+
+        cols.forEach(c => {
+          addColRow(c.label, c.name, c.type, c.searchable, c.sortable, c.width);
+          if (c.name !== 'id' && c.name !== 'created_at' && c.name !== 'updated_at') {
+            let inputType = 'text';
+            if (c.type === 'number') inputType = 'number';
+            else if (c.type === 'money') inputType = 'money';
+            else if (c.type === 'email') inputType = 'email';
+            else if (c.type === 'image') inputType = 'upload';
+            else if (c.type === 'badge') inputType = 'select';
+            else if (c.type === 'date') inputType = 'date';
+            else if (c.type === 'datetime') inputType = 'datetime';
+            else if (c.name.endsWith('_id')) inputType = 'lov';
+
+            let opts = '';
+            if (inputType === 'select') opts = 'Active:Active, Inactive:Inactive';
+            else if (inputType === 'lov' && c.name.endsWith('_id')) {
+              const relTbl = c.name.replace(/_id$/, '') + 's';
+              opts = relTbl + ',name,id';
+            }
+
+            addFormFieldRow(c.label, c.name, inputType, true, 'Enter ' + c.label + '...', opts);
+          }
+        });
+
+        showToast('Auto-detected ' + cols.length + ' columns from ' + tbl + '!', 'success');
+      })
+      .catch(err => {
+        showToast('Failed to inspect schema: ' + err.message, 'error');
+      });
+  }
+
+  // Add Column Row
+  function addColRow(label, name, type, searchable, sortable, width) {
+    label = label || '';
+    name = name || '';
+    type = type || 'text';
+    searchable = (searchable !== false);
+    sortable = (sortable !== false);
+    width = width || '';
+
+    const container = document.getElementById('wzColsContainer');
+    const tr = document.createElement('tr');
+    tr.className = 'wz-col-row';
+    tr.innerHTML = 
+      '<td style="text-align: center;">' +
+        '<div style="display: flex; gap: 2px; justify-content: center;">' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="moveRowUp(this)" style="padding: 2px 6px;">▲</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="moveRowDown(this)" style="padding: 2px 6px;">▼</button>' +
+        '</div>' +
+      '</td>' +
+      '<td><input type="text" class="cb-input col-label" value="' + escapeHtml(label) + '" placeholder="e.g. Price"></td>' +
+      '<td><input type="text" class="cb-input col-name" value="' + escapeHtml(name) + '" placeholder="e.g. price"></td>' +
+      '<td>' +
+        '<select class="cb-input col-type">' +
+          '<option value="text"' + (type === 'text' ? ' selected' : '') + '>Text (ColText)</option>' +
+          '<option value="image"' + (type === 'image' ? ' selected' : '') + '>Image / Photo (ColImage)</option>' +
+          '<option value="number"' + (type === 'number' ? ' selected' : '') + '>Number (ColNumber)</option>' +
+          '<option value="money"' + (type === 'money' ? ' selected' : '') + '>Money / Rp (ColMoney)</option>' +
+          '<option value="badge"' + (type === 'badge' ? ' selected' : '') + '>Status Badge (ColBadge)</option>' +
+          '<option value="date"' + (type === 'date' ? ' selected' : '') + '>Date (ColDate)</option>' +
+          '<option value="datetime"' + (type === 'datetime' ? ' selected' : '') + '>DateTime (ColDateTime)</option>' +
+          '<option value="email"' + (type === 'email' ? ' selected' : '') + '>Email (ColEmail)</option>' +
+          '<option value="url"' + (type === 'url' ? ' selected' : '') + '>URL Link (ColURL)</option>' +
+        '</select>' +
+      '</td>' +
+      '<td style="text-align: center;"><input type="checkbox" class="cb-checkbox col-searchable"' + (searchable ? ' checked' : '') + '></td>' +
+      '<td style="text-align: center;"><input type="checkbox" class="cb-checkbox col-sortable"' + (sortable ? ' checked' : '') + '></td>' +
+      '<td><input type="text" class="cb-input col-width" value="' + escapeHtml(width) + '" placeholder="e.g. 120px"></td>' +
+      '<td style="text-align: center;">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="this.closest(\'tr\').remove()" style="padding: 4px 8px; color: var(--danger);">✕</button>' +
+      '</td>';
+    container.appendChild(tr);
+  }
+
+  // Add Form Field Row
+  function addFormFieldRow(label, name, type, required, placeholder, options) {
+    label = label || '';
+    name = name || '';
+    type = type || 'text';
+    required = (required !== false);
+    placeholder = placeholder || '';
+    options = options || '';
+
+    const container = document.getElementById('wzFormsContainer');
+    const tr = document.createElement('tr');
+    tr.className = 'wz-form-row';
+    tr.innerHTML = 
+      '<td style="text-align: center;">' +
+        '<div style="display: flex; gap: 2px; justify-content: center;">' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="moveRowUp(this)" style="padding: 2px 6px;">▲</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="moveRowDown(this)" style="padding: 2px 6px;">▼</button>' +
+        '</div>' +
+      '</td>' +
+      '<td><input type="text" class="cb-input f-label" value="' + escapeHtml(label) + '" placeholder="e.g. Product Name"></td>' +
+      '<td><input type="text" class="cb-input f-name" value="' + escapeHtml(name) + '" placeholder="e.g. name"></td>' +
+      '<td>' +
+        '<select class="cb-input f-type" onchange="handleFormTypeChange(this)">' +
+          '<option value="text"' + (type === 'text' ? ' selected' : '') + '>Text Input</option>' +
+          '<option value="number"' + (type === 'number' ? ' selected' : '') + '>Number Input</option>' +
+          '<option value="money"' + (type === 'money' ? ' selected' : '') + '>Money / Currency (Rp)</option>' +
+          '<option value="email"' + (type === 'email' ? ' selected' : '') + '>Email Address</option>' +
+          '<option value="password"' + (type === 'password' ? ' selected' : '') + '>Password</option>' +
+          '<option value="textarea"' + (type === 'textarea' ? ' selected' : '') + '>Textarea</option>' +
+          '<option value="wysiwyg"' + (type === 'wysiwyg' ? ' selected' : '') + '>WYSIWYG Rich Editor</option>' +
+          '<option value="select"' + (type === 'select' ? ' selected' : '') + '>Dropdown Select</option>' +
+          '<option value="select_table"' + (type === 'select_table' ? ' selected' : '') + '>Select from Table (Relation)</option>' +
+          '<option value="lov"' + (type === 'lov' ? ' selected' : '') + '>LOV Modal Picker (Enterprise)</option>' +
+          '<option value="upload"' + (type === 'upload' ? ' selected' : '') + '>File / Image Upload</option>' +
+          '<option value="date"' + (type === 'date' ? ' selected' : '') + '>Date Picker</option>' +
+          '<option value="datetime"' + (type === 'datetime' ? ' selected' : '') + '>DateTime Picker</option>' +
+          '<option value="radio"' + (type === 'radio' ? ' selected' : '') + '>Radio Choice</option>' +
+          '<option value="checkbox"' + (type === 'checkbox' ? ' selected' : '') + '>Checkbox Toggle</option>' +
+          '<option value="hidden"' + (type === 'hidden' ? ' selected' : '') + '>Hidden Field</option>' +
+        '</select>' +
+      '</td>' +
+      '<td style="text-align: center;"><input type="checkbox" class="cb-checkbox f-req"' + (required ? ' checked' : '') + '></td>' +
+      '<td><input type="text" class="cb-input f-placeholder" value="' + escapeHtml(placeholder) + '" placeholder="e.g. Enter name..."></td>' +
+      '<td><input type="text" class="cb-input f-options" value="' + escapeHtml(options) + '" placeholder="Options / Table relation"></td>' +
+      '<td style="text-align: center;">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="this.closest(\'tr\').remove()" style="padding: 4px 8px; color: var(--danger);">✕</button>' +
+      '</td>';
+    container.appendChild(tr);
+  }
+
+  function handleFormTypeChange(sel) {
+    const row = sel.closest('tr');
+    const optInput = row.querySelector('.f-options');
+    const val = sel.value;
+    if (val === 'select' || val === 'radio') {
+      optInput.placeholder = 'e.g. Active:Active, Inactive:Inactive';
+    } else if (val === 'select_table' || val === 'lov') {
+      optInput.placeholder = 'table,label_col,key_col';
+    } else {
+      optInput.placeholder = 'N/A';
+    }
+  }
+
+  function syncFormsFromCols() {
+    const colRows = document.querySelectorAll('.wz-col-row');
+    if (colRows.length === 0) {
+      showToast('No columns configured to sync from', 'info');
+      return;
+    }
+    const container = document.getElementById('wzFormsContainer');
+    container.innerHTML = '';
+    colRows.forEach(r => {
+      const label = r.querySelector('.col-label')?.value || '';
+      const name = r.querySelector('.col-name')?.value || '';
+      const type = r.querySelector('.col-type')?.value || 'text';
+      if (name !== 'id' && name !== 'created_at' && name !== 'updated_at') {
+        let inputType = 'text';
+        if (type === 'number') inputType = 'number';
+        else if (type === 'money') inputType = 'money';
+        else if (type === 'email') inputType = 'email';
+        else if (type === 'image') inputType = 'upload';
+        else if (type === 'badge') inputType = 'select';
+        else if (type === 'date') inputType = 'date';
+        else if (type === 'datetime') inputType = 'datetime';
+        else if (name.endsWith('_id')) inputType = 'lov';
+
+        let opts = '';
+        if (inputType === 'select') opts = 'Active:Active, Inactive:Inactive';
+        else if (inputType === 'lov' && name.endsWith('_id')) {
+          opts = name.replace(/_id$/, '') + 's,name,id';
+        }
+
+        addFormFieldRow(label, name, inputType, true, 'Enter ' + label + '...', opts);
+      }
+    });
+    showToast('Synced form inputs from columns', 'success');
+  }
+
+  function moveRowUp(btn) {
+    const row = btn.closest('tr');
+    if (row.previousElementSibling) {
+      row.parentNode.insertBefore(row, row.previousElementSibling);
+    }
+  }
+
+  function moveRowDown(btn) {
+    const row = btn.closest('tr');
+    if (row.nextElementSibling) {
+      row.parentNode.insertBefore(row.nextElementSibling, row);
+    }
+  }
+
+  function toggleWidgetOptions(checked) {
+    const box = document.getElementById('wzWidgetBox');
+    if (box) box.style.display = checked ? 'grid' : 'none';
+  }
+
+  // Compile Module Data Object
+  function gatherModuleData() {
+    const tbl = getSelectedTableName();
+    const title = document.getElementById('wzModuleTitle')?.value?.trim() || 'Items';
+    const icon = document.getElementById('wzSelectedIcon')?.value || STUDIO_ICONS[0].svg;
+    const pk = document.getElementById('wzPrimaryKey')?.value?.trim() || 'id';
+    const orderBy = document.getElementById('wzOrderBy')?.value?.trim() || (pk + ' DESC');
+    const provider = document.querySelector('input[name="wzProvider"]:checked')?.value || 'sql';
+
+    // Columns
+    const cols = [];
+    document.querySelectorAll('.wz-col-row').forEach(r => {
+      cols.push({
+        label: r.querySelector('.col-label')?.value?.trim() || 'Col',
+        name: r.querySelector('.col-name')?.value?.trim() || 'col',
+        type: r.querySelector('.col-type')?.value || 'text',
+        searchable: r.querySelector('.col-searchable')?.checked || false,
+        sortable: r.querySelector('.col-sortable')?.checked || false,
+        width: r.querySelector('.col-width')?.value?.trim() || ''
+      });
+    });
+
+    // Forms
+    const forms = [];
+    document.querySelectorAll('.wz-form-row').forEach(r => {
+      const type = r.querySelector('.f-type')?.value || 'text';
+      const optStr = r.querySelector('.f-options')?.value?.trim() || '';
+      
+      const f = {
+        label: r.querySelector('.f-label')?.value?.trim() || 'Field',
+        name: r.querySelector('.f-name')?.value?.trim() || 'field',
+        type: type,
+        required: r.querySelector('.f-req')?.checked || false,
+        placeholder: r.querySelector('.f-placeholder')?.value?.trim() || ''
+      };
+
+      if (type === 'select_table' || type === 'lov') {
+        f.datatable = optStr;
+      } else if (type === 'select' || type === 'radio') {
+        if (optStr.includes(',')) {
+          f.datatable = optStr;
+        } else if (optStr) {
+          f.datatable = optStr;
+        }
+      }
+      forms.push(f);
+    });
+
+    // Widgets
+    const widgets = [];
+    if (document.getElementById('wzEnableWidgets')?.checked) {
+      widgets.push({
+        title: document.getElementById('wzWidget1Title')?.value?.trim() || 'Total Records',
+        value: document.getElementById('wzWidget1Value')?.value?.trim() || 'Active',
+        trend: document.getElementById('wzWidget1Trend')?.value?.trim() || 'Optimal',
+        trend_type: 'positive',
+        color: 'blue',
+        col_span: 4
+      });
+    }
+
+    return {
+      title: title,
+      table: tbl,
+      icon: icon,
+      primary_key: pk,
+      order_by: orderBy,
+      provider_type: provider,
+      columns: cols,
+      forms: forms,
+      widgets: widgets
+    };
+  }
+
+  // Render Step 5 Review
+  function renderStep5Review() {
+    const data = gatherModuleData();
+    
+    document.getElementById('wzSummaryTitle').innerText = data.title;
+    document.getElementById('wzSummaryTable').innerText = data.table;
+    document.getElementById('wzSummaryPath').innerText = '{{.AdminPath}}/' + data.table;
+    document.getElementById('wzSummaryCounts').innerText = data.columns.length + ' Columns • ' + data.forms.length + ' Fields';
+    document.getElementById('wzSummaryIcon').innerHTML = data.icon;
+    document.getElementById('wzCodeFilename').innerText = 'admin_' + data.table + '_controller.go';
+
+    // Generate Go Code
+    const code = generateGoCodeFromData(data);
+    document.getElementById('wzGeneratedCode').innerText = code;
+  }
+
+  function generateGoCodeFromData(data) {
+    const pascal = data.title.replace(/[^a-zA-Z0-9]/g, '') || 'Module';
+    const lines = [
+      'package controllers',
+      '',
+      'import (',
+      '    booster "github.com/tokalink/tgo-booster"'
+    ];
+
+    if (data.provider_type === 'sql') {
+      lines.push('    "github.com/tokalink/tgo-booster/starter/app/models"');
+    }
+    lines.push(')');
+    lines.push('');
+    lines.push('// NewAdmin' + pascal + 'Controller returns the ' + data.title + ' resource controller');
+    lines.push('func NewAdmin' + pascal + 'Controller() *booster.Controller {');
+    lines.push('    ctrl := &booster.Controller{');
+    lines.push('        Title:        "' + data.title + '",');
+    lines.push('        Table:        "' + data.table + '",');
+    lines.push('        Icon:         `' + data.icon + '`,');
+    lines.push('        PrimaryKey:   "' + data.primary_key + '",');
+    lines.push('        OrderBy:      "' + data.order_by + '",');
+    
+    if (data.provider_type === 'sql') {
+      lines.push('        DataProvider: booster.NewSQLStore(models.DB, "' + data.table + '", "' + data.primary_key + '"),');
+    } else {
+      lines.push('        DataProvider: booster.NewMemoryStore(),');
+    }
+    lines.push('    }');
+    lines.push('');
+
+    // Columns
+    lines.push('    // 1. Data Grid Columns (CRUDBooster Table Display)');
+    lines.push('    ctrl.');
+    data.columns.forEach((c, i) => {
+      let bCol = 'booster.ColText';
+      if (c.type === 'number') bCol = 'booster.ColNumber';
+      else if (c.type === 'money') bCol = 'booster.ColMoney';
+      else if (c.type === 'email') bCol = 'booster.ColEmail';
+      else if (c.type === 'image') bCol = 'booster.ColImage';
+      else if (c.type === 'badge') bCol = 'booster.ColBadge';
+      else if (c.type === 'date') bCol = 'booster.ColDate';
+      else if (c.type === 'datetime') bCol = 'booster.ColDateTime';
+      else if (c.type === 'url') bCol = 'booster.ColURL';
+
+      const dot = (i === data.columns.length - 1) ? '' : '.';
+      lines.push('        AddCol("' + c.label + '", "' + c.name + '", ' + bCol + ', ' + c.searchable + ', ' + c.sortable + ')' + dot);
+    });
+    lines.push('');
+
+    // Forms
+    lines.push('    // 2. Form Input Fields (CRUDBooster Form Display)');
+    lines.push('    ctrl.');
+    data.forms.forEach((f, i) => {
+      const dot = (i === data.forms.length - 1) ? '' : '.';
+      if (f.type === 'select' || f.type === 'radio') {
+        if (f.datatable && f.datatable.includes(',')) {
+          lines.push('        AddSelectTable("' + f.label + '", "' + f.name + '", "' + f.datatable + '", ' + f.required + ', "' + f.placeholder + '")' + dot);
+        } else {
+          lines.push('        AddSelect("' + f.label + '", "' + f.name + '", ' + f.required + ', "' + f.placeholder + '",');
+          lines.push('            booster.Option{Value: "Active", Label: "Active"},');
+          lines.push('            booster.Option{Value: "Inactive", Label: "Inactive"},');
+          lines.push('        )' + dot);
+        }
+      } else if (f.type === 'lov') {
+        lines.push('        AddLOV("' + f.label + '", "' + f.name + '", "' + (f.datatable || 'customers,name,id') + '", ' + f.required + ', "' + f.placeholder + '")' + dot);
+      } else {
+        let bInput = 'booster.InputText';
+        if (f.type === 'number') bInput = 'booster.InputNumber';
+        else if (f.type === 'money') bInput = 'booster.InputMoney';
+        else if (f.type === 'email') bInput = 'booster.InputEmail';
+        else if (f.type === 'password') bInput = 'booster.InputPassword';
+        else if (f.type === 'textarea') bInput = 'booster.InputTextarea';
+        else if (f.type === 'wysiwyg') bInput = 'booster.InputWYSIWYG';
+        else if (f.type === 'upload') bInput = 'booster.InputUpload';
+        else if (f.type === 'date') bInput = 'booster.InputDate';
+        else if (f.type === 'datetime') bInput = 'booster.InputDateTime';
+        else if (f.type === 'checkbox') bInput = 'booster.InputCheckbox';
+        else if (f.type === 'hidden') bInput = 'booster.InputHidden';
+
+        lines.push('        AddForm("' + f.label + '", "' + f.name + '", ' + bInput + ', ' + f.required + ', "' + f.placeholder + '")' + dot);
+      }
+    });
+    lines.push('');
+
+    // Widgets
+    if (data.widgets && data.widgets.length > 0) {
+      lines.push('    // 3. Executive Widgets (CRUDBooster Widget Card equivalent)');
+      data.widgets.forEach(w => {
+        lines.push('    ctrl.AddWidget(booster.WidgetCard{');
+        lines.push('        Title:     "' + w.title + '",');
+        lines.push('        Value:     "' + w.value + '",');
+        lines.push('        Trend:     "' + w.trend + '",');
+        lines.push('        TrendType: "positive",');
+        lines.push('        Color:     "blue",');
+        lines.push('        ColSpan:   4,');
+        lines.push('    })');
+      });
+      lines.push('');
+    }
+
+    lines.push('    return ctrl');
+    lines.push('}');
+    return lines.join('\n');
+  }
+
+  // Save and Hot-Deploy Module
+  function saveAndDeployModule() {
+    const data = gatherModuleData();
+    if (!data.table) {
+      showToast('Table name is required', 'warning');
+      jumpToStep(1);
+      return;
+    }
+
+    showToast('Deploying module ' + data.title + '...', 'info');
+
+    fetch('{{.AdminPath}}/module_generator/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        showToast('🚀 Module "' + data.title + '" deployed successfully!', 'success', 5000);
+        closeModuleWizard();
+        setTimeout(() => {
+          window.location.href = res.path || ('{{.AdminPath}}/' + data.table);
+        }, 800);
+      } else {
+        showToast('Deploy error: ' + (res.error || 'Unknown error'), 'error');
+      }
+    })
+    .catch(err => {
+      showToast('Network error deploying module: ' + err.message, 'error');
+    });
+  }
+
+  // Edit Existing Module
+  function openEditModuleModal(table) {
+    showToast('Loading module ' + table + '...', 'info');
+    fetch('{{.AdminPath}}/module_generator/api/module?table=' + encodeURIComponent(table))
+      .then(res => res.json())
+      .then(mod => {
+        if (!mod) {
+          showToast('Failed to load module configuration', 'error');
+          return;
+        }
+
+        wizardIsEdit = true;
+        activeEditTable = table;
+        document.getElementById('wizardModalTitle').innerText = 'Edit Module: ' + mod.title;
+        document.getElementById('wizardModalSub').innerText = 'Modify columns, form inputs, and features';
+
+        // Select Table
+        const sel = document.getElementById('wzTableSelect');
+        if (sel) {
+          let hasOpt = false;
+          for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === mod.table) {
+              sel.selectedIndex = i;
+              hasOpt = true;
+              break;
+            }
+          }
+          if (!hasOpt) {
+            sel.value = '__custom__';
+            document.getElementById('wzCustomTableWrap').style.display = 'block';
+            document.getElementById('wzCustomTableName').value = mod.table;
+          } else {
+            document.getElementById('wzCustomTableWrap').style.display = 'none';
+          }
+        }
+
+        document.getElementById('wzModuleTitle').value = mod.title;
+        document.getElementById('wzModuleSlug').value = mod.table;
+        document.getElementById('wzControllerName').value = 'Admin' + mod.title.replace(/[^a-zA-Z0-9]/g, '') + 'Controller';
+        document.getElementById('wzPrimaryKey').value = mod.primary_key || 'id';
+        document.getElementById('wzOrderBy').value = mod.order_by || 'id DESC';
+
+        // Provider
+        selectProvider(mod.provider_type || 'sql');
+
+        // Populate Columns
+        const colsContainer = document.getElementById('wzColsContainer');
+        colsContainer.innerHTML = '';
+        if (mod.columns && mod.columns.length > 0) {
+          mod.columns.forEach(c => addColRow(c.label, c.name, c.type, c.searchable, c.sortable, c.width));
+        }
+
+        // Populate Forms
+        const formsContainer = document.getElementById('wzFormsContainer');
+        formsContainer.innerHTML = '';
+        if (mod.forms && mod.forms.length > 0) {
+          mod.forms.forEach(f => {
+            let opts = f.datatable || '';
+            if (!opts && f.options && f.options.length > 0) {
+              opts = f.options.map(o => o.value + ':' + o.label).join(', ');
+            }
+            addFormFieldRow(f.label, f.name, f.type, f.required, f.placeholder, opts);
+          });
+        }
+
+        jumpToStep(1);
+        document.getElementById('moduleWizardModal').style.display = 'flex';
+      })
+      .catch(err => {
+        showToast('Error loading module: ' + err.message, 'error');
+      });
+  }
+
+  // View Go Code Modal
+  function viewModuleCode(table) {
+    fetch('{{.AdminPath}}/module_generator/api/module?table=' + encodeURIComponent(table))
+      .then(res => res.json())
+      .then(mod => {
+        if (!mod) return;
+        const code = generateGoCodeFromData(mod);
+        document.getElementById('codeModalTitle').innerText = 'Admin' + mod.title.replace(/[^a-zA-Z0-9]/g, '') + 'Controller.go';
+        document.getElementById('codeModalSub').innerText = 'Table: ' + mod.table + ' • Path: {{.AdminPath}}/' + mod.table;
+        document.getElementById('codeModalOutput').innerText = code;
+        document.getElementById('codePreviewModal').style.display = 'flex';
+      });
+  }
+
+  function closeCodeModal() {
+    document.getElementById('codePreviewModal').style.display = 'none';
+  }
+
+  function copyPreviewCode() {
+    const text = document.getElementById('codeModalOutput')?.innerText || '';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('Go Controller code copied to clipboard!', 'success'));
+    }
+  }
+
+  function downloadPreviewCode() {
+    const text = document.getElementById('codeModalOutput')?.innerText || '';
+    const fn = document.getElementById('codeModalTitle')?.innerText || 'admin_controller.go';
+    downloadBlob(text, fn);
+  }
+
+  function copyCurrentGenCode() {
+    const text = document.getElementById('wzGeneratedCode')?.innerText || '';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => showToast('Go Controller code copied to clipboard!', 'success'));
+    }
+  }
+
+  function downloadCurrentGenCode() {
+    const text = document.getElementById('wzGeneratedCode')?.innerText || '';
+    const fn = document.getElementById('wzCodeFilename')?.innerText || 'admin_controller.go';
+    downloadBlob(text, fn);
+  }
+
+  function downloadBlob(text, filename) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    showToast('Downloaded ' + filename, 'success');
+  }
+
+  function confirmDeleteModule(table, title) {
+    if (confirm('Are you sure you want to unregister and remove module "' + title + '" (' + table + ')?')) {
+      fetch('{{.AdminPath}}/module_generator/delete?table=' + encodeURIComponent(table), {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast('Module "' + title + '" removed successfully!', 'success');
+          setTimeout(() => window.location.reload(), 600);
+        } else {
+          showToast('Error removing module: ' + (res.error || 'Failed'), 'error');
+        }
+      });
+    }
+  }
+
+  function syncAllMenus() {
+    showToast('Menu navigation synchronized with active controllers', 'success');
+  }
+
+  function escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>

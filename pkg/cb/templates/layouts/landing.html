@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<html lang="{{if and .Settings .Settings.DefaultLanguage}}{{.Settings.DefaultLanguage}}{{else}}en{{end}}"
+  data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{if .MetaTitle}}{{.MetaTitle}}{{else}}{{.Page.Title}} • {{.AppName}}{{end}}</title>
+  {{if and .Settings .Settings.AppFaviconURL}}
+  <link rel="icon" href="{{.Settings.AppFaviconURL}}">
+  {{end}}
+
+  <!-- SEO Suite -->
+  {{if .MetaDescription}}
+  <meta name="description" content="{{.MetaDescription}}">{{end}}
+  {{if .MetaKeywords}}
+  <meta name="keywords" content="{{.MetaKeywords}}">{{end}}
+  <meta name="robots" content="{{if .Robots}}{{.Robots}}{{else}}index, follow{{end}}">
+  {{if .CanonicalURL}}
+  <link rel="canonical" href="{{.CanonicalURL}}">{{end}}
+
+  <!-- OpenGraph Social Sharing -->
+  <meta property="og:type" content="{{if .OGType}}{{.OGType}}{{else}}website{{end}}">
+  <meta property="og:title" content="{{if .OGTitle}}{{.OGTitle}}{{else}}{{.Page.Title}}{{end}}">
+  {{if .OGDescription}}
+  <meta property="og:description" content="{{.OGDescription}}">{{end}}
+  {{if .CanonicalURL}}
+  <meta property="og:url" content="{{.CanonicalURL}}">{{end}}
+  {{if .OGImage}}
+  <meta property="og:image" content="{{.OGImage}}">{{end}}
+  <meta property="og:site_name" content="{{.AppName}}">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="{{if .TwitterCard}}{{.TwitterCard}}{{else}}summary_large_image{{end}}">
+  <meta name="twitter:title" content="{{if .OGTitle}}{{.OGTitle}}{{else}}{{.Page.Title}}{{end}}">
+  {{if .OGDescription}}
+  <meta name="twitter:description" content="{{.OGDescription}}">{{end}}
+  {{if .OGImage}}
+  <meta name="twitter:image" content="{{.OGImage}}">{{end}}
+
+  <!-- Structured Data JSON-LD -->
+  {{if .SchemaJSON}}
+  <script type="application/ld+json">
+{{.SchemaJSON | safeHTML}}
+  </script>
+  {{end}}
+
+  <!-- Marketing Pixels -->
+  {{if .PixelMetaID}}
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      }; if (!f._fbq) f._fbq = n;
+      n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+    }(window,
+      document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '{{.PixelMetaID}}');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id={{.PixelMetaID}}&ev=PageView&noscript=1" /></noscript>
+  {{end}}
+
+  {{if .PixelGTMID}}
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', '{{.PixelGTMID}}');</script>
+  {{end}}
+
+  {{if .PixelTikTokID}}
+  <!-- TikTok Pixel -->
+  <script>
+    !function (w, d, t) { w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) { for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e }, ttq.load = function (e, n) { var i = "https://analytics.tiktok.com/i18n/pixel/events.js"; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = i, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; var o = document.createElement("script"); o.type = "text/javascript", o.async = !0, o.src = i + "?sdkid=" + e + "&lib=" + t; var a = document.getElementsByTagName("script")[0]; a.parentNode.insertBefore(o, a) }; ttq.load('{{.PixelTikTokID}}'); ttq.page(); }(window, document, 'ttq');
+  </script>
+  {{end}}
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       TGO ENTERPRISE LANDING DESIGN SYSTEM (VANILLA CSS)
+       ========================================================================== */
+    :root {
+      --bg: #090d16;
+      --bg-elevated: #0f172a;
+      --bg-surface: rgba(15, 23, 42, 0.7);
+      --bg-card: rgba(15, 23, 42, 0.6);
+      --bg-card-hover: rgba(30, 41, 59, 0.8);
+      --bg-input: rgba(15, 23, 42, 0.85);
+
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --border-glow: rgba(56, 189, 248, 0.35);
+
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --text-inverted: #0f172a;
+
+      --accent: {{if and .Settings .Settings.AccentColor}}{{.Settings.AccentColor}}{{else}}#0284c7{{end}};
+      --accent-rgb: 2, 132, 199;
+      --accent-hover: #38bdf8;
+      --accent-glow: rgba(2, 132, 199, 0.28);
+      --emerald: #10b981;
+      --indigo: #6366f1;
+      --amber: #f59e0b;
+      --purple: #a855f7;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 20px 48px -12px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 32px -4px var(--accent-glow);
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --bg-elevated: #ffffff;
+      --bg-surface: rgba(255, 255, 255, 0.85);
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --bg-input: #ffffff;
+
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --border-glow: rgba(2, 132, 199, 0.25);
+
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --text-inverted: #ffffff;
+
+      --accent-glow: rgba(2, 132, 199, 0.16);
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+      --shadow-glow: 0 0 28px -4px rgba(2, 132, 199, 0.15);
+    }
+
+    /* Reset & Base Typography */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(at 15% 10%, rgba(56, 189, 248, 0.08) 0px, transparent 40%),
+        radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.08) 0px, transparent 45%),
+        radial-gradient(at 50% 75%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    [data-theme="light"] body {
+      background-image:
+        radial-gradient(at 15% 10%, rgba(2, 132, 199, 0.04) 0px, transparent 40%),
+        radial-gradient(at 85% 15%, rgba(99, 102, 241, 0.03) 0px, transparent 45%),
+        radial-gradient(at 50% 75%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
+    }
+
+    /* Container Utility */
+    .landing-container {
+      width: 100%;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ==========================================================================
+       TOP FLOATING NAVIGATION
+       ========================================================================== */
+    .landing-nav-wrapper {
+      position: sticky;
+      top: 1rem;
+      z-index: 1000;
+      padding: 0 1.25rem;
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    .landing-nav {
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s ease;
+    }
+
+    .landing-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .landing-logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent) 0%, #0369a1 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+
+    .landing-version-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.02em;
+    }
+
+    /* Nav Links */
+    .landing-nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .landing-nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: color 0.15s ease;
+      position: relative;
+    }
+
+    .landing-nav-link:hover {
+      color: var(--text);
+    }
+
+    .landing-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Live Telemetry Beacon */
+    .status-beacon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--emerald);
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.3);
+        opacity: 0.7;
+      }
+    }
+
+    /* Theme Toggle */
+    .btn-landing-theme {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-landing-theme:hover {
+      border-color: var(--text-muted);
+      transform: rotate(15deg);
+    }
+
+    /* Action CTA Button */
+    .btn-cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent) 0%, #0369a1 100%);
+      color: #ffffff !important;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.55rem 1.15rem;
+      border-radius: var(--radius-full);
+      text-decoration: none;
+      box-shadow: 0 0 16px var(--accent-glow);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-cta-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 24px var(--accent-glow);
+      filter: brightness(1.1);
+    }
+
+    /* Mobile Hamburger */
+    .landing-hamburger {
+      display: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Mobile Drawer */
+    .landing-mobile-drawer {
+      display: none;
+      position: fixed;
+      top: 4.8rem;
+      left: 1.25rem;
+      right: 1.25rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .landing-mobile-drawer.open {
+      display: flex;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================================================
+       HERO SECTION (FOR LANDING TEMPLATE)
+       ========================================================================== */
+    .hero-section {
+      padding: 4.5rem 0 3.5rem 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 1.75rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .hero-badge-pill:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .hero-title {
+      font-size: clamp(2.4rem, 5.5vw, 4.3rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      max-width: 980px;
+      margin: 0 auto 1.5rem auto;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 50%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.8vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 2.5rem auto;
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn-hero-lg {
+      padding: 0.85rem 2rem;
+      font-size: 0.98rem;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-hero-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #0369a1 100%);
+      color: #ffffff !important;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .btn-hero-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 36px var(--accent-glow);
+      filter: brightness(1.1);
+    }
+
+    .btn-hero-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-hero-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Terminal Code Snippet */
+    .hero-terminal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .hero-terminal-pill:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .hero-terminal-pill code {
+      color: #38bdf8;
+    }
+
+    /* ==========================================================================
+       INTERACTIVE PRODUCT SHOWCASE MOCKUP
+       ========================================================================== */
+    .showcase-container {
+      margin: 3.5rem auto 5rem auto;
+      max-width: 1100px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), 0 0 40px -10px var(--accent-glow);
+    }
+
+    .mockup-header {
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .mockup-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mockup-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+
+    .dot-red {
+      background: #ef4444;
+    }
+
+    .dot-yellow {
+      background: #f59e0b;
+    }
+
+    .dot-green {
+      background: #10b981;
+    }
+
+    .mockup-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .mockup-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .mockup-tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mockup-tab-btn.active {
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .mockup-body {
+      padding: 2rem;
+      min-height: 380px;
+    }
+
+    .mockup-view {
+      display: none;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .mockup-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Showcase Stat Cards */
+    .mockup-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .mockup-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .mockup-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .mockup-stat-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    /* Showcase Table */
+    .mockup-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .mockup-table th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 14px;
+      text-align: left;
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mockup-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       KEY METRICS & SOCIAL PROOF STRIP
+       ========================================================================== */
+    .proof-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      padding: 2.5rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin: 3rem auto;
+      text-align: center;
+    }
+
+    .proof-item h4 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .proof-item p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       BENTO GRID FEATURE SHOWCASE
+       ========================================================================== */
+    .features-section {
+      padding: 4rem 0;
+    }
+
+    .section-head {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .bento-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bento-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .bento-card.col-span-2 {
+      grid-column: span 2;
+    }
+
+    .bento-card.col-span-3 {
+      grid-column: span 3;
+    }
+
+    .bento-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .bento-card h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+    }
+
+    .bento-card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       ARTICLE TEMPLATE (EDITORIAL LAYOUT)
+       ========================================================================== */
+    .article-wrapper {
+      max-width: 820px;
+      margin: 2.5rem auto 5rem auto;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3.5rem 3rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .article-header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+
+    .article-category {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      margin-bottom: 1rem;
+    }
+
+    .article-title {
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+
+    .article-author-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .author-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #0369a1 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .article-body {
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .article-body p {
+      margin-bottom: 1.5rem;
+    }
+
+    .article-body h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+      margin: 2.5rem 0 1rem 0;
+    }
+
+    .article-body h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 2rem 0 0.8rem 0;
+    }
+
+    /* Reading Progress Bar */
+    .reading-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.1s;
+    }
+
+    /* ==========================================================================
+       DEFAULT TEMPLATE (CORPORATE / CLEAN CONTENT)
+       ========================================================================== */
+    .default-page-wrapper {
+      max-width: 960px;
+      margin: 2.5rem auto 5rem auto;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 2.5rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      margin-bottom: 1.25rem;
+    }
+
+    .breadcrumbs a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      color: var(--accent);
+    }
+
+    .default-page-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .default-page-content {
+      font-size: 1.02rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    /* ==========================================================================
+       CALL TO ACTION BANNER (HIGH CONVERSION)
+       ========================================================================== */
+    .cta-banner-card {
+      margin: 5rem auto;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      padding: 4rem 2rem;
+      text-align: center;
+      box-shadow: 0 0 40px -10px var(--accent-glow);
+    }
+
+    .cta-banner-title {
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .cta-banner-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
+    }
+
+    /* ==========================================================================
+       ENTERPRISE FOOTER
+       ========================================================================== */
+    .landing-footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-elevated);
+      padding: 4rem 0 2rem 0;
+      margin-top: 5rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .footer-brand h4 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-brand p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 320px;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-col h5 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      transition: color 0.15s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn-scroll-top {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-scroll-top:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .bento-card.col-span-2 {
+        grid-column: span 2;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .landing-nav-menu,
+      .status-beacon {
+        display: none;
+      }
+
+      .landing-hamburger {
+        display: flex;
+      }
+
+      .bento-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bento-card.col-span-2,
+      .bento-card.col-span-3 {
+        grid-column: span 1;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .article-wrapper,
+      .default-page-wrapper {
+        padding: 2rem 1.25rem;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .landing-nav {
+        padding: 0.5rem 0.85rem;
+      }
+
+      .landing-brand span:not(.landing-version-pill) {
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .landing-version-pill {
+        display: none;
+      }
+
+      .landing-nav-actions .btn-cta-primary {
+        display: none;
+      }
+    }
+  </style>
+
+  {{if .CustomCSS}}
+  <style id="page-custom-css">
+{{.CustomCSS}}
+  </style>
+  {{end}}
+
+  {{if .HeaderScripts}}
+  {{.HeaderScripts}}
+  {{end}}
+</head>
+
+<body>
+
+  <!-- READING PROGRESS BAR (ARTICLE MODE) -->
+  {{if eq .Page.Template "article"}}
+  <div id="readingProgress" class="reading-progress-bar"></div>
+  {{end}}
+
+  <!-- PREVIEW MODE BANNER -->
+  {{if .IsPreview}}
+  <div
+    style="position: sticky; top: 0; left: 0; right: 0; z-index: 999999; background: linear-gradient(90deg, #d97706 0%, #b45309 100%); color: #ffffff; font-size: 0.85rem; font-weight: 700; padding: 10px 1.5rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">⚡
+        PREVIEW MODE ({{.Page.Status}})</span>
+      <span>Live Simulation Preview &bull; Not visible to public visitors until published</span>
+    </div>
+    <a href="{{.AdminPath}}/pages" style="color: #ffffff; text-decoration: underline; font-size: 0.8rem;">Return to
+      Pages Studio &rarr;</a>
+  </div>
+  {{end}}
+
+  {{if ne .Page.Template "blank"}}
+  <!-- FLOATING NAVIGATION BAR -->
+  <header class="landing-nav-wrapper">
+    <nav class="landing-nav">
+      <!-- Brand Logo -->
+      <a href="/" class="landing-brand">
+        <div class="landing-logo-badge">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
+        </div>
+        <span>{{.AppName}}</span>
+        <span class="landing-version-pill">Core v2.4</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <ul class="landing-nav-menu">
+        <li><a href="/#features" class="landing-nav-link">Features</a></li>
+        <li><a href="/#showcase" class="landing-nav-link">Interactive Studio</a></li>
+        <li><a href="/about-us" class="landing-nav-link">About Us</a></li>
+        <li><a href="/promo-special" class="landing-nav-link">Deals</a></li>
+        <li><a href="{{.AdminPath}}/api_generator" class="landing-nav-link">REST API</a></li>
+      </ul>
+
+      <!-- Right Nav Actions -->
+      <div class="landing-nav-actions">
+        <!-- Telemetry beacon -->
+        <!-- <div class="status-beacon" title="TGo zero-alloc HTTP/2 kernel">
+          <span class="status-dot"></span>
+          <span>0.38ms TTFB</span>
+        </div> -->
+
+        <!-- Theme Mode Switcher -->
+        <button type="button" class="btn-landing-theme" onclick="toggleLandingTheme()" title="Toggle Dark/Light Mode"
+          aria-label="Toggle theme">
+          <svg id="themeIconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" style="display: none;">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <svg id="themeIconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+
+        <!-- CTA Button -->
+        <a href="{{.AdminPath}}" class="btn-cta-primary">
+          <span>Admin Console</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </a>
+
+        <!-- Hamburger for mobile -->
+        <button type="button" class="landing-hamburger" onclick="toggleMobileDrawer()" aria-label="Toggle Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MOBILE SLIDE-DOWN DRAWER -->
+  <div id="landingMobileDrawer" class="landing-mobile-drawer">
+    <a href="/#features" class="landing-nav-link" onclick="toggleMobileDrawer()">Features</a>
+    <a href="/#showcase" class="landing-nav-link" onclick="toggleMobileDrawer()">Interactive Studio</a>
+    <a href="/about-us" class="landing-nav-link" onclick="toggleMobileDrawer()">About Us</a>
+    <a href="/promo-special" class="landing-nav-link" onclick="toggleMobileDrawer()">Special Deals</a>
+    <a href="{{.AdminPath}}/api_generator" class="landing-nav-link">REST API Engine</a>
+    <div style="height: 1px; background: var(--border); margin: 0.5rem 0;"></div>
+    <a href="{{.AdminPath}}" class="btn-cta-primary" style="justify-content: center;">
+      <span>Open Admin Console</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14" />
+        <path d="m12 5 7 7-7 7" />
+      </svg>
+    </a>
+  </div>
+  {{end}}
+
+  <!-- MAIN VIEWPORT ROUTER BY TEMPLATE -->
+  <main>
+    {{if eq .Page.Template "blank"}}
+    <!-- BLANK CANVAS: RAW MARKUP INJECTION -->
+    {{.Content}}
+
+    {{else if eq .Page.Template "landing"}}
+    <!-- ================================================================= -->
+    <!-- TEMPLATE 1: MODERN HIGH-CONVERSION LANDING PAGE -->
+    <!-- ================================================================= -->
+    <section class="hero-section">
+      <div class="landing-container">
+        <!-- Announcement Pill -->
+        <a href="{{.AdminPath}}/module_generator" class="hero-badge-pill">
+          <span
+            style="background: var(--accent); color: #fff; padding: 2px 7px; border-radius: 9999px; font-size: 0.7rem;">HOT</span>
+          <span>Enterprise Go Kernel • Dynamic CRUD Generator & Full RBAC Studio &rarr;</span>
+        </a>
+
+        <!-- Hero Headline -->
+        <h1 class="hero-title">
+          Build, Deploy & Scale Enterprise Apps <br><span class="gradient-text">10x Faster</span> in Pure Go
+        </h1>
+
+        <p class="hero-subtitle">
+          Zero-allocation HTTP/2 architecture, live CRUD generator, HMAC-secured RBAC governance, audit trail logging,
+          and custom landing page studio.
+        </p>
+
+        <!-- Dual Hero Action Buttons -->
+        <div class="hero-actions">
+          <a href="{{.AdminPath}}" class="btn-hero-lg btn-hero-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            <span>Launch Admin Studio</span>
+          </a>
+          <a href="#showcase" class="btn-hero-lg btn-hero-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" />
+            </svg>
+            <span>Explore Live Showcase</span>
+          </a>
+        </div>
+
+        <!-- Quick Run CLI command snippet -->
+        <div>
+          <div class="hero-terminal-pill" onclick="copySnippet('go run main.go', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5" />
+              <line x1="12" y1="19" x2="20" y2="19" />
+            </svg>
+            <span>$ <code>go run main.go</code></span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE PLATFORM SHOWCASE (MACOS WINDOW MOCKUP) -->
+    <section id="showcase" class="landing-container">
+      <div class="showcase-container">
+        <div class="mockup-header">
+          <div class="mockup-dots">
+            <span class="mockup-dot dot-red"></span>
+            <span class="mockup-dot dot-yellow"></span>
+            <span class="mockup-dot dot-green"></span>
+          </div>
+          <div class="mockup-tabs">
+            <button type="button" class="mockup-tab-btn active" onclick="switchMockupTab('dashboard', this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="7" height="9" x="3" y="3" rx="1" />
+                <rect width="7" height="5" x="14" y="3" rx="1" />
+                <rect width="7" height="9" x="14" y="12" rx="1" />
+                <rect width="7" height="5" x="3" y="16" rx="1" />
+              </svg>
+              <span>Live Dashboard</span>
+            </button>
+            <button type="button" class="mockup-tab-btn" onclick="switchMockupTab('datagrid', this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M3 15h18" />
+                <path d="M9 3v18" />
+              </svg>
+              <span>CRUD Data Grid</span>
+            </button>
+            <button type="button" class="mockup-tab-btn" onclick="switchMockupTab('api', this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              <span>REST API Studio</span>
+            </button>
+            <button type="button" class="mockup-tab-btn" onclick="switchMockupTab('audit', this)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>Audit Trail</span>
+            </button>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-dim); font-family: monospace;">port :8080</div>
+        </div>
+
+        <div class="mockup-body">
+          <!-- TAB 1: DASHBOARD -->
+          <div id="mockView-dashboard" class="mockup-view active">
+            <div class="mockup-stats-grid">
+              <div class="mockup-stat-card">
+                <div class="mockup-stat-label">TOTAL REVENUE (Q4)</div>
+                <div class="mockup-stat-val" style="color: #38bdf8;">$1,842,500</div>
+                <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">&uarr; +24.8% vs
+                  last month</div>
+              </div>
+              <div class="mockup-stat-card">
+                <div class="mockup-stat-label">HTTP/2 TTFB LATENCY</div>
+                <div class="mockup-stat-val" style="color: #10b981;">0.38 ms</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Zero allocations kernel
+                </div>
+              </div>
+              <div class="mockup-stat-card">
+                <div class="mockup-stat-label">SECURITY COMPLIANCE</div>
+                <div class="mockup-stat-val" style="color: #a855f7;">100%</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">HMAC Signed Sessions</div>
+              </div>
+              <div class="mockup-stat-card">
+                <div class="mockup-stat-label">ACTIVE MODULES</div>
+                <div class="mockup-stat-val" style="color: #f59e0b;">12 Live</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Auto-generated schema</div>
+              </div>
+            </div>
+
+            <!-- Mini visual chart mockup -->
+            <div
+              style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--text);">Telemetry Request Velocity (24
+                  Hours)</span>
+                <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Real-time Telemetry</span>
+              </div>
+              <div style="display: flex; align-items: flex-end; gap: 8px; height: 90px; padding-top: 10px;">
+                <div style="flex: 1; height: 35%; background: rgba(56, 189, 248, 0.4); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 50%; background: rgba(56, 189, 248, 0.5); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 42%; background: rgba(56, 189, 248, 0.4); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 68%; background: rgba(56, 189, 248, 0.6); border-radius: 4px 4px 0 0;">
+                </div>
+                <div
+                  style="flex: 1; height: 85%; background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 62%; background: rgba(56, 189, 248, 0.5); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 78%; background: rgba(56, 189, 248, 0.7); border-radius: 4px 4px 0 0;">
+                </div>
+                <div
+                  style="flex: 1; height: 95%; background: linear-gradient(180deg, #10b981 0%, #059669 100%); border-radius: 4px 4px 0 0;">
+                </div>
+                <div style="flex: 1; height: 80%; background: rgba(56, 189, 248, 0.7); border-radius: 4px 4px 0 0;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: DATA GRID -->
+          <div id="mockView-datagrid" class="mockup-view">
+            <table class="mockup-table">
+              <thead>
+                <tr>
+                  <th>ORDER ID</th>
+                  <th>CUSTOMER</th>
+                  <th>PRODUCT</th>
+                  <th>AMOUNT</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight: 700; color: #38bdf8;">#ORD-9021</td>
+                  <td style="color: var(--text); font-weight: 600;">Sophia Vance</td>
+                  <td>Enterprise Cloud License</td>
+                  <td style="font-weight: 700; color: #10b981;">$4,800.00</td>
+                  <td><span
+                      style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">Completed</span>
+                  </td>
+                  <td><span style="color: var(--accent); font-weight: 600; cursor: pointer;">Detail &rarr;</span></td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 700; color: #38bdf8;">#ORD-9020</td>
+                  <td style="color: var(--text); font-weight: 600;">Marcus Aurel</td>
+                  <td>High-Perf Dedicated Cluster</td>
+                  <td style="font-weight: 700; color: #10b981;">$12,500.00</td>
+                  <td><span
+                      style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">Completed</span>
+                  </td>
+                  <td><span style="color: var(--accent); font-weight: 600; cursor: pointer;">Detail &rarr;</span></td>
+                </tr>
+                <tr>
+                  <td style="font-weight: 700; color: #38bdf8;">#ORD-9019</td>
+                  <td style="color: var(--text); font-weight: 600;">Elena Rostova</td>
+                  <td>Custom Page CMS Module</td>
+                  <td style="font-weight: 700; color: #10b981;">$890.00</td>
+                  <td><span
+                      style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 8px; border-radius: 9999px; font-size: 0.72rem; font-weight: 700;">Processing</span>
+                  </td>
+                  <td><span style="color: var(--accent); font-weight: 600; cursor: pointer;">Detail &rarr;</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- TAB 3: REST API STUDIO -->
+          <div id="mockView-api" class="mockup-view">
+            <div
+              style="background: #090d16; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.84rem; color: #e2e8f0; line-height: 1.6;">
+              <div style="color: #64748b; margin-bottom: 8px;">// GET /api/v1/products - Bearer Token Authenticated
+              </div>
+              <div style="color: #38bdf8;">{</div>
+              <div style="padding-left: 20px;">
+                <span style="color: #f472b6;">"success"</span>: <span style="color: #4ade80;">true</span>,<br>
+                <span style="color: #f472b6;">"data"</span>: [<br>
+                <div style="padding-left: 20px;">
+                  { <span style="color: #f472b6;">"id"</span>: 1, <span style="color: #f472b6;">"name"</span>: <span
+                    style="color: #fde047;">"Enterprise Cloud Node"</span>, <span
+                    style="color: #f472b6;">"stock"</span>: 42, <span style="color: #f472b6;">"status"</span>: <span
+                    style="color: #fde047;">"active"</span> },<br>
+                  { <span style="color: #f472b6;">"id"</span>: 2, <span style="color: #f472b6;">"name"</span>: <span
+                    style="color: #fde047;">"High-Concurrency Edge Gateway"</span>, <span
+                    style="color: #f472b6;">"stock"</span>: 18, <span style="color: #f472b6;">"status"</span>: <span
+                    style="color: #fde047;">"active"</span> }
+                </div>
+                ],<br>
+                <span style="color: #f472b6;">"latency_ms"</span>: <span style="color: #38bdf8;">0.28</span>,<br>
+                <span style="color: #f472b6;">"auth_mode"</span>: <span style="color: #fde047;">"SHA256_BEARER"</span>
+              </div>
+              <div style="color: #38bdf8;">}</div>
+            </div>
+          </div>
+
+          <!-- TAB 4: AUDIT TRAIL -->
+          <div id="mockView-audit" class="mockup-view">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div
+                style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span
+                    style="background: rgba(16, 185, 129, 0.15); color: #10b981; font-weight: 700; padding: 2px 6px; border-radius: 4px;">AUTH_LOGIN</span>
+                  <span style="color: var(--text); font-weight: 600;">Super Administrator (admin@tgo.io)</span>
+                  <span style="color: var(--text-dim);">&bull; Session token signed with HMAC</span>
+                </div>
+                <span style="color: var(--text-dim); font-size: 0.75rem;">Just now</span>
+              </div>
+              <div
+                style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span
+                    style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; padding: 2px 6px; border-radius: 4px;">PAGE_UPDATE</span>
+                  <span style="color: var(--text); font-weight: 600;">Custom Page 'Special Promo' published</span>
+                  <span style="color: var(--text-dim);">&bull; Meta & TikTok pixels active</span>
+                </div>
+                <span style="color: var(--text-dim); font-size: 0.75rem;">2 mins ago</span>
+              </div>
+              <div
+                style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span
+                    style="background: rgba(168, 85, 247, 0.15); color: #a855f7; font-weight: 700; padding: 2px 6px; border-radius: 4px;">SETTINGS_SAVE</span>
+                  <span style="color: var(--text); font-weight: 600;">Appearance skin synchronized</span>
+                  <span style="color: var(--text-dim);">&bull; Persisted to data/settings.json</span>
+                </div>
+                <span style="color: var(--text-dim); font-size: 0.75rem;">12 mins ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROOF STRIP -->
+      <div class="proof-strip">
+        <div class="proof-item">
+          <h4 style="color: #38bdf8;">&lt; 0.4 ms</h4>
+          <p>Average HTTP TTFB</p>
+        </div>
+        <div class="proof-item">
+          <h4 style="color: #10b981;">100,000+</h4>
+          <p>Concurrent Requests / sec</p>
+        </div>
+        <div class="proof-item">
+          <h4 style="color: #a855f7;">100%</h4>
+          <p>Offline & Single Binary Embed</p>
+        </div>
+        <div class="proof-item">
+          <h4 style="color: #f59e0b;">Zero</h4>
+          <p>Cloud Vendor Dependencies</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOM PAGE USER INJECTED CONTENT -->
+    <section class="landing-container" style="margin-bottom: 4rem;">
+      {{.Content}}
+    </section>
+
+    <!-- BENTO GRID ARCHITECTURE & FEATURES -->
+    <section id="features" class="features-section">
+      <div class="landing-container">
+        <div class="section-head">
+          <span class="section-tag">ENGINEERED FOR SCALE</span>
+          <h2 class="section-title">The Complete Go Administrative Suite</h2>
+          <p class="section-desc">Everything an engineering squad needs to ship production-grade backends with high
+            velocity and enterprise compliance.</p>
+        </div>
+
+        <div class="bento-grid">
+          <!-- Bento 1 (Large 2-col) -->
+          <div class="bento-card col-span-2">
+            <div class="bento-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M3 15h18" />
+                <path d="M9 3v18" />
+              </svg>
+            </div>
+            <h3>Visual Module Generator Studio</h3>
+            <p>Generate full CRUD controllers with real-time validation, dynamic primary keys, CSV bulk import/export,
+              relation lookups, and rich WYSIWYG editors without writing repetitive boilerplate.</p>
+          </div>
+
+          <!-- Bento 2 -->
+          <div class="bento-card">
+            <div class="bento-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
+            <h3>HMAC Auth & RBAC Governance</h3>
+            <p>Cryptographically signed session cookies, SHA-256 salted credentials, role matrices, brute-force lockout,
+              and granular Superadmin protection.</p>
+          </div>
+
+          <!-- Bento 3 -->
+          <div class="bento-card">
+            <div class="bento-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </div>
+            <h3>Real-Time Audit Trail Logging</h3>
+            <p>Every administrative event—authentication, create, update, and delete—is automatically hooked,
+              timestamped, IP-tagged, and persisted to thread-safe storage.</p>
+          </div>
+
+          <!-- Bento 4 -->
+          <div class="bento-card">
+            <div class="bento-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="m4.93 4.93 4.24 4.24" />
+                <path d="m14.83 9.17 4.24-4.24" />
+                <path d="m14.83 14.83 4.24 4.24" />
+                <path d="m9.17 14.83-4.24 4.24" />
+              </svg>
+            </div>
+            <h3>Full SEO & Social Conversion Pixels</h3>
+            <p>Custom routing, JSON-LD Schema, OpenGraph cards, and 1-click injection of Meta/Facebook, TikTok, and
+              Google Tag Manager analytics scripts.</p>
+          </div>
+
+          <!-- Bento 5 -->
+          <div class="bento-card">
+            <div class="bento-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+              </svg>
+            </div>
+            <h3>Multi-Database Persistence</h3>
+            <p>Agnostic storage layer supporting native MySQL, PostgreSQL, SQLite, and ultra-fast in-memory stores with
+              zero external configuration requirements.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HIGH CONVERSION CTA CARD -->
+    <section class="landing-container">
+      <div class="cta-banner-card">
+        <h2 class="cta-banner-title">Ready to Experience Real Go Performance?</h2>
+        <p class="cta-banner-desc">
+          Explore the full platform in your browser. Launch the Admin Studio, inspect dynamic schemas, and build custom
+          endpoints in minutes.
+        </p>
+        <a href="{{.AdminPath}}" class="btn-hero-lg btn-hero-primary" style="margin: 0 auto;">
+          <span>Enter Admin Console &rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    {{else if eq .Page.Template "article"}}
+    <!-- ================================================================= -->
+    <!-- TEMPLATE 2: SLEEK EDITORIAL / BLOG ARTICLE LAYOUT -->
+    <!-- ================================================================= -->
+    <div class="landing-container">
+      <article class="article-wrapper">
+        <header class="article-header">
+          <span class="article-category">Editorial Article</span>
+          <h1 class="article-title">{{.Page.Title}}</h1>
+
+          <div class="article-author-row">
+            <div class="author-avatar">
+              {{if .Page.Author}}{{slice .Page.Author 0 1}}{{else}}E{{end}}
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--text);">{{if .Page.Author}}{{.Page.Author}}{{else}}Editorial
+                Team{{end}}</div>
+              <div style="font-size: 0.8rem; color: var(--text-dim);">Published on {{.Page.CreatedAt}} &bull; 4 min read
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div class="article-body">
+          {{.Content}}
+        </div>
+      </article>
+    </div>
+
+    {{else}}
+    <!-- ================================================================= -->
+    <!-- TEMPLATE 3: DEFAULT CORPORATE / PUBLIC CONTENT LAYOUT -->
+    <!-- ================================================================= -->
+    <div class="landing-container">
+      <div class="default-page-wrapper">
+        <nav class="breadcrumbs">
+          <a href="/">Home</a>
+          <span>&rsaquo;</span>
+          <span>{{.Page.Title}}</span>
+        </nav>
+
+        <h1 class="default-page-title">{{.Page.Title}}</h1>
+
+        <div class="default-page-content">
+          {{.Content}}
+        </div>
+      </div>
+    </div>
+    {{end}}
+  </main>
+
+  {{if ne .Page.Template "blank"}}
+  <!-- ENTERPRISE MULTI-COLUMN FOOTER -->
+  <footer class="landing-footer">
+    <div class="landing-container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>{{.AppName}}</h4>
+          <p>{{if and .Settings .Settings.AppTagline}}{{.Settings.AppTagline}}{{else}}High-Performance Go Administrative
+            Platform & CMS Studio. Built for mission-critical software.{{end}}</p>
+          <div class="status-beacon">
+            <span class="status-dot"></span>
+            <span>All Core Services Operational</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h5>Platform</h5>
+          <ul class="footer-links">
+            <li><a href="{{.AdminPath}}">Admin Dashboard</a></li>
+            <li><a href="{{.AdminPath}}/module_generator">CRUD Generator</a></li>
+            <li><a href="{{.AdminPath}}/api_generator">REST API Engine</a></li>
+            <li><a href="{{.AdminPath}}/logs">Audit Trail Stream</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Custom Pages</h5>
+          <ul class="footer-links">
+            <li><a href="/about-us">About Our Company</a></li>
+            <li><a href="/promo-special">Special Promotion</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="{{.AdminPath}}/pages">Pages Studio</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h5>Governance</h5>
+          <ul class="footer-links">
+            <li><a href="{{.AdminPath}}/settings">Theme & Settings</a></li>
+            <li><a href="{{.AdminPath}}/privileges">RBAC Matrix</a></li>
+            <li><a href="{{.AdminPath}}/users">User Directory</a></li>
+            <li><a href="{{.AdminPath}}/email_templates">Mailer Templates</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          {{if and .Settings .Settings.CopyrightText}}{{.Settings.CopyrightText}}{{else}}&copy; {{.CurrentYear}}
+          {{.AppName}}. All rights reserved.{{end}} &bull; Zero-Alloc Go Kernel
+        </div>
+        <button type="button" class="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <span>Back to Top</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="18 15 12 9 6 15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </footer>
+  {{end}}
+
+  <!-- CLIENT-SIDE SCRIPT ENGINE -->
+  <script>
+    // Theme Switcher Engine for Landing/Public Pages
+    (function initLandingTheme() {
+      try {
+        var saved = localStorage.getItem('tgo_booster_theme');
+        if (saved) {
+          document.documentElement.setAttribute('data-theme', saved);
+        } else {
+          var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        }
+      } catch (e) { }
+      updateThemeIcons();
+    })();
+
+    function toggleLandingTheme() {
+      var current = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('tgo_booster_theme', next); } catch (e) { }
+      updateThemeIcons();
+    }
+
+    function updateThemeIcons() {
+      var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+      var sun = document.getElementById('themeIconSun');
+      var moon = document.getElementById('themeIconMoon');
+      if (sun && moon) {
+        if (theme === 'dark') {
+          sun.style.display = 'block';
+          moon.style.display = 'none';
+        } else {
+          sun.style.display = 'none';
+          moon.style.display = 'block';
+        }
+      }
+    }
+
+    // Mobile Navigation Drawer Toggle
+    function toggleMobileDrawer() {
+      var drawer = document.getElementById('landingMobileDrawer');
+      if (drawer) {
+        drawer.classList.toggle('open');
+      }
+    }
+
+    // Showcase Interactive Mockup Tab Switcher
+    function switchMockupTab(tabId, btn) {
+      var views = document.querySelectorAll('.mockup-view');
+      views.forEach(function (v) { v.classList.remove('active'); });
+
+      var btns = document.querySelectorAll('.mockup-tab-btn');
+      btns.forEach(function (b) { b.classList.remove('active'); });
+
+      var target = document.getElementById('mockView-' + tabId);
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    // One-click Code Snippet Copy Helper
+    function copySnippet(text, el) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      }
+      var origHTML = el.innerHTML;
+      el.innerHTML = '<span style="color: #10b981; font-weight: 700;">Copied to clipboard! ✓</span>';
+      setTimeout(function () {
+        el.innerHTML = origHTML;
+      }, 1800);
+    }
+
+    // Reading Progress Indicator (Article Mode)
+    window.addEventListener('scroll', function () {
+      var bar = document.getElementById('readingProgress');
+      if (!bar) return;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        var pct = (window.scrollY / docHeight) * 100;
+        bar.style.width = pct + '%';
+      }
+    });
+  </script>
+
+  {{if .FooterScripts}}
+  {{.FooterScripts}}
+  {{end}}
+</body>
+
+</html>

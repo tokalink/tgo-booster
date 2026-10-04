@@ -1,0 +1,524 @@
+<div class="cb-card" style="margin-bottom: 1.5rem;">
+  <div class="cb-card-header" style="flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(56, 189, 248, 0.2) 100%); color: var(--accent-purple); border: 1px solid rgba(168, 85, 247, 0.3);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+        </div>
+        <div>
+          <h2 class="cb-card-title" style="font-size: 1.25rem;">
+            <span>Privileges & Roles Management</span>
+            <span class="cb-badge cb-badge-pro" style="margin-left: 6px; font-size: 0.72rem;">RBAC Matrix</span>
+          </h2>
+        </div>
+      </div>
+      <p class="cb-card-sub">Configure role-based access control, granular module permissions (C, R, U, D, Visible), and superadmin rights ala CRUDBooster</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn btn-primary" onclick="openNewRoleModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>+ Create New Role</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STAT METRICS & ROLE SWITCHER FOR DEMO/TESTING -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-top: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Configured Roles</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">{{len .Roles}} Roles</div>
+      <div style="font-size: 0.75rem; color: var(--accent); margin-top: 2px;">Hierarchical Access Control</div>
+    </div>
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Protected Modules</div>
+      <div style="font-size: 1.35rem; font-weight: 800; color: var(--success);">{{len .Modules}} Modules</div>
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Enforced at Controller & Nav</div>
+    </div>
+    <div style="background: var(--bg-subtle); padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border); grid-column: span 2;">
+      <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Live Role Testing Switcher</div>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Current Active Session Role:</span>
+        <span class="cb-badge cb-badge-primary" style="font-weight: 700;">{{.CurrentRole}}</span>
+        <div style="display: flex; gap: 6px; margin-left: auto;">
+          {{range .Roles}}
+          <button type="button" class="btn btn-secondary btn-sm" onclick="switchSessionRole('{{.Slug}}')" style="padding: 4px 10px; font-size: 0.76rem;" title="Switch active session to {{.Name}}">
+            Test as {{.Name}}
+          </button>
+          {{end}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROLES TABLE -->
+<div class="cb-card">
+  <div class="cb-toolbar">
+    <div class="cb-toolbar-left">
+      <div class="cb-module-title-wrap">
+        <h3 class="cb-card-title" style="font-size: 1.05rem;">
+          <span>System Roles & Privileges</span>
+        </h3>
+        <span class="cb-badge cb-badge-count">{{len .Roles}} Roles</span>
+      </div>
+    </div>
+    <div class="cb-toolbar-right">
+      <div class="cb-search-wrap">
+        <svg class="cb-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="roleTableSearch" class="cb-search" placeholder="Filter roles..." onkeyup="filterRoleList()">
+      </div>
+    </div>
+  </div>
+
+  <div class="cb-table-container">
+    <table class="cb-table" id="rolesTable">
+      <thead>
+        <tr>
+          <th style="width: 50px;">ID</th>
+          <th>Role Title</th>
+          <th>Slug</th>
+          <th>Superadmin</th>
+          <th>Users Assigned</th>
+          <th>Permissions Matrix Summary</th>
+          <th style="text-align: right; min-width: 160px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Roles}}
+        <tr class="role-row" data-id="{{.ID}}" data-slug="{{.Slug}}">
+          <td><span class="cell-id">#{{.ID}}</span></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="color: var(--accent-purple);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              </div>
+              <strong style="color: var(--text-main);">{{.Name}}</strong>
+            </div>
+            {{if .Description}}<div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">{{.Description}}</div>{{end}}
+          </td>
+          <td><code class="cell-code">{{.Slug}}</code></td>
+          <td>
+            {{if .IsSuperadmin}}
+            <span class="cb-badge cb-badge-pro" style="background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.4); color: var(--accent-purple);">
+              ★ Yes (Unrestricted)
+            </span>
+            {{else}}
+            <span class="cb-badge cb-badge-subtle">No (Matrix Enforced)</span>
+            {{end}}
+          </td>
+          <td>
+            <span class="cb-badge cb-badge-primary">{{.UsersCount}} Users</span>
+          </td>
+          <td>
+            {{if .IsSuperadmin}}
+              <span style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">Full Access Across All Modules (C,R,U,D)</span>
+            {{else}}
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <span class="cb-badge cb-badge-success" style="font-size: 0.72rem;">Granular RBAC</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">{{len .Permissions}} Custom Module Rules</span>
+              </div>
+            {{end}}
+          </td>
+          <td style="text-align: right;">
+            <div class="row-actions" style="justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openPermissionsMatrix('{{.ID}}')" style="gap: 5px;" title="Configure CRUDBooster Permission Matrix">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Matrix</span>
+              </button>
+              <button type="button" class="btn-action btn-action-edit" onclick="openEditRoleModal('{{.ID}}')" title="Edit Role Details">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </button>
+              {{if not .IsSuperadmin}}
+              <button type="button" class="btn-action btn-action-delete" onclick="confirmDeleteRole('{{.ID}}', '{{.Name}}')" title="Delete Role">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
+              {{end}}
+            </div>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     CRUDBOOSTER PERMISSION MATRIX & ROLE MODAL
+     ========================================================================== -->
+<div id="roleModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeRoleModal()">
+  <div class="modal-card" style="max-width: 900px; width: 95vw; max-height: 90vh; display: flex; flex-direction: column;">
+    
+    <!-- MODAL HEADER -->
+    <div class="modal-header" style="flex-shrink: 0; background: var(--bg-card); border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(168, 85, 247, 0.15); color: var(--accent-purple);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <h3 class="modal-title" id="roleModalTitle">Configure Role & Permissions Matrix</h3>
+          <p class="modal-sub" id="roleModalSub">CRUDBooster Granular Access Control</p>
+        </div>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeRoleModal()">✕</button>
+    </div>
+
+    <!-- MODAL BODY (SCROLLABLE) -->
+    <div class="modal-body" style="flex: 1 1 auto; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+      <input type="hidden" id="roleId" value="">
+
+      <!-- ROLE META ROW -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+        <div class="cb-form-group">
+          <label class="cb-form-label">
+            <span>Role Title / Name</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input type="text" id="roleName" class="cb-input" placeholder="e.g. Regional Manager" oninput="autoSlugRole(this.value)">
+        </div>
+
+        <div class="cb-form-group">
+          <label class="cb-form-label">
+            <span>Role Slug</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input type="text" id="roleSlug" class="cb-input" placeholder="e.g. regional_manager">
+        </div>
+      </div>
+
+      <!-- SUPERADMIN TOGGLE -->
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Is Superadministrator?</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              If enabled, this role automatically bypasses all restrictions and has unrestricted access to all modules, actions, and settings.
+            </div>
+          </div>
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="roleIsSuperadmin" onchange="toggleSuperadminMatrix(this.checked)">
+            <span class="cb-toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="cb-form-group">
+        <label class="cb-form-label">Role Description</label>
+        <textarea id="roleDesc" class="cb-input cb-textarea" style="height: 60px;" placeholder="Describe responsibilities and scope of this role..."></textarea>
+      </div>
+
+      <!-- PERMISSIONS MATRIX SECTION -->
+      <div id="matrixSection">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0;">Granular Module Permissions Matrix</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 2px 0 0 0;">Check which actions this role is permitted to perform per module</p>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="checkAllMatrix(true)">Select All</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="checkAllMatrix(false)">Deselect All</button>
+          </div>
+        </div>
+
+        <div style="border: 1px solid var(--border); border-radius: var(--radius-md); overflow-x: auto; background: var(--bg-card);">
+          <table class="cb-table" id="matrixTable">
+            <thead>
+              <tr>
+                <th style="min-width: 160px;">Module Name</th>
+                <th style="width: 100px; text-align: center;">
+                  <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <input type="checkbox" id="colVisible" onchange="toggleMatrixCol('visible', this.checked)" class="cb-checkbox">
+                    <span>Visible</span>
+                  </label>
+                </th>
+                <th style="width: 100px; text-align: center;">
+                  <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <input type="checkbox" id="colCreate" onchange="toggleMatrixCol('create', this.checked)" class="cb-checkbox">
+                    <span>Create</span>
+                  </label>
+                </th>
+                <th style="width: 100px; text-align: center;">
+                  <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <input type="checkbox" id="colRead" onchange="toggleMatrixCol('read', this.checked)" class="cb-checkbox">
+                    <span>Read</span>
+                  </label>
+                </th>
+                <th style="width: 100px; text-align: center;">
+                  <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <input type="checkbox" id="colUpdate" onchange="toggleMatrixCol('update', this.checked)" class="cb-checkbox">
+                    <span>Update</span>
+                  </label>
+                </th>
+                <th style="width: 100px; text-align: center;">
+                  <label style="cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <input type="checkbox" id="colDelete" onchange="toggleMatrixCol('delete', this.checked)" class="cb-checkbox">
+                    <span>Delete</span>
+                  </label>
+                </th>
+                <th style="width: 80px; text-align: center;">Row</th>
+              </tr>
+            </thead>
+            <tbody id="matrixBody">
+              {{range .Modules}}
+              <tr class="matrix-row" data-module="{{.Table}}">
+                <td>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="color: var(--accent);">{{.Icon | safeHTML}}</div>
+                    <div>
+                      <strong style="color: var(--text-main);">{{.Title}}</strong>
+                      <div style="font-size: 0.72rem; color: var(--text-dim); font-family: 'JetBrains Mono', monospace;">{{.BasePath}}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" class="cb-checkbox perm-visible" checked>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" class="cb-checkbox perm-create" checked>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" class="cb-checkbox perm-read" checked>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" class="cb-checkbox perm-update" checked>
+                </td>
+                <td style="text-align: center;">
+                  <input type="checkbox" class="cb-checkbox perm-delete" checked>
+                </td>
+                <td style="text-align: center;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="toggleRowPerms(this)" style="padding: 2px 8px; font-size: 0.72rem;">All</button>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MODAL FOOTER -->
+    <div class="modal-footer" style="flex-shrink: 0; background: var(--bg-card); border-top: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeRoleModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="saveRoleAndPermissions()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Role & Permissions</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function filterRoleList() {
+    const q = document.getElementById('roleTableSearch')?.value?.toLowerCase() || '';
+    document.querySelectorAll('.role-row').forEach(row => {
+      const match = row.innerText.toLowerCase().includes(q);
+      row.style.display = match ? '' : 'none';
+    });
+  }
+
+  function autoSlugRole(val) {
+    const slugInput = document.getElementById('roleSlug');
+    if (slugInput && (!slugInput.value || slugInput.dataset.touched !== 'true')) {
+      slugInput.value = val.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    }
+  }
+
+  document.getElementById('roleSlug')?.addEventListener('input', function() {
+    this.dataset.touched = 'true';
+  });
+
+  function openNewRoleModal() {
+    document.getElementById('roleId').value = '';
+    document.getElementById('roleName').value = '';
+    document.getElementById('roleSlug').value = '';
+    document.getElementById('roleSlug').dataset.touched = 'false';
+    document.getElementById('roleIsSuperadmin').checked = false;
+    document.getElementById('roleDesc').value = '';
+    
+    document.getElementById('roleModalTitle').innerText = 'Create New System Role';
+    document.getElementById('roleModalSub').innerText = 'CRUDBooster Permissions Matrix';
+    
+    toggleSuperadminMatrix(false);
+    checkAllMatrix(true);
+
+    const modal = document.getElementById('roleModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeRoleModal() {
+    const modal = document.getElementById('roleModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function toggleSuperadminMatrix(isSuper) {
+    const section = document.getElementById('matrixSection');
+    if (section) {
+      if (isSuper) {
+        section.style.opacity = '0.4';
+        section.style.pointerEvents = 'none';
+      } else {
+        section.style.opacity = '1';
+        section.style.pointerEvents = 'auto';
+      }
+    }
+  }
+
+  function toggleMatrixCol(colType, checked) {
+    document.querySelectorAll('.perm-' + colType).forEach(cb => {
+      cb.checked = checked;
+    });
+  }
+
+  function checkAllMatrix(checked) {
+    document.querySelectorAll('.matrix-row input[type="checkbox"]').forEach(cb => {
+      cb.checked = checked;
+    });
+    ['colVisible', 'colCreate', 'colRead', 'colUpdate', 'colDelete'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.checked = checked;
+    });
+  }
+
+  function toggleRowPerms(btn) {
+    const row = btn.closest('tr');
+    const boxes = row.querySelectorAll('input[type="checkbox"]');
+    const someUnchecked = Array.from(boxes).some(b => !b.checked);
+    boxes.forEach(b => b.checked = someUnchecked);
+  }
+
+  function openPermissionsMatrix(roleId) {
+    openEditRoleModal(roleId);
+  }
+
+  function openEditRoleModal(roleId) {
+    showToast('Loading role configuration...', 'info');
+
+    fetch('{{.AdminPath}}/privileges/api/role?id=' + encodeURIComponent(roleId))
+      .then(res => res.json())
+      .then(role => {
+        if (!role) {
+          showToast('Failed to load role details', 'error');
+          return;
+        }
+
+        document.getElementById('roleId').value = role.id || '';
+        document.getElementById('roleName').value = role.name || '';
+        document.getElementById('roleSlug').value = role.slug || '';
+        document.getElementById('roleSlug').dataset.touched = 'true';
+        document.getElementById('roleIsSuperadmin').checked = !!role.is_superadmin;
+        document.getElementById('roleDesc').value = role.description || '';
+
+        document.getElementById('roleModalTitle').innerText = 'Edit Role: ' + role.name;
+        document.getElementById('roleModalSub').innerText = 'Modify permissions matrix for ' + role.name;
+
+        toggleSuperadminMatrix(!!role.is_superadmin);
+
+        // Load permissions matrix checkboxes
+        const perms = role.permissions || {};
+        document.querySelectorAll('.matrix-row').forEach(row => {
+          const mod = row.dataset.module;
+          const p = perms[mod] || perms[mod.toLowerCase()] || {};
+
+          // If role has explicit permissions, use them; if empty and superadmin, all true
+          const isSup = !!role.is_superadmin;
+          row.querySelector('.perm-visible').checked = (p.is_visible !== undefined ? p.is_visible : isSup);
+          row.querySelector('.perm-create').checked = (p.can_create !== undefined ? p.can_create : isSup);
+          row.querySelector('.perm-read').checked = (p.can_read !== undefined ? p.can_read : isSup);
+          row.querySelector('.perm-update').checked = (p.can_update !== undefined ? p.can_update : isSup);
+          row.querySelector('.perm-delete').checked = (p.can_delete !== undefined ? p.can_delete : isSup);
+        });
+
+        document.getElementById('roleModal').style.display = 'flex';
+      })
+      .catch(err => {
+        showToast('Error loading role: ' + err.message, 'error');
+      });
+  }
+
+  function saveRoleAndPermissions() {
+    const id = document.getElementById('roleId')?.value?.trim();
+    const name = document.getElementById('roleName')?.value?.trim();
+    const slug = document.getElementById('roleSlug')?.value?.trim();
+    const isSuper = document.getElementById('roleIsSuperadmin')?.checked || false;
+    const desc = document.getElementById('roleDesc')?.value?.trim();
+
+    if (!name || !slug) {
+      showToast('Role title and slug are required', 'warning');
+      return;
+    }
+
+    const perms = {};
+    document.querySelectorAll('.matrix-row').forEach(row => {
+      const mod = row.dataset.module;
+      perms[mod] = {
+        is_visible: row.querySelector('.perm-visible')?.checked || false,
+        can_create: row.querySelector('.perm-create')?.checked || false,
+        can_read: row.querySelector('.perm-read')?.checked || false,
+        can_update: row.querySelector('.perm-update')?.checked || false,
+        can_delete: row.querySelector('.perm-delete')?.checked || false
+      };
+    });
+
+    const payload = {
+      id: id,
+      name: name,
+      slug: slug,
+      is_superadmin: isSuper,
+      description: desc,
+      permissions: perms
+    };
+
+    fetch('{{.AdminPath}}/privileges/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        showToast('Role & Permissions saved successfully!', 'success');
+        closeRoleModal();
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        showToast('Save error: ' + (res.error || 'Failed'), 'error');
+      }
+    })
+    .catch(err => {
+      showToast('Network error saving role: ' + err.message, 'error');
+    });
+  }
+
+  function confirmDeleteRole(id, name) {
+    if (confirm('Are you sure you want to delete role "' + name + '"? Users assigned will lose this privilege.')) {
+      fetch('{{.AdminPath}}/privileges/delete?id=' + encodeURIComponent(id), {
+        method: 'POST'
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          showToast('Role deleted successfully', 'success');
+          setTimeout(() => window.location.reload(), 600);
+        } else {
+          showToast('Error: ' + (res.error || 'Failed to delete role'), 'error');
+        }
+      });
+    }
+  }
+
+  function switchSessionRole(roleSlug) {
+    showToast('Switching session to ' + roleSlug + '...', 'info');
+    fetch('{{.AdminPath}}/privileges/switch?role=' + encodeURIComponent(roleSlug), {
+      method: 'POST'
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.success) {
+        showToast('Switched to role "' + res.role_name + '"! Reloading permissions...', 'success');
+        setTimeout(() => window.location.reload(), 700);
+      } else {
+        showToast('Failed to switch role: ' + res.error, 'error');
+      }
+    });
+  }
+</script>

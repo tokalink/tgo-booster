@@ -1,0 +1,189 @@
+[
+  {
+    "id": "group_platform",
+    "title": "Platform",
+    "type": "header",
+    "icon": "",
+    "path": "",
+    "order": 1,
+    "children": [
+      {
+        "id": "dashboard",
+        "title": "Executive Dashboard",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003crect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/\u003e\u003crect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"/\u003e\u003crect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"/\u003e\u003crect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/\u003e\u003c/svg\u003e",
+        "path": "/admin",
+        "parent_id": "group_platform",
+        "order": 1
+      }
+    ]
+  },
+  {
+    "id": "group_business",
+    "title": "Business Modules",
+    "type": "header",
+    "icon": "",
+    "path": "",
+    "order": 2,
+    "children": [
+      {
+        "id": "employees",
+        "title": "Employees",
+        "type": "module",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/\u003e\u003cline x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/employees",
+        "badge_color": "primary",
+        "parent_id": "group_business",
+        "order": 1
+      },
+      {
+        "id": "subscriptions",
+        "title": "Subscriptions",
+        "type": "module",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/\u003e\u003cline x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/subscriptions",
+        "badge_color": "primary",
+        "parent_id": "group_business",
+        "order": 2
+      },
+      {
+        "id": "orders",
+        "title": "Orders",
+        "type": "module",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/\u003e\u003cline x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/orders",
+        "badge_color": "primary",
+        "parent_id": "group_business",
+        "order": 3
+      },
+      {
+        "id": "blog_posts",
+        "title": "Blog Posts",
+        "type": "module",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/\u003e\u003cline x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/blog_posts",
+        "badge_color": "primary",
+        "parent_id": "group_business",
+        "order": 4
+      }
+    ]
+  },
+  {
+    "id": "group_tools",
+    "title": "Engine Tools",
+    "type": "header",
+    "icon": "",
+    "path": "",
+    "order": 3,
+    "children": [
+      {
+        "id": "module_generator",
+        "title": "Module Generator",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M13 2 3 14h9l-1 8 10-12h-9l1-8z\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/module_generator",
+        "badge": "PRO",
+        "badge_color": "purple",
+        "parent_id": "group_tools",
+        "order": 1,
+        "roles": [
+          "superadmin"
+        ]
+      },
+      {
+        "id": "menu_management",
+        "title": "Menu Management",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cline x1=\"4\" x2=\"20\" y1=\"6\" y2=\"6\"/\u003e\u003cline x1=\"4\" x2=\"20\" y1=\"12\" y2=\"12\"/\u003e\u003cline x1=\"4\" x2=\"20\" y1=\"18\" y2=\"18\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/menus",
+        "parent_id": "group_tools",
+        "order": 2,
+        "roles": [
+          "superadmin"
+        ]
+      },
+      {
+        "id": "privileges",
+        "title": "Privileges \u0026 Roles",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/privileges",
+        "parent_id": "group_tools",
+        "order": 3,
+        "roles": [
+          "superadmin"
+        ]
+      },
+      {
+        "id": "pages_studio",
+        "title": "Pages \u0026 SEO",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/\u003e\u003cline x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/pages",
+        "parent_id": "group_tools",
+        "order": 4,
+        "roles": [
+          "superadmin"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "system_dropdown",
+    "title": "Administration",
+    "type": "dropdown",
+    "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cline x1=\"4\" x2=\"4\" y1=\"21\" y2=\"14\"/\u003e\u003cline x1=\"4\" x2=\"4\" y1=\"10\" y2=\"3\"/\u003e\u003cline x1=\"12\" x2=\"12\" y1=\"21\" y2=\"12\"/\u003e\u003cline x1=\"12\" x2=\"12\" y1=\"8\" y2=\"3\"/\u003e\u003cline x1=\"20\" x2=\"20\" y1=\"21\" y2=\"16\"/\u003e\u003cline x1=\"20\" x2=\"20\" y1=\"12\" y2=\"3\"/\u003e\u003cline x1=\"1\" x2=\"7\" y1=\"14\" y2=\"14\"/\u003e\u003cline x1=\"9\" x2=\"15\" y1=\"8\" y2=\"8\"/\u003e\u003cline x1=\"17\" x2=\"23\" y1=\"16\" y2=\"16\"/\u003e\u003c/svg\u003e",
+    "path": "",
+    "order": 4,
+    "children": [
+      {
+        "id": "users",
+        "title": "User Accounts",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003ccircle cx=\"12\" cy=\"8\" r=\"5\"/\u003e\u003cpath d=\"M20 21a8 8 0 0 0-16 0\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/users",
+        "parent_id": "system_dropdown",
+        "order": 1
+      },
+      {
+        "id": "api_generator",
+        "title": "API \u0026 Tokens",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4\"/\u003e\u003cpath d=\"m21 2-9.6 9.6\"/\u003e\u003ccircle cx=\"7.5\" cy=\"15.5\" r=\"5.5\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/api_generator",
+        "parent_id": "system_dropdown",
+        "order": 2
+      },
+      {
+        "id": "email_templates",
+        "title": "Email Templates",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003crect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"/\u003e\u003cpath d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/email_templates",
+        "parent_id": "system_dropdown",
+        "order": 3
+      },
+      {
+        "id": "logs",
+        "title": "Audit Trail",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/\u003e\u003cpolyline points=\"14 2 14 8 20 8\"/\u003e\u003cline x1=\"16\" x2=\"8\" y1=\"13\" x2=\"13\"/\u003e\u003cline x1=\"16\" x2=\"8\" y1=\"17\" y2=\"17\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/logs",
+        "parent_id": "system_dropdown",
+        "order": 4
+      },
+      {
+        "id": "settings",
+        "title": "Settings",
+        "type": "url",
+        "icon": "\u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"\u003e\u003cpath d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\"/\u003e\u003ccircle cx=\"12\" cy=\"12\" r=\"3\"/\u003e\u003c/svg\u003e",
+        "path": "/admin/settings",
+        "parent_id": "system_dropdown",
+        "order": 5,
+        "roles": [
+          "superadmin"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,251 @@
+<!-- EXECUTIVE ADMIN DASHBOARD -->
+<div class="cb-dashboard">
+
+  <!-- 1. GREETING BANNER -->
+  <div class="cb-card cb-dash-hero" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%); border-color: rgba(56, 189, 248, 0.25); margin-bottom: 1.5rem; padding: 1.5rem 1.75rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="cb-avatar" style="width: 48px; height: 48px; font-size: 1.15rem; background: var(--accent); color: #fff;">
+          {{.UserInitials}}
+        </div>
+        <div>
+          <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span>Welcome back, {{.User.Name}}</span>
+            <span class="cb-badge cb-badge-primary" style="font-size: 0.72rem;">{{.User.RoleName}}</span>
+          </h1>
+          <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem;">
+            Enterprise Control Center • High-Performance TGo Kernel Running on <strong>{{.Diagnostics.OS}}/{{.Diagnostics.Arch}}</strong>
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="{{.AdminPath}}/module_generator" class="btn btn-primary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>New Module</span>
+        </a>
+        <a href="{{.AdminPath}}/settings" class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. KPI STATS ROW -->
+  <div class="cb-stats-grid" style="margin-bottom: 1.5rem;">
+    <!-- CARD 1: ACTIVE MODULES -->
+    <div class="cb-stat-card">
+      <div class="stat-card-header">
+        <div class="cb-stat-icon stat-blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+        </div>
+        <span class="cb-trend-badge positive">Live MVC</span>
+      </div>
+      <div class="cb-stat-info">
+        <span class="cb-stat-title">Active Data Modules</span>
+        <span class="cb-stat-value">{{.ActiveModulesCount}}</span>
+        <div class="sparkline-wrap">
+          <span class="sparkline-label">{{.TotalControllersCount}} total controllers loaded</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: REGISTERED USERS -->
+    <div class="cb-stat-card">
+      <div class="stat-card-header">
+        <div class="cb-stat-icon stat-purple">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <span class="cb-trend-badge positive">RBAC Ready</span>
+      </div>
+      <div class="cb-stat-info">
+        <span class="cb-stat-title">Admin Accounts</span>
+        <span class="cb-stat-value">{{.UsersCount}}</span>
+        <div class="sparkline-wrap">
+          <span class="sparkline-label">Encrypted in data/users.json</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: CUSTOM PAGES -->
+    <div class="cb-stat-card">
+      <div class="stat-card-header">
+        <div class="cb-stat-icon stat-green">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span class="cb-trend-badge positive">SEO & Pixel</span>
+      </div>
+      <div class="cb-stat-info">
+        <span class="cb-stat-title">Dynamic Pages</span>
+        <span class="cb-stat-value">{{.PagesCount}}</span>
+        <div class="sparkline-wrap">
+          <span class="sparkline-label">HTML / Rich Visual Builder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 4: GROSS REVENUE -->
+    <div class="cb-stat-card">
+      <div class="stat-card-header">
+        <div class="cb-stat-icon stat-amber">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <span class="cb-trend-badge positive">+14.2%</span>
+      </div>
+      <div class="cb-stat-info">
+        <span class="cb-stat-title">Gross Revenue</span>
+        <span class="cb-stat-value">$124,500</span>
+        <div class="sparkline-wrap">
+          <span class="sparkline-label">Business telemetry</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 5: API ACCESS TOKENS -->
+    <div class="cb-stat-card">
+      <div class="stat-card-header">
+        <div class="cb-stat-icon stat-blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5 4 4"/><path d="M13 7 8.7 11.3a2.41 2.41 0 0 0 0 3.4l1.6 1.6a2.41 2.41 0 0 0 3.4 0L18 12"/><path d="m2 22 5.5-1.5L21.3 6.7a2.4 2.4 0 0 0 0-3.4l-1.6-1.6a2.4 2.4 0 0 0-3.4 0L2 16.5Z"/></svg>
+        </div>
+        <span class="cb-trend-badge neutral">REST & CORS</span>
+      </div>
+      <div class="cb-stat-info">
+        <span class="cb-stat-title">Active API Tokens</span>
+        <span class="cb-stat-value">{{.APITokensCount}}</span>
+        <div class="sparkline-wrap">
+          <span class="sparkline-label">Scoped public endpoints</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MIDDLE SECTION: MODULE LAUNCHER & SYSTEM TELEMETRY -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+    <!-- MODULE LAUNCHER -->
+    <div class="cb-card">
+      <div class="cb-card-header">
+        <div>
+          <h2 class="cb-card-title"><span>Module Launcher</span></h2>
+          <p class="cb-card-sub">Quick navigation to active administrative data grids</p>
+        </div>
+        <a href="{{.AdminPath}}/module_generator" class="btn btn-secondary btn-sm">Manage Modules</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 1.25rem;">
+        {{range .Controllers}}
+        <a href="{{$.AdminPath}}/{{.Table}}" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); text-decoration: none; color: var(--text-main); transition: all 0.15s ease;" onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='var(--border)'; this.style.transform='none';">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--accent-glow); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            {{.Icon | safeHTML}}
+          </div>
+          <div style="overflow: hidden;">
+            <div style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{.Title}}</div>
+            <div style="font-size: 0.75rem; color: var(--text-dim); font-family: var(--font-mono);">/{{.Table}}</div>
+          </div>
+        </a>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- LIVE SYSTEM TELEMETRY -->
+    <div class="cb-card">
+      <div class="cb-card-header">
+        <div>
+          <h2 class="cb-card-title"><span>Kernel Telemetry</span></h2>
+          <p class="cb-card-sub">Real-time runtime statistics</p>
+        </div>
+      </div>
+      <div style="padding: 1.25rem;">
+        <table style="width: 100%; font-size: 0.82rem; border-collapse: collapse;">
+          <tbody>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">Go Version</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono); font-weight: 600;">{{.Diagnostics.GoVersion}}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">OS / Arch</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono);">{{.Diagnostics.OS}} / {{.Diagnostics.Arch}}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">CPU Cores</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono);">{{.Diagnostics.NumCPU}} Cores</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">Goroutines</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono);">{{.Diagnostics.NumGoroutine}}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">Memory Alloc</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono); color: #10b981; font-weight: 600;">{{.Diagnostics.AllocMB}}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 8px 0; color: var(--text-muted);">Uptime</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono);">{{.Diagnostics.Uptime}}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: var(--text-muted);">Database State</td>
+              <td style="padding: 8px 0; text-align: right; font-family: var(--font-mono); font-size: 0.76rem; color: var(--accent);">{{.Diagnostics.DatabaseState}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. RECENT AUDIT TRAIL ACTIVITY -->
+  <div class="cb-card">
+    <div class="cb-card-header">
+      <div>
+        <h2 class="cb-card-title"><span>Recent Operational & Security Audit Logs</span></h2>
+        <p class="cb-card-sub">Real-time immutable audit trail events</p>
+      </div>
+      <a href="{{.AdminPath}}/logs" class="btn btn-secondary btn-sm">
+        <span>View All Logs</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+    <div style="overflow-x: auto;">
+      <table class="cb-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th style="width: 70px;">ID</th>
+            <th style="width: 130px;">Action</th>
+            <th style="width: 140px;">Module</th>
+            <th>Description</th>
+            <th style="width: 160px;">Operator</th>
+            <th style="width: 160px;">Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{if .RecentLogs}}
+            {{range .RecentLogs}}
+            <tr>
+              <td><span class="cell-id">#{{.ID}}</span></td>
+              <td>
+                {{if eq .Action "LOGIN"}}
+                  <span class="cb-badge cb-badge-success"><span class="badge-dot"></span> LOGIN</span>
+                {{else if eq .Action "LOGOUT"}}
+                  <span class="cb-badge cb-badge-neutral"><span class="badge-dot"></span> LOGOUT</span>
+                {{else if or (eq .Action "DELETE") (eq .Action "BULK_DELETE") (eq .Action "TOKEN_REVOKE")}}
+                  <span class="cb-badge cb-badge-danger"><span class="badge-dot"></span> {{.Action}}</span>
+                {{else if or (eq .Action "CREATE") (eq .Action "TOKEN_CREATE")}}
+                  <span class="cb-badge cb-badge-primary"><span class="badge-dot"></span> {{.Action}}</span>
+                {{else}}
+                  <span class="cb-badge cb-badge-warning"><span class="badge-dot"></span> {{.Action}}</span>
+                {{end}}
+              </td>
+              <td><span class="cb-badge cb-badge-neutral">{{.Module}}</span></td>
+              <td style="color: var(--text-main); font-size: 0.85rem;">{{.Description}}</td>
+              <td style="font-size: 0.82rem; color: var(--text-muted); font-weight: 500;">{{.User}}</td>
+              <td style="font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono);">{{.CreatedAt}}</td>
+            </tr>
+            {{end}}
+          {{else}}
+            <tr>
+              <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">No audit logs recorded yet.</td>
+            </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

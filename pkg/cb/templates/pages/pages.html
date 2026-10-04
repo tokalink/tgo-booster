@@ -1,0 +1,3504 @@
+<!-- ======================================================================= -->
+<!-- VIEW 1: PAGES MANAGEMENT LIST VIEW                                      -->
+<!-- ======================================================================= -->
+<div id="pagesListView">
+  <!-- STAT METRICS & HEADER CARD -->
+  <div class="cb-card" style="margin-bottom: 1.5rem;">
+    <div class="cb-card-header" style="flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+          <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <h2 class="cb-card-title" style="font-size: 1.35rem; color: var(--text-main);">
+              <span>Custom Pages & SEO Studio</span>
+              <span class="cb-badge cb-badge-pro" style="margin-left: 6px; font-size: 0.72rem;">Route &bull; Pixels &bull; OG</span>
+            </h2>
+          </div>
+        </div>
+        <p class="cb-card-sub" style="color: var(--text-muted);">Build custom landing pages, set vanity route URLs, configure Meta/TikTok/GTM marketing pixels, and optimize SERP & social share cards.</p>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button type="button" class="btn btn-secondary" onclick="openAIPageModal()" style="padding: 10px 18px; font-weight: 700; background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%); border: 1px solid rgba(168, 85, 247, 0.4); color: var(--text-main); display: inline-flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.1rem; line-height: 1;">✨</span>
+          <span>AI Page Generator</span>
+        </button>
+        <button type="button" class="btn btn-primary" onclick="openStudioEditor()" style="padding: 10px 20px; font-weight: 700; box-shadow: 0 4px 14px var(--accent-glow);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>+ Create Custom Page</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STAT METRICS CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-top: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+      <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Total Custom Pages</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{.TotalCount}} Pages</div>
+        <div style="font-size: 0.75rem; color: var(--accent); margin-top: 2px;">Custom Route Vanity Mappings</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Live Published</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success);">{{.PublishedCount}} Published</div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">Publicly Accessible</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Active Pixel Trackers</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-purple);">{{.PixelActiveCount}} Integrated</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Meta &bull; GTM &bull; TikTok</div>
+      </div>
+      <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">SEO Complete Index</div>
+        <div style="font-size: 1.5rem; font-weight: 800; color: #0284c7;">{{.SeoReadyCount}} Optimized</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Title &bull; Meta &bull; Canonical</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGES TABLE CARD -->
+  <div class="cb-card">
+    <div class="cb-toolbar">
+      <div class="cb-toolbar-left" style="gap: 12px; flex-wrap: wrap;">
+        <div class="cb-module-title-wrap">
+          <h3 class="cb-card-title" style="font-size: 1.05rem; color: var(--text-main);">
+            <span>Registered Custom Pages</span>
+          </h3>
+          <span class="cb-badge cb-badge-count">{{len .Pages}} Total</span>
+        </div>
+        <!-- STATUS FILTER TABS -->
+        <div style="display: flex; gap: 4px; background: var(--bg-subtle); padding: 3px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+          <button type="button" class="page-filter-btn active" onclick="filterPagesByStatus('all', this)" style="padding: 5px 14px; font-size: 0.78rem; font-weight: 600; border-radius: 4px; border: none; background: var(--bg-card); color: var(--text-main); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">All</button>
+          <button type="button" class="page-filter-btn" onclick="filterPagesByStatus('published', this)" style="padding: 5px 14px; font-size: 0.78rem; font-weight: 600; border-radius: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;">Published</button>
+          <button type="button" class="page-filter-btn" onclick="filterPagesByStatus('draft', this)" style="padding: 5px 14px; font-size: 0.78rem; font-weight: 600; border-radius: 4px; border: none; background: transparent; color: var(--text-muted); cursor: pointer;">Drafts</button>
+        </div>
+      </div>
+      <div class="cb-toolbar-right">
+        <div class="cb-search-wrap">
+          <svg class="cb-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="pageSearchInput" class="cb-search" placeholder="Search pages, routes, titles..." onkeyup="filterPageRows()">
+        </div>
+      </div>
+    </div>
+
+    <div class="cb-table-container">
+      <table class="cb-table" id="pagesTable">
+        <thead>
+          <tr>
+            <th style="width: 50px;">ID</th>
+            <th>Page Title & Summary</th>
+            <th>Custom Route URL</th>
+            <th>Template</th>
+            <th>Status</th>
+            <th>Marketing Pixels</th>
+            <th>SEO & OpenGraph</th>
+            <th style="text-align: center;">Views</th>
+            <th style="text-align: right; min-width: 170px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Pages}}
+          <tr class="page-row" data-id="{{.ID}}" data-status="{{.Status}}" data-title="{{.Title}}" data-route="{{.RouteURL}}" data-slug="{{.Slug}}">
+            <td><span class="cell-id">#{{.ID}}</span></td>
+            <td>
+              <div style="font-weight: 700; color: var(--text-main); font-size: 0.92rem; margin-bottom: 2px;">
+                {{.Title}}
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted);">
+                <span>Slug: <code class="cell-code">{{.Slug}}</code></span>
+                {{if .Author}}<span>&bull; Author: {{.Author}}</span>{{end}}
+              </div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <a href="{{.RouteURL}}" target="_blank" class="cell-code" style="color: var(--accent); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Open live public URL">
+                  <span>{{.RouteURL}}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+                {{if eq .RouteURL "/"}}
+                  <span class="cb-badge cb-badge-success" style="font-size: 0.68rem; padding: 1px 6px; font-weight: 700;">🏠 Homepage</span>
+                {{end}}
+                <button type="button" class="btn btn-secondary btn-sm" onclick="copyToClipboard('{{.RouteURL}}')" style="padding: 2px 6px; font-size: 0.7rem;" title="Copy Route URL">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                </button>
+              </div>
+            </td>
+            <td>
+              <span class="cb-badge cb-badge-secondary" style="text-transform: capitalize; font-size: 0.74rem;">
+                {{.Template}}
+              </span>
+            </td>
+            <td>
+              {{if eq .Status "published"}}
+                <span class="cb-badge cb-badge-success" style="font-size: 0.74rem;">Published</span>
+              {{else if eq .Status "draft"}}
+                <span class="cb-badge cb-badge-warning" style="font-size: 0.74rem;">Draft</span>
+              {{else}}
+                <span class="cb-badge cb-badge-secondary" style="font-size: 0.74rem;">{{.Status}}</span>
+              {{end}}
+            </td>
+            <td>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                {{if .PixelMetaID}}
+                  <span class="cb-badge" style="background: rgba(24, 119, 242, 0.2); color: #38bdf8; border: 1px solid rgba(24, 119, 242, 0.4); font-size: 0.7rem; padding: 2px 6px;" title="Meta Pixel ID: {{.PixelMetaID}}">
+                    FB Pixel
+                  </span>
+                {{end}}
+                {{if .PixelGTMID}}
+                  <span class="cb-badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.4); font-size: 0.7rem; padding: 2px 6px;" title="GTM/GA4 ID: {{.PixelGTMID}}">
+                    GTM/GA
+                  </span>
+                {{end}}
+                {{if .PixelTikTokID}}
+                  <span class="cb-badge" style="background: rgba(255, 255, 255, 0.12); color: var(--text-main); border: 1px solid var(--border); font-size: 0.7rem; padding: 2px 6px;" title="TikTok Pixel ID: {{.PixelTikTokID}}">
+                    TikTok
+                  </span>
+                {{end}}
+                {{if and (not .PixelMetaID) (not .PixelGTMID) (not .PixelTikTokID)}}
+                  <span style="font-size: 0.72rem; color: var(--text-dim);">None</span>
+                {{end}}
+              </div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                {{if and .MetaTitle .MetaDescription}}
+                  <span class="cb-badge cb-badge-success" style="font-size: 0.72rem; padding: 2px 8px;">
+                    &#10003; SEO Ready
+                  </span>
+                {{else}}
+                  <span class="cb-badge cb-badge-warning" style="font-size: 0.72rem; padding: 2px 8px;">
+                    Partial
+                  </span>
+                {{end}}
+                {{if .OGImage}}
+                  <span class="cb-badge" style="background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); font-size: 0.7rem; padding: 2px 6px;" title="og:image configured">
+                    🖼️ OG Image
+                  </span>
+                {{end}}
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <span style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">{{.Views}}</span>
+            </td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="{{.RouteURL}}?preview=1" target="_blank" class="btn btn-secondary btn-sm" style="padding: 4px 8px;" title="Preview Page in New Tab">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="editPage('{{.ID}}')" style="padding: 4px 10px;" title="Edit in Studio Workspace">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  <span>Edit</span>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="deletePage('{{.ID}}', '{{.Title}}')" style="padding: 4px 8px;" title="Delete Custom Page">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+              <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 4px;">No custom pages configured yet</div>
+              <div style="font-size: 0.85rem; margin-bottom: 1rem;">Click "+ Create Custom Page" to launch your first SEO landing page.</div>
+              <button type="button" class="btn btn-primary btn-sm" onclick="openStudioEditor()">+ Create Custom Page</button>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- VIEW 2: FULL-FEATURED 2-COLUMN STUDIO WORKSPACE (EMBEDDED, NOT CRAMPED) -->
+<!-- ======================================================================= -->
+<div id="pagesStudioView" style="display: none;">
+  <!-- TOP STUDIO ACTION BAR -->
+  <div class="cb-card" style="margin-bottom: 1.25rem; padding: 0.85rem 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeStudioEditor()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg>
+          <span>Back to Pages List</span>
+        </button>
+        <div style="height: 20px; width: 1px; background: var(--border);"></div>
+        <div>
+          <span id="studioHeaderTitle" style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">Create Custom Page</span>
+          <span id="studioHeaderStatus" class="cb-badge cb-badge-warning" style="margin-left: 8px; font-size: 0.72rem;">Draft</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" class="btn btn-secondary" onclick="openAIPageModal()" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(56, 189, 248, 0.15) 100%); border: 1px solid rgba(168, 85, 247, 0.4); color: var(--text-main); font-weight: 700;">
+          <span>✨ AI Page Generator</span>
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="previewCurrentDraft()" style="display: inline-flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Live Preview</span>
+        </button>
+        <button type="button" class="btn btn-primary" onclick="submitPageStudio()" style="padding: 9px 24px; font-weight: 700; box-shadow: 0 4px 14px var(--accent-glow);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="studioSaveBtnText">Save Page</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDIO FORM -->
+  <form id="pageStudioForm" onsubmit="event.preventDefault(); submitPageStudio();">
+    <input type="hidden" id="pageId" name="id">
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 1.5rem; align-items: start;">
+      
+      <!-- =================================================================== -->
+      <!-- LEFT COLUMN: PRIMARY CANVAS, VANITY ROUTE & CONTENT EDITOR          -->
+      <!-- =================================================================== -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <!-- CARD: TITLE & VANITY ROUTE -->
+        <div class="cb-card" style="padding: 1.5rem;">
+          <div style="margin-bottom: 1.25rem;">
+            <label class="cb-form-label" style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">Page Title <span style="color: var(--danger);">*</span></label>
+            <input type="text" id="pageTitle" name="title" class="cb-input" placeholder="e.g. Special Promo 2026: 50% Off Everything" required onkeyup="handleTitleChange(this.value)" style="font-size: 1.25rem; font-weight: 700; padding: 12px 16px;">
+            <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 4px;">The main title for your page, shown on navigation and internal studio.</div>
+          </div>
+
+          <!-- VANITY ROUTE URL INPUT GROUP -->
+          <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="cb-form-label" style="font-weight: 700; font-size: 0.84rem; margin: 0; color: var(--text-main);">
+                  <span>Custom Route URL (Vanity Path)</span>
+                </label>
+                <span id="routeHomepageBadge" class="cb-badge cb-badge-success" style="display: none; font-size: 0.72rem; font-weight: 700;">🏠 Halaman Utama (Root /)</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnSetHomepage" onclick="toggleHomepageRoute()" style="font-size: 0.74rem; padding: 3px 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;" title="Atur halaman ini agar terbuka langsung di domain utama (/)">
+                  <span>🏠 Jadikan Halaman Utama (/)</span>
+                </button>
+                <span id="instantRouteBadge" style="font-size: 0.72rem; color: var(--accent); font-weight: 600;">⚡ Instant Live Route</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; flex: 1; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;">
+                <span id="routeDomainPrefix" style="padding: 10px 12px; font-size: 0.85rem; color: var(--text-muted); background: var(--bg-subtle); border-right: 1px solid var(--border); white-space: nowrap; font-family: var(--font-mono);">https://domain.com</span>
+                <input type="text" id="pageRouteURL" name="route_url" placeholder="/promo-special" oninput="handleRouteUrlInput(this.value)" style="flex: 1; border: none; background: transparent; padding: 10px 14px; color: var(--accent); font-weight: 700; font-size: 0.95rem; font-family: var(--font-mono); outline: none;">
+              </div>
+              <button type="button" class="btn btn-secondary" onclick="copyCurrentRoute()" title="Copy Full Route URL" style="padding: 10px 12px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              </button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted);">
+              <span>Slug Identifier: <input type="text" id="pageSlug" name="slug" placeholder="promo-special" oninput="handleSlugManualInput(this.value)" style="background: transparent; border: none; border-bottom: 1px dashed var(--border); color: var(--text-main); font-family: var(--font-mono); font-size: 0.75rem; padding: 1px 4px; outline: none; width: 140px;"></span>
+              <span>Universal Slug Path: <code class="cell-code" id="universalSlugLabel">/p/promo-special</code></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD: RICH VISUAL WYSIWYG & HTML CONTENT STUDIO -->
+        <div class="cb-card wysiwyg-card-container" id="editorCardContainer" style="padding: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0;">Interactive Page Content Studio</h3>
+                <span class="cb-badge cb-badge-secondary" id="editorCurrentModeBadge" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Visual WYSIWYG</span>
+              </div>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 3px 0 0 0;">Format text visually or switch to raw HTML code. Instant bidirectional sync.</p>
+            </div>
+            
+            <!-- MODE SWITCHER TABS & ACTIONS -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="wysiwyg-mode-tabs">
+                <button type="button" class="wysiwyg-mode-btn active" id="btnModeVisual" onclick="setEditorMode('visual')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>Visual Editor</span>
+                </button>
+                <button type="button" class="wysiwyg-mode-btn" id="btnModeCode" onclick="setEditorMode('code')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                  <span>HTML Source</span>
+                </button>
+              </div>
+              <!-- FULLSCREEN EXPAND TOGGLE -->
+              <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditorFullscreen()" id="btnFullscreenToggle" title="Toggle Fullscreen Distraction-Free Editor" style="padding: 5px 9px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="iconFullscreen"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- WYSIWYG MAIN WRAPPER -->
+          <div class="wysiwyg-wrapper" id="wysiwygWrapper">
+            
+            <!-- FORMATTING TOOLBAR (ACTIVE IN VISUAL MODE) -->
+            <div class="wysiwyg-toolbar" id="wysiwygToolbar">
+              <!-- BLOCK FORMAT -->
+              <select class="wysiwyg-select" id="formatBlockSelect" onchange="execFormatBlock(this.value)" title="Text Paragraph / Heading Style">
+                <option value="p">Paragraph</option>
+                <option value="h1">Heading 1 (H1)</option>
+                <option value="h2">Heading 2 (H2)</option>
+                <option value="h3">Heading 3 (H3)</option>
+                <option value="h4">Heading 4 (H4)</option>
+                <option value="blockquote">Quote Block</option>
+                <option value="pre">Code Block</option>
+              </select>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- INLINE TEXT STYLING -->
+              <div class="wysiwyg-btn-group">
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+              </div>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- TEXT & HIGHLIGHT COLORS -->
+              <div class="wysiwyg-btn-group">
+                <label class="wysiwyg-color-wrap" title="Text Color">
+                  <span style="font-weight: 800; font-size: 0.85rem; border-bottom: 3px solid var(--accent); line-height: 1;">A</span>
+                  <input type="color" value="#0284c7" onchange="execCmd('foreColor', this.value)">
+                </label>
+                <label class="wysiwyg-color-wrap" title="Highlight Background Color">
+                  <span style="font-size: 0.8rem; background: #fef08a; color: #000; padding: 0 4px; border-radius: 2px;">HL</span>
+                  <input type="color" value="#fef08a" onchange="execCmd('hiliteColor', this.value)">
+                </label>
+              </div>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- ALIGNMENT -->
+              <div class="wysiwyg-btn-group">
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('justifyLeft')" title="Align Left">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('justifyCenter')" title="Align Center">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('justifyRight')" title="Align Right">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+                </button>
+              </div>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- LISTS & HR -->
+              <div class="wysiwyg-btn-group">
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="4" cy="18" r="2"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('insertOrderedList')" title="Numbered List">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('insertHorizontalRule')" title="Horizontal Divider Line">&mdash;</button>
+              </div>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- MEDIA & INSERTS -->
+              <div class="wysiwyg-btn-group">
+                <button type="button" class="wysiwyg-btn" onclick="openLinkDialog()" title="Insert or Edit Link">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('unlink')" title="Remove Link">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18.84 12.25 1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="m5.16 11.75-1.72 1.71a5 5 0 0 0 7.07 7.07l1.72-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="openImageDialog()" title="Insert Image (URL or Upload)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="insertTableDialog()" title="Insert Responsive Table">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+                </button>
+                <button type="button" class="wysiwyg-btn" onclick="execCmd('removeFormat')" title="Clear Formatting">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
+
+              <div class="wysiwyg-divider"></div>
+
+              <!-- QUICK COMPONENT SNIPPET CHIPS -->
+              <div style="display: flex; gap: 4px; align-items: center; margin-left: auto; flex-wrap: wrap;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; margin-right: 2px;">Blocks:</span>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="insertSnippet('button')" style="padding: 2px 7px; font-size: 0.72rem;">+ CTA</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="insertSnippet('card')" style="padding: 2px 7px; font-size: 0.72rem;">+ Card</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="insertSnippet('grid')" style="padding: 2px 7px; font-size: 0.72rem;">+ 2-Col</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="insertSnippet('grid3')" style="padding: 2px 7px; font-size: 0.72rem;">+ 3-Col</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="insertSnippet('alert')" style="padding: 2px 7px; font-size: 0.72rem;">+ Alert</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="openAIPageModal()" style="padding: 2px 8px; font-size: 0.72rem; font-weight: 700; color: #a855f7; border-color: rgba(168, 85, 247, 0.4);" title="Generate full page with AI">✨ AI Generate</button>
+              </div>
+            </div>
+
+            <!-- VISUAL EDITABLE CANVAS (ACTIVE IN VISUAL MODE) -->
+            <div id="visualEditorCanvas" class="visual-editor-canvas" contenteditable="true" spellcheck="false" data-placeholder="Start typing your page copy visually, click toolbar buttons to format, or insert ready-to-use blocks above..." oninput="handleVisualEditorInput()"></div>
+
+            <!-- ADVANCED IDE CODE EDITOR (ACTIVE IN CODE MODE, 100% OFFLINE ZERO-DEPENDENCY) -->
+            <div id="ideEditorContainer" class="ide-editor-container" style="display: none;">
+              <!-- IDE SUB-TOOLBAR -->
+              <div class="ide-toolbar">
+                <div class="ide-toolbar-left">
+                  <span class="ide-lang-pill">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span>HTML5</span>
+                  </span>
+                  <span class="ide-stat-item" id="ideCursorPos">Ln 1, Col 1</span>
+                  <span class="ide-stat-divider"></span>
+                  <span class="ide-stat-item" id="ideLineCount">1 line</span>
+                  <span class="ide-stat-divider"></span>
+                  <span class="ide-stat-item" id="ideCharCount">0 chars</span>
+                </div>
+                <div class="ide-toolbar-right">
+                  <button type="button" class="ide-btn" id="btnIdeSearch" onclick="toggleIDESearchBar()" title="Find & Replace (Ctrl+F)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <span>Find</span>
+                  </button>
+                  <button type="button" class="ide-btn" onclick="formatHTMLCode()" title="Prettify / Format HTML with clean indentation">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="10" x2="7" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+                    <span>Format HTML</span>
+                  </button>
+                  <button type="button" class="ide-btn" onclick="minifyHTMLCode()" title="Minify HTML (compress whitespace)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                    <span>Minify</span>
+                  </button>
+                  <button type="button" class="ide-btn" onclick="toggleHTMLComment()" title="Toggle HTML Comment &lt;!-- ... --&gt; (Ctrl+/)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Comment</span>
+                  </button>
+                  <button type="button" class="ide-btn" id="btnIdeToggleWrap" onclick="toggleLineWrap()" title="Toggle Word Wrap">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20 10c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8h1"/></svg>
+                    <span id="ideWrapLabel">Wrap: Off</span>
+                  </button>
+                  <button type="button" class="ide-btn" id="btnIdeToggleSyntax" onclick="toggleSyntaxHighlight()" title="Toggle Real-Time Syntax Highlighting">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/></svg>
+                    <span id="ideSyntaxLabel">Syntax: On</span>
+                  </button>
+                  <button type="button" class="ide-btn" onclick="copyCodeToClipboard()" title="Copy Code to Clipboard">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- COLLAPSIBLE FIND & REPLACE DRAWER -->
+              <div id="ideSearchBar" class="ide-search-bar" style="display: none;">
+                <div class="ide-search-inputs">
+                  <div class="ide-search-input-wrap">
+                    <span class="ide-search-icon">🔍</span>
+                    <input type="text" id="ideSearchQuery" placeholder="Find in HTML..." oninput="handleSearchInputChange()" onkeydown="handleSearchKeyDown(event)">
+                    <span class="ide-match-count" id="ideSearchMatches">0/0</span>
+                  </div>
+                  <div class="ide-search-input-wrap">
+                    <span class="ide-search-icon">✏️</span>
+                    <input type="text" id="ideReplaceQuery" placeholder="Replace with..." onkeydown="handleReplaceKeyDown(event)">
+                  </div>
+                </div>
+                <div class="ide-search-actions">
+                  <button type="button" class="ide-btn ide-btn-sm" onclick="findNextMatch(-1)" title="Previous Match (Shift+Enter)">▲ Prev</button>
+                  <button type="button" class="ide-btn ide-btn-sm" onclick="findNextMatch(1)" title="Next Match (Enter)">▼ Next</button>
+                  <button type="button" class="ide-btn ide-btn-sm" onclick="replaceCurrentMatch()" title="Replace selected match">Replace</button>
+                  <button type="button" class="ide-btn ide-btn-sm" onclick="replaceAllMatches()" title="Replace all occurrences">Replace All</button>
+                  <button type="button" class="ide-btn ide-btn-sm" onclick="toggleIDESearchBar(false)" title="Close Search Bar (Esc)">✕</button>
+                </div>
+              </div>
+
+              <!-- MAIN IDE STAGE: GUTTER + CODE SURFACE -->
+              <div class="ide-stage" id="ideStage">
+                <!-- LINE NUMBER GUTTER -->
+                <div class="ide-gutter" id="ideGutter" aria-hidden="true" title="Click any line number to jump cursor" onclick="handleGutterClick(event)">
+                  <div class="ide-gutter-line active-line" data-line="1">1</div>
+                </div>
+
+                <!-- EDITOR CORE (DUAL LAYER: SYNTAX HIGHLIGHT PRE + INTERACTIVE TEXTAREA) -->
+                <div class="ide-editor-core" id="ideEditorCore">
+                  <!-- LAYER 1: SYNTAX HIGHLIGHTING (BACKGROUND) -->
+                  <pre class="ide-highlight-pre" id="ideHighlightPre" aria-hidden="true"><code class="ide-highlight-code" id="ideHighlightCode"></code></pre>
+
+                  <!-- LAYER 2: INTERACTIVE TEXTAREA (FOREGROUND) -->
+                  <textarea id="pageContent" name="content" class="ide-textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" rows="22" placeholder="Write or paste your custom HTML markup here..." oninput="handleCodeEditorInput()" onscroll="syncCodeScroll()" onkeydown="handleCodeEditorKeyDown(event)" onclick="updateCursorPos()" onkeyup="updateCursorPos()"></textarea>
+                </div>
+              </div>
+
+              <!-- IDE STATUS FOOTER -->
+              <div class="ide-footer">
+                <div class="ide-footer-left">
+                  <span class="ide-footer-pill">
+                    <span class="ide-indicator-dot"></span> IDE Ready
+                  </span>
+                  <span class="ide-footer-shortcuts">Shortcuts: <b>Tab</b> Indent &bull; <b>Shift+Tab</b> Outdent &bull; <b>Ctrl+/</b> Comment &bull; <b>Ctrl+F</b> Find</span>
+                </div>
+                <div class="ide-footer-right">
+                  <span class="ide-footer-meta">UTF-8</span>
+                  <span class="ide-footer-meta">HTML5</span>
+                  <span class="ide-footer-meta">Auto-Sync Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- EDITOR BOTTOM STATUS BAR (ACTIVE IN VISUAL MODE) -->
+            <div class="wysiwyg-status-bar" id="wysiwygStatusBar">
+              <div style="display: flex; align-items: center; gap: 14px; font-size: 0.75rem; color: var(--text-muted);">
+                <span id="editorWordCount">0 words</span>
+                <span style="opacity: 0.4;">&bull;</span>
+                <span id="editorCharCount">0 characters</span>
+                <span style="opacity: 0.4;">&bull;</span>
+                <span id="editorReadTime">~1 min read</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Auto-synchronized</span>
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: var(--success);" title="Synchronized"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CARD: CUSTOM PAGE CSS (COLLAPSIBLE) -->
+        <div class="cb-card" style="padding: 1.25rem 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleSection('cssCollapseBody')">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: var(--accent-purple); font-weight: bold; font-size: 0.95rem;">{ }</span>
+              <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">Custom Page CSS</span>
+              <span style="font-size: 0.74rem; color: var(--text-muted);">(Injected into &lt;style&gt; for this page)</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="cssCollapseIcon"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div id="cssCollapseBody" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+            <textarea id="pageCustomCSS" name="custom_css" class="cb-input" rows="5" style="font-family: var(--font-mono); font-size: 0.82rem;" placeholder=".my-hero { background: #000; color: #fff; padding: 2rem; }"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- RIGHT COLUMN: INSPECTOR SIDEBAR (PIXELS, OG IMAGE, SEO, SETTINGS)   -->
+      <!-- =================================================================== -->
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        
+        <!-- =============================================================== -->
+        <!-- SIDEBAR PANEL 1: MARKETING PIXELS (JIKA DIPERLUKAN / IF NEEDED) -->
+        <!-- =============================================================== -->
+        <div class="cb-card" style="border: 1px solid rgba(56, 189, 248, 0.35); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(56, 189, 248, 0.18); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                🎯
+              </div>
+              <div>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Marketing Pixels</h4>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Set jika diperlukan pada halaman ini</div>
+              </div>
+            </div>
+            <span class="cb-badge cb-badge-pro" style="font-size: 0.68rem;">Auto-Injected</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+            
+            <!-- 1. META (FACEBOOK) PIXEL ITEM -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 24px; height: 24px; border-radius: 4px; background: #1877f2; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">f</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">Meta (Facebook) Pixel</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">fbq('init') &bull; PageView</div>
+                  </div>
+                </div>
+                <label class="cb-switch">
+                  <input type="checkbox" id="toggleMetaPixel" onchange="handlePixelToggle('meta', this.checked)">
+                  <span class="cb-slider"></span>
+                </label>
+              </div>
+              <div id="wrapMetaPixel" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+                <input type="text" id="pagePixelMetaID" name="pixel_meta_id" class="cb-input" placeholder="Enter Meta Pixel ID (e.g. 123456789012345)" style="font-size: 0.82rem; font-family: var(--font-mono);">
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Official Meta Pixel boilerplate SDK injected into &lt;head&gt;.</div>
+              </div>
+            </div>
+
+            <!-- 2. GOOGLE TAG MANAGER / GA4 ITEM -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 24px; height: 24px; border-radius: 4px; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">G</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">Google Tag Manager / GA4</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">GTM Container or gtag.js</div>
+                  </div>
+                </div>
+                <label class="cb-switch">
+                  <input type="checkbox" id="toggleGTM" onchange="handlePixelToggle('gtm', this.checked)">
+                  <span class="cb-slider"></span>
+                </label>
+              </div>
+              <div id="wrapGTM" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+                <input type="text" id="pagePixelGTMID" name="pixel_gtm_id" class="cb-input" placeholder="e.g. GTM-XXXXXXX or G-XXXXXXXXXX" style="font-size: 0.82rem; font-family: var(--font-mono);">
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Supports GTM-XXXX container or G-XXXX GA4 measurement.</div>
+              </div>
+            </div>
+
+            <!-- 3. TIKTOK PIXEL ITEM -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="width: 24px; height: 24px; border-radius: 4px; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.78rem;">TT</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">TikTok Pixel</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">ttq.load() &bull; PageView</div>
+                  </div>
+                </div>
+                <label class="cb-switch">
+                  <input type="checkbox" id="toggleTikTok" onchange="handlePixelToggle('tiktok', this.checked)">
+                  <span class="cb-slider"></span>
+                </label>
+              </div>
+              <div id="wrapTikTok" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);">
+                <input type="text" id="pagePixelTikTokID" name="pixel_tiktok_id" class="cb-input" placeholder="e.g. CXXXXXXXXXXXXXX" style="font-size: 0.82rem; font-family: var(--font-mono);">
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">TikTok Ads conversion telemetry injected into &lt;head&gt;.</div>
+              </div>
+            </div>
+
+            <!-- CUSTOM RAW SCRIPTS (HEAD & FOOTER) COLLAPSIBLE -->
+            <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 12px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="toggleSection('wrapRawScripts')">
+                <span style="font-weight: 600; font-size: 0.82rem; color: var(--text-muted);">Custom &lt;head&gt; & &lt;body&gt; Scripts</span>
+                <span style="font-size: 0.75rem; color: var(--accent);">Expand &darr;</span>
+              </div>
+              <div id="wrapRawScripts" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-direction: column; gap: 8px;">
+                <div>
+                  <label class="cb-form-label" style="font-size: 0.75rem;">Header Scripts (&lt;head&gt;)</label>
+                  <textarea id="pageHeaderScripts" name="header_scripts" class="cb-input" rows="3" style="font-family: var(--font-mono); font-size: 0.76rem;" placeholder="Hotjar, Clarity, Verification tags..."></textarea>
+                </div>
+                <div>
+                  <label class="cb-form-label" style="font-size: 0.75rem;">Footer Scripts (before &lt;/body&gt;)</label>
+                  <textarea id="pageFooterScripts" name="footer_scripts" class="cb-input" rows="3" style="font-family: var(--font-mono); font-size: 0.76rem;" placeholder="Chat widgets, conversion callbacks..."></textarea>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- SIDEBAR PANEL 2: SOCIAL SHARE & OPENGRAPH IMAGE (og:image)      -->
+        <!-- =============================================================== -->
+        <div class="cb-card" style="border: 1px solid rgba(168, 85, 247, 0.35); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(168, 85, 247, 0.18); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                🖼️
+              </div>
+              <div>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Social Share & og:image</h4>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Preview saat dishare ke WhatsApp / FB</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="syncSocialFromSEO()" style="padding: 2px 8px; font-size: 0.7rem;">Sync SEO</button>
+          </div>
+
+          <!-- OG IMAGE UPLOAD & DROPZONE -->
+          <div style="margin-top: 10px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label class="cb-form-label" style="font-weight: 700; font-size: 0.8rem; margin: 0;">Share Banner Image &bull; og:image</label>
+              <div style="display: flex; gap: 4px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetOGImage('promo')" style="padding: 2px 6px; font-size: 0.68rem;">Preset 1</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="setPresetOGImage('tech')" style="padding: 2px 6px; font-size: 0.68rem;">Preset 2</button>
+              </div>
+            </div>
+
+            <!-- DRAG & DROP / FILE UPLOAD BOX -->
+            <div class="og-upload-dropzone" onclick="document.getElementById('ogImageFileInput').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="handleOGDrop(event)">
+              <input type="file" id="ogImageFileInput" accept="image/*" style="display: none;" onchange="handleOGFileSelect(this)">
+              <div id="ogUploadPrompt">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 4px; color: var(--accent);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">Upload / Drag Image Here</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Recommended: 1200 &times; 630 px (PNG, JPG, WebP)</div>
+              </div>
+              <div id="ogUploadPreview" style="display: none; position: relative; width: 100%; height: 140px;">
+                <img id="ogPreviewImg" src="" alt="og:image preview" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);">
+                <button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation(); removeOGImage();" style="position: absolute; top: 6px; right: 6px; padding: 2px 8px; font-size: 0.7rem;">Remove</button>
+              </div>
+            </div>
+
+            <!-- URL INPUT FOR OG IMAGE -->
+            <input type="text" id="pageOGImage" name="og_image" class="cb-input" placeholder="Or paste image URL (https://...)" onkeyup="handleOGUrlInput(this.value)" style="margin-top: 6px; font-size: 0.78rem;">
+          </div>
+
+          <!-- OG TITLE & DESCRIPTION -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div>
+              <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700;">OpenGraph Title</label>
+              <input type="text" id="pageOGTitle" name="og_title" class="cb-input" placeholder="Title for WhatsApp / FB shares..." onkeyup="updateLivePreviews()" style="font-size: 0.82rem;">
+            </div>
+            <div>
+              <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700;">OpenGraph Description</label>
+              <textarea id="pageOGDescription" name="og_description" class="cb-input" rows="2" placeholder="Summary snippet for social media feeds..." onkeyup="updateLivePreviews()" style="font-size: 0.8rem;"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <label class="cb-form-label" style="font-size: 0.75rem;">OG Type</label>
+                <select id="pageOGType" name="og_type" class="cb-input" style="font-size: 0.78rem;">
+                  <option value="website">website</option>
+                  <option value="article">article</option>
+                  <option value="product">product</option>
+                </select>
+              </div>
+              <div>
+                <label class="cb-form-label" style="font-size: 0.75rem;">Twitter Card</label>
+                <select id="pageTwitterCard" name="twitter_card" class="cb-input" style="font-size: 0.78rem;">
+                  <option value="summary_large_image">large_image</option>
+                  <option value="summary">thumbnail</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIVE SOCIAL SHARE CARD FEED SIMULATOR (WHATSAPP / FACEBOOK) -->
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+            <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+              Live WhatsApp / FB Preview
+            </div>
+            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
+              <div id="feedSimImgWrap" style="height: 120px; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <img id="feedSimImg" src="" alt="preview" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <span id="feedSimPlaceholder" style="font-size: 0.75rem; color: var(--text-muted);">No banner image set</span>
+              </div>
+              <div style="padding: 10px 12px; background: var(--bg-subtle);">
+                <div id="feedSimDomain" style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-mono);">DOMAIN.COM</div>
+                <div id="feedSimTitle" style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin: 2px 0 3px 0; line-height: 1.3;">Page Title</div>
+                <div id="feedSimDesc" style="font-size: 0.74rem; color: var(--text-muted); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Description will appear here.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- SIDEBAR PANEL 3: SEO ENGINE & GOOGLE SERP SIMULATOR             -->
+        <!-- =============================================================== -->
+        <div class="cb-card" style="border: 1px solid rgba(16, 185, 129, 0.35); padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(16, 185, 129, 0.18); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+              🔍
+            </div>
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">SEO Search Meta & SERP</h4>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Optimasi Google Search Engine</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700; margin: 0;">Meta Title &bull; &lt;title&gt;</label>
+                <span id="titleCounter" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">0 / 60</span>
+              </div>
+              <input type="text" id="pageMetaTitle" name="meta_title" class="cb-input" placeholder="Google SERP headline..." onkeyup="handleMetaTitleInput(this.value)" style="font-size: 0.82rem;">
+              <div style="height: 3px; background: var(--border); border-radius: 2px; margin-top: 3px; overflow: hidden;">
+                <div id="titleMeterBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.2s;"></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700; margin: 0;">Meta Description</label>
+                <span id="descCounter" style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600;">0 / 160</span>
+              </div>
+              <textarea id="pageMetaDescription" name="meta_description" class="cb-input" rows="2" placeholder="Search result snippet description..." onkeyup="handleMetaDescInput(this.value)" style="font-size: 0.8rem;"></textarea>
+              <div style="height: 3px; background: var(--border); border-radius: 2px; margin-top: 3px; overflow: hidden;">
+                <div id="descMeterBar" style="height: 100%; width: 0%; background: var(--success); transition: width 0.2s;"></div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <label class="cb-form-label" style="font-size: 0.75rem;">Canonical URL</label>
+                <input type="text" id="pageCanonicalURL" name="canonical_url" class="cb-input" placeholder="https://..." onkeyup="updateLivePreviews()" style="font-size: 0.78rem;">
+              </div>
+              <div>
+                <label class="cb-form-label" style="font-size: 0.75rem;">Robots Directive</label>
+                <select id="pageRobots" name="robots" class="cb-input" style="font-size: 0.78rem;">
+                  <option value="index, follow">index, follow</option>
+                  <option value="noindex, follow">noindex, follow</option>
+                  <option value="index, nofollow">index, nofollow</option>
+                  <option value="noindex, nofollow">noindex, nofollow</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Meta Keywords</label>
+              <input type="text" id="pageMetaKeywords" name="meta_keywords" class="cb-input" placeholder="promo, enterprise, booster" style="font-size: 0.78rem;">
+            </div>
+
+            <!-- LIVE GOOGLE SEARCH SNIPPET SIMULATOR -->
+            <div style="margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border);">
+              <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">
+                Google Search Result (SERP)
+              </div>
+              <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-family: arial, sans-serif;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <div style="width: 18px; height: 18px; border-radius: 50%; background: #4285f4; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold;">G</div>
+                  <div id="googleBreadcrumb" style="font-size: 0.72rem; color: var(--text-muted);">https://domain.com › promo</div>
+                </div>
+                <div id="googlePreviewTitle" style="font-size: 0.95rem; color: #38bdf8; font-weight: 600; line-height: 1.3; margin-bottom: 2px;">
+                  Page Title - Google Search
+                </div>
+                <div id="googlePreviewDesc" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                  Meta description snippet shown here.
+                </div>
+              </div>
+            </div>
+
+            <!-- SCHEMA.ORG JSON-LD PRESETS -->
+            <div style="margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="cb-form-label" style="font-size: 0.74rem; font-weight: 600; margin: 0;">Schema.org JSON-LD</label>
+                <div style="display: flex; gap: 3px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="insertSchemaPreset('WebPage')" style="padding: 1px 5px; font-size: 0.65rem;">WebPage</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="insertSchemaPreset('Product')" style="padding: 1px 5px; font-size: 0.65rem;">Product</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="insertSchemaPreset('Article')" style="padding: 1px 5px; font-size: 0.65rem;">Article</button>
+                </div>
+              </div>
+              <textarea id="pageSchemaJSON" name="schema_json" class="cb-input" rows="2" style="font-family: var(--font-mono); font-size: 0.72rem;" placeholder='{"@context":"https://schema.org",...}'></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- SIDEBAR PANEL 4: PUBLICATION STATUS & TEMPLATE CANVAS           -->
+        <!-- =============================================================== -->
+        <div class="cb-card" style="padding: 1.25rem;">
+          <h4 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); margin: 0 0 10px 0;">Publish & Template</h4>
+          
+          <div style="margin-bottom: 10px;">
+            <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700;">Status</label>
+            <select id="pageStatus" name="status" class="cb-input" onchange="updateStudioStatusBadge(this.value)">
+              <option value="published">Published (Live Public)</option>
+              <option value="draft">Draft (Admin Preview Only)</option>
+              <option value="archived">Archived (Disabled)</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700;">Layout Template Canvas</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label class="tpl-card">
+                <input type="radio" name="template" value="default" checked>
+                <div class="tpl-box">Default</div>
+              </label>
+              <label class="tpl-card">
+                <input type="radio" name="template" value="landing">
+                <div class="tpl-box" style="color: var(--accent);">Landing</div>
+              </label>
+              <label class="tpl-card">
+                <input type="radio" name="template" value="article">
+                <div class="tpl-box" style="color: var(--accent-purple);">Article</div>
+              </label>
+              <label class="tpl-card">
+                <input type="radio" name="template" value="blank">
+                <div class="tpl-box" style="color: var(--text-dim);">Blank</div>
+              </label>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Author</label>
+              <input type="text" id="pageAuthor" name="author" class="cb-input" placeholder="Team" style="font-size: 0.78rem;">
+            </div>
+            <div>
+              <label class="cb-form-label" style="font-size: 0.75rem;">Excerpt</label>
+              <input type="text" id="pageExcerpt" name="excerpt" class="cb-input" placeholder="Summary..." onkeyup="updateLivePreviews()" style="font-size: 0.78rem;">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- ======================================================================= -->
+<!-- STYLES & INTERACTIVE SCRIPT LOGIC                                       -->
+<!-- ======================================================================= -->
+<style>
+/* Modern Switch Toggle */
+.cb-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+.cb-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.cb-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--border);
+  transition: .25s;
+  border-radius: 20px;
+}
+.cb-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: .25s;
+  border-radius: 50%;
+}
+.cb-switch input:checked + .cb-slider {
+  background-color: var(--accent);
+}
+.cb-switch input:checked + .cb-slider:before {
+  transform: translateX(16px);
+}
+
+/* Template Radio Cards */
+.tpl-card { cursor: pointer; display: block; }
+.tpl-card input[type="radio"] { display: none; }
+.tpl-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  transition: all 0.15s;
+}
+.tpl-card input[type="radio"]:checked + .tpl-box {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* Drag & Drop Upload Zone */
+.og-upload-dropzone {
+  background: var(--bg-subtle);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.og-upload-dropzone:hover, .og-upload-dropzone.dragover {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+/* WYSIWYG & Fullscreen Studio */
+.is-editor-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99998 !important;
+  border-radius: 0 !important;
+  padding: 1.25rem !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: var(--bg-card) !important;
+  overflow: hidden !important;
+}
+.is-editor-fullscreen .wysiwyg-wrapper {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+.is-editor-fullscreen .visual-editor-canvas,
+.is-editor-fullscreen .editor-code-canvas,
+.is-editor-fullscreen .ide-editor-container {
+  flex: 1 !important;
+  max-height: none !important;
+  height: 100% !important;
+}
+
+.visual-editor-canvas {
+  min-height: 380px;
+  max-height: 650px;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  background: var(--bg-card);
+  outline: none;
+}
+.visual-editor-canvas:empty:before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  display: block;
+}
+.visual-editor-canvas h1 { font-size: 2rem; font-weight: 800; margin: 1.5rem 0 1rem 0; line-height: 1.25; color: var(--text-main); }
+.visual-editor-canvas h2 { font-size: 1.6rem; font-weight: 700; margin: 1.4rem 0 0.85rem 0; line-height: 1.3; color: var(--text-main); }
+.visual-editor-canvas h3 { font-size: 1.3rem; font-weight: 700; margin: 1.2rem 0 0.75rem 0; line-height: 1.35; color: var(--text-main); }
+.visual-editor-canvas h4 { font-size: 1.1rem; font-weight: 600; margin: 1rem 0 0.5rem 0; color: var(--text-main); }
+.visual-editor-canvas p { margin: 0 0 1rem 0; }
+.visual-editor-canvas a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.visual-editor-canvas blockquote { border-left: 4px solid var(--accent); padding-left: 1rem; margin: 1rem 0; color: var(--text-muted); font-style: italic; }
+.visual-editor-canvas pre { background: var(--bg-subtle); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.85rem; overflow-x: auto; margin: 1rem 0; }
+.visual-editor-canvas code { background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; border: 1px solid var(--border); }
+.visual-editor-canvas img { max-width: 100%; height: auto; border-radius: 8px; margin: 0.75rem 0; display: inline-block; }
+.visual-editor-canvas table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.9rem; }
+.visual-editor-canvas table th, .visual-editor-canvas table td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+.visual-editor-canvas table th { background: var(--bg-subtle); font-weight: 700; }
+.visual-editor-canvas hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.visual-editor-canvas ul, .visual-editor-canvas ol { padding-left: 1.75rem; margin: 0 0 1rem 0; }
+.visual-editor-canvas li { margin-bottom: 0.35rem; }
+
+/* ==========================================================================
+   ADVANCED IDE CODE EDITOR STYLES
+   ========================================================================== */
+.ide-editor-container {
+  display: flex;
+  flex-direction: column;
+  background: #090d16;
+  border-top: 1px solid #1e293b;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ide-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  padding: 6px 12px;
+  min-height: 38px;
+  flex-wrap: wrap;
+  gap: 8px;
+  user-select: none;
+}
+.ide-toolbar-left, .ide-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ide-lang-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+.ide-stat-item {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.ide-stat-divider {
+  width: 1px;
+  height: 14px;
+  background: #334155;
+}
+
+.ide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.ide-btn:hover {
+  background: #334155;
+  color: #ffffff;
+  border-color: #475569;
+}
+.ide-btn.active {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+.ide-btn-sm {
+  padding: 3px 8px;
+  font-size: 0.72rem;
+}
+
+/* FIND & REPLACE DRAWER */
+.ide-search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #182234;
+  border-bottom: 1px solid #27354a;
+  padding: 8px 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+  animation: slideDown 0.15s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ide-search-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.ide-search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #0b1120;
+  border: 1px solid #334155;
+  border-radius: 5px;
+  padding: 2px 8px;
+  gap: 6px;
+  flex: 1;
+  min-width: 180px;
+}
+.ide-search-input-wrap:focus-within {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+.ide-search-icon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.ide-search-input-wrap input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f1f5f9;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.78rem;
+  width: 100%;
+  padding: 3px 0;
+}
+.ide-match-count {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  white-space: nowrap;
+}
+.ide-search-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* MAIN STAGE */
+.ide-stage {
+  display: flex;
+  height: 520px;
+  min-height: 380px;
+  position: relative;
+  background: #090d16;
+  overflow: hidden;
+}
+.is-editor-fullscreen .ide-stage {
+  flex: 1 !important;
+  height: calc(100vh - 165px) !important;
+  min-height: 0 !important;
+}
+
+/* LINE NUMBER GUTTER */
+.ide-gutter {
+  width: 56px;
+  min-width: 56px;
+  background: #080c14;
+  border-right: 1px solid #1e293b;
+  color: #475569;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 22px;
+  padding: 14px 8px 14px 0;
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.ide-gutter-line {
+  height: 22px;
+  line-height: 22px;
+  box-sizing: border-box;
+  padding-right: 6px;
+  transition: color 0.1s, background 0.1s;
+}
+.ide-gutter-line:hover {
+  color: #94a3b8;
+}
+.ide-gutter-line.active-line {
+  color: #38bdf8;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.12);
+  border-radius: 3px 0 0 3px;
+}
+
+/* EDITOR CORE */
+.ide-editor-core {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  background: #090d16;
+}
+
+.ide-highlight-pre {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 22px;
+  letter-spacing: 0px;
+  white-space: pre;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+  background: transparent;
+  color: #e2e8f0;
+  z-index: 1;
+}
+.ide-highlight-code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: inherit;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.ide-textarea {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 14px 16px;
+  border: none;
+  outline: none;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 22px;
+  letter-spacing: 0px;
+  white-space: pre;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  box-sizing: border-box;
+  overflow: auto;
+  background: transparent;
+  color: transparent;
+  caret-color: #38bdf8;
+  resize: none;
+  z-index: 2;
+}
+.ide-textarea::selection {
+  background: rgba(56, 189, 248, 0.35);
+  color: transparent;
+}
+.ide-textarea.syntax-off {
+  color: #e2e8f0 !important;
+}
+
+/* SYNTAX TOKENS */
+.token-comment { color: #64748b; font-style: italic; }
+.token-doctype { color: #c084fc; font-weight: 700; }
+.token-tag-bracket { color: #818cf8; font-weight: 600; }
+.token-tag-name { color: #38bdf8; font-weight: 700; }
+.token-attr-name { color: #fde047; }
+.token-operator { color: #94a3b8; }
+.token-attr-value { color: #4ade80; }
+
+/* IDE FOOTER */
+.ide-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #080c14;
+  border-top: 1px solid #1e293b;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  color: #64748b;
+  user-select: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ide-footer-left, .ide-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ide-footer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+.ide-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  display: inline-block;
+}
+.ide-footer-shortcuts {
+  color: #64748b;
+}
+.ide-footer-shortcuts b {
+  color: #94a3b8;
+  font-weight: 600;
+}
+.ide-footer-meta {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.editor-code-canvas {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  padding: 1.25rem 1.5rem;
+  background: var(--bg-input);
+  color: var(--text-main);
+  border: none;
+  outline: none;
+  min-height: 380px;
+  resize: vertical;
+}
+
+.wysiwyg-wrapper {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.wysiwyg-toolbar {
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.2s;
+}
+.wysiwyg-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.wysiwyg-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+.wysiwyg-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.wysiwyg-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--accent);
+}
+.wysiwyg-select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  height: 28px;
+  cursor: pointer;
+}
+.wysiwyg-color-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.wysiwyg-color-wrap input[type="color"] {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.wysiwyg-status-bar {
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wysiwyg-mode-tabs {
+  display: inline-flex;
+  background: var(--bg-input);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.wysiwyg-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.wysiwyg-mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 6px var(--accent-glow);
+}
+
+/* WYSIWYG Modals */
+.wysiwyg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.wysiwyg-modal-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  overflow: hidden;
+  animation: modalScaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.wysiwyg-tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.wysiwyg-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--bg-card);
+}
+</style>
+
+<!-- ======================================================================= -->
+<!-- WYSIWYG INSERT LINK MODAL -->
+<!-- ======================================================================= -->
+<div id="wysiwygLinkModal" class="wysiwyg-modal-overlay">
+  <div class="wysiwyg-modal-box">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Insert / Edit Hyperlink</h4>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygLinkModal')" style="padding: 3px 8px;">✕</button>
+    </div>
+    <div style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 12px;">
+      <div>
+        <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Target URL <span style="color: var(--danger);">*</span></label>
+        <input type="text" id="modalLinkUrl" class="cb-input" placeholder="https://example.com or /my-page" style="font-size: 0.9rem;">
+      </div>
+      <div>
+        <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Text to Display</label>
+        <input type="text" id="modalLinkText" class="cb-input" placeholder="Click here or descriptive text" style="font-size: 0.9rem;">
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <input type="checkbox" id="modalLinkNewTab" checked style="accent-color: var(--accent); width: 16px; height: 16px;">
+        <label for="modalLinkNewTab" style="font-size: 0.82rem; color: var(--text-main); cursor: pointer; user-select: none;">Open link in a new tab (<code class="cell-code">target="_blank"</code>)</label>
+      </div>
+    </div>
+    <div style="padding: 1rem 1.5rem; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygLinkModal')">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="confirmInsertLink()">Insert Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- WYSIWYG INSERT IMAGE MODAL -->
+<!-- ======================================================================= -->
+<div id="wysiwygImageModal" class="wysiwyg-modal-overlay">
+  <div class="wysiwyg-modal-box">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Insert Image</h4>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygImageModal')" style="padding: 3px 8px;">✕</button>
+    </div>
+    
+    <!-- TABS: URL vs UPLOAD -->
+    <div style="display: flex; border-bottom: 1px solid var(--border); background: var(--bg-subtle);">
+      <button type="button" class="wysiwyg-tab-btn active" id="tabBtnImgUrl" onclick="switchImageTab('url')">Web Image URL</button>
+      <button type="button" class="wysiwyg-tab-btn" id="tabBtnImgUpload" onclick="switchImageTab('upload')">Upload File</button>
+    </div>
+
+    <div style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 12px;">
+      <!-- TAB 1: URL -->
+      <div id="imgTabUrlContent">
+        <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Image Source URL <span style="color: var(--danger);">*</span></label>
+        <input type="text" id="modalImageUrl" class="cb-input" placeholder="https://images.unsplash.com/... or /images/banner.jpg" oninput="previewModalImage(this.value)">
+      </div>
+
+      <!-- TAB 2: UPLOAD -->
+      <div id="imgTabUploadContent" style="display: none;">
+        <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Choose Image from Computer</label>
+        <input type="file" id="modalImageFileInput" accept="image/*" class="cb-input" onchange="handleModalImageFileSelect(this)">
+      </div>
+
+      <!-- IMAGE PREVIEW -->
+      <div id="modalImagePreviewBox" style="display: none; text-align: center; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px;">
+        <img id="modalImagePreviewTag" src="" style="max-height: 140px; max-width: 100%; border-radius: 6px; object-fit: contain;">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 140px; gap: 10px;">
+        <div>
+          <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Alt Text (SEO)</label>
+          <input type="text" id="modalImageAlt" class="cb-input" placeholder="Brief visual description">
+        </div>
+        <div>
+          <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Width</label>
+          <select id="modalImageWidth" class="cb-input" style="height: 38px;">
+            <option value="100%">Full (100%)</option>
+            <option value="75%">Medium (75%)</option>
+            <option value="50%">Half (50%)</option>
+            <option value="auto">Original</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 1rem 1.5rem; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygImageModal')">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="confirmInsertImage()">Insert Image</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- WYSIWYG INSERT TABLE MODAL -->
+<!-- ======================================================================= -->
+<div id="wysiwygTableModal" class="wysiwyg-modal-overlay">
+  <div class="wysiwyg-modal-box">
+    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-main);">Insert Data Table</h4>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygTableModal')" style="padding: 3px 8px;">✕</button>
+    </div>
+    <div style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Rows</label>
+          <input type="number" id="modalTableRows" class="cb-input" value="3" min="1" max="50">
+        </div>
+        <div>
+          <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Columns</label>
+          <input type="number" id="modalTableCols" class="cb-input" value="3" min="1" max="12">
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <input type="checkbox" id="modalTableHeader" checked style="accent-color: var(--accent); width: 16px; height: 16px;">
+        <label for="modalTableHeader" style="font-size: 0.82rem; color: var(--text-main); cursor: pointer; user-select: none;">Include Styled Header Row</label>
+      </div>
+    </div>
+    <div style="padding: 1rem 1.5rem; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('wysiwygTableModal')">Cancel</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="confirmInsertTable()">Insert Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- MODAL: AI PAGE GENERATOR STUDIO                                        -->
+<!-- ======================================================================= -->
+<div id="aiPageModal" class="wysiwyg-modal-overlay">
+  <div class="wysiwyg-modal-box" style="max-width: 640px; border-radius: var(--radius-lg); box-shadow: 0 25px 60px rgba(0,0,0,0.5);">
+    <div style="padding: 1.25rem 1.5rem; background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(56, 189, 248, 0.12) 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: linear-gradient(135deg, #a855f7 0%, #0284c7 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);">
+          ✨
+        </div>
+        <div>
+          <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-main);">AI Custom Page Generator</h4>
+          <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Synthesize production-grade landing pages, copy & SEO via DeepSeek / OpenAI</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeAIPageModal()" style="border: none; background: transparent; font-size: 1.25rem; color: var(--text-muted); cursor: pointer; padding: 4px 8px;">&times;</button>
+    </div>
+
+    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem; max-height: 80vh; overflow-y: auto;">
+      
+      <!-- PROMPT DESCRIPTION -->
+      <div class="cb-form-group">
+        <label class="cb-form-label" style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); display: flex; justify-content: space-between;">
+          <span>Page Topic & Core Value Proposition <span class="required-mark">*</span></span>
+          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">Describe your product, service, or goal</span>
+        </label>
+        <textarea id="aiModalPrompt" class="cb-input cb-textarea" rows="3" placeholder="Contoh: Landing page untuk platform monitoring Kubernetes enterprise dengan live telemetry showcase, 3 fitur bento grid, testimoni klien fintech, dan pricing table..." style="font-size: 0.85rem; line-height: 1.5; resize: vertical;"></textarea>
+      </div>
+
+      <!-- INSPIRATION CHIPS -->
+      <div>
+        <label class="cb-form-label" style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Quick Inspiration Prompts</label>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAIPromptPreset('saas')" style="font-size: 0.72rem; padding: 4px 9px;">🚀 SaaS Cloud Platform</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAIPromptPreset('cyber')" style="font-size: 0.72rem; padding: 4px 9px;">🛡️ Cybersecurity & Zero Trust</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAIPromptPreset('analytics')" style="font-size: 0.72rem; padding: 4px 9px;">📊 Data Analytics & BI</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAIPromptPreset('promo')" style="font-size: 0.72rem; padding: 4px 9px;">🎉 Promo & Launch</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="setAIPromptPreset('article')" style="font-size: 0.72rem; padding: 4px 9px;">📰 Tech Whitepaper</button>
+        </div>
+      </div>
+
+      <!-- TEMPLATE, TONE & LANGUAGE SELECTION -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
+        <div class="cb-form-group">
+          <label class="cb-form-label" style="font-size: 0.78rem;">Template Mode</label>
+          <select id="aiModalTemplate" class="cb-input" style="height: 38px; font-size: 0.82rem;">
+            <option value="landing" selected>🌟 Landing (Hero + Bento Grid)</option>
+            <option value="article">📰 Article (Whitepaper / Guide)</option>
+            <option value="default">📄 Default (Clean Container)</option>
+            <option value="blank">🎨 Blank (Minimal Style)</option>
+          </select>
+        </div>
+
+        <div class="cb-form-group">
+          <label class="cb-form-label" style="font-size: 0.78rem;">Tone of Voice</label>
+          <select id="aiModalTone" class="cb-input" style="height: 38px; font-size: 0.82rem;">
+            <option value="professional" selected>👔 Professional & Enterprise</option>
+            <option value="modern">⚡ Modern & High-Tech</option>
+            <option value="creative">💡 Creative & Inspiring</option>
+            <option value="promotional">🔥 Punchy & Promotional</option>
+          </select>
+        </div>
+
+        <div class="cb-form-group">
+          <label class="cb-form-label" style="font-size: 0.78rem;">Language</label>
+          <select id="aiModalLanguage" class="cb-input" style="height: 38px; font-size: 0.82rem;">
+            <option value="id" selected>🇮🇩 Bahasa Indonesia</option>
+            <option value="en">🇬🇧 English (Global)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- MODEL SELECTION & AUTO-GET -->
+      <div class="cb-form-group">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+          <label class="cb-form-label" style="font-size: 0.78rem; font-weight: 700; margin-bottom: 0;">AI Engine / Model</label>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="fetchModalAIModels(true)" id="btnModalFetchModels" style="padding: 1px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">
+            <span id="modalFetchIcon">🔄</span>
+            <span>Auto-Get Server Models</span>
+          </button>
+        </div>
+        <select id="aiModalModel" class="cb-input" style="height: 38px; font-size: 0.82rem; cursor: pointer;">
+          <option value="">⚙️ Default Configured Model</option>
+        </select>
+        <span class="settings-hint" id="aiModalModelHint">Secara default menggunakan model platform yang aktif. Anda dapat memilih model lain dari daftar server.</span>
+      </div>
+
+      <!-- PROGRESS & STATUS BOX -->
+      <div id="aiModalProgressBox" style="display: none; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-size: 0.82rem;">
+        <div style="display: flex; align-items: center; gap: 10px; color: var(--accent);">
+          <span class="cb-spinner-inline" style="display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;"></span>
+          <strong id="aiProgressText">Synthesizing page structure and copywriting...</strong>
+        </div>
+        <p style="margin: 4px 0 0 24px; font-size: 0.74rem; color: var(--text-muted);" id="aiProgressSub">Calling configured LLM API. This typically completes in 5-15 seconds.</p>
+      </div>
+
+    </div>
+
+    <!-- MODAL FOOTER -->
+    <div style="padding: 1rem 1.5rem; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <a href="{{.AdminPath}}/settings" target="_blank" style="font-size: 0.75rem; color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Manage AI Keys and Models">
+        <span>⚙️ AI Settings</span>
+      </a>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeAIPageModal()" id="btnCancelAIGen">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="executeAIPageGeneration()" id="btnSubmitAIGen" style="padding: 8px 20px; font-weight: 700; background: linear-gradient(135deg, #a855f7 0%, #0284c7 100%); border: none; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
+          <span>Generate Page ✨</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =======================================================================
+// WYSIWYG & VISUAL HTML STUDIO ENGINE
+// =======================================================================
+var currentEditorMode = 'visual';
+var savedSelectionRange = null;
+
+function setEditorMode(mode) {
+  currentEditorMode = mode;
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var ideContainer = document.getElementById('ideEditorContainer');
+  var codeCanvas = document.getElementById('pageContent');
+  var toolbar = document.getElementById('wysiwygToolbar');
+  var wysiwygStatusBar = document.getElementById('wysiwygStatusBar');
+  var btnVisual = document.getElementById('btnModeVisual');
+  var btnCode = document.getElementById('btnModeCode');
+  var modeBadge = document.getElementById('editorCurrentModeBadge');
+
+  if (mode === 'visual') {
+    // Sync code textarea to visual canvas
+    if (codeCanvas && visualCanvas) {
+      visualCanvas.innerHTML = codeCanvas.value;
+      visualCanvas.style.display = 'block';
+    }
+    if (ideContainer) ideContainer.style.display = 'none';
+    if (toolbar) {
+      toolbar.style.opacity = '1';
+      toolbar.style.pointerEvents = 'auto';
+      toolbar.style.display = 'flex';
+    }
+    if (wysiwygStatusBar) wysiwygStatusBar.style.display = 'flex';
+    if (btnVisual) btnVisual.classList.add('active');
+    if (btnCode) btnCode.classList.remove('active');
+    if (modeBadge) {
+      modeBadge.innerText = 'Visual WYSIWYG';
+      modeBadge.className = 'cb-badge cb-badge-secondary';
+    }
+  } else {
+    // Sync visual canvas to code textarea
+    if (codeCanvas && visualCanvas) {
+      codeCanvas.value = visualCanvas.innerHTML;
+    }
+    if (visualCanvas) visualCanvas.style.display = 'none';
+    if (toolbar) toolbar.style.display = 'none';
+    if (wysiwygStatusBar) wysiwygStatusBar.style.display = 'none';
+    if (ideContainer) ideContainer.style.display = 'flex';
+    if (btnVisual) btnVisual.classList.remove('active');
+    if (btnCode) btnCode.classList.add('active');
+    if (modeBadge) {
+      modeBadge.innerText = 'HTML IDE Studio';
+      modeBadge.className = 'cb-badge cb-badge-primary';
+    }
+    
+    // Refresh IDE highlighting, line numbers and focus
+    handleCodeEditorInput();
+    setTimeout(function() {
+      if (codeCanvas) codeCanvas.focus();
+    }, 50);
+  }
+  updateEditorStats();
+}
+
+function handleVisualEditorInput() {
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var codeCanvas = document.getElementById('pageContent');
+  if (visualCanvas && codeCanvas) {
+    codeCanvas.value = visualCanvas.innerHTML;
+  }
+  updateEditorStats();
+}
+
+function handleCodeEditorInput() {
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var codeCanvas = document.getElementById('pageContent');
+  if (visualCanvas && codeCanvas) {
+    visualCanvas.innerHTML = codeCanvas.value;
+  }
+  
+  // Syntax highlight layer
+  var highlightCode = document.getElementById('ideHighlightCode');
+  if (highlightCode && codeCanvas) {
+    highlightCode.innerHTML = highlightHTML(codeCanvas.value);
+  }
+
+  // Update line numbers & cursor
+  updateLineNumbers();
+  updateEditorStats();
+  syncCodeScroll();
+}
+
+// Escapes special HTML characters safely
+function escapeHTMLEntities(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Pure JS, Zero-dependency, Offline-safe HTML Syntax Highlighting
+function highlightHTML(code) {
+  if (!code) return '';
+
+  // Extract comments and doctypes to avoid tag regex collisions
+  var comments = [];
+  var clean = code
+    .replace(/<!--[\s\S]*?-->/g, function(match) {
+      var idx = comments.length;
+      comments.push('<span class="token-comment">' + escapeHTMLEntities(match) + '</span>');
+      return '___IDE_COMMENT_' + idx + '___';
+    })
+    .replace(/<!DOCTYPE[^>]*>/gi, function(match) {
+      var idx = comments.length;
+      comments.push('<span class="token-doctype">' + escapeHTMLEntities(match) + '</span>');
+      return '___IDE_COMMENT_' + idx + '___';
+    });
+
+  var escaped = escapeHTMLEntities(clean);
+
+  // Match HTML tags: opening, closing, or self-closing
+  var highlighted = escaped.replace(/(&lt;\/?)([a-zA-Z0-9\-]+)([\s\S]*?)(\/?&gt;)/g, function(match, open, tag, attrs, close) {
+    var highlightedAttrs = attrs.replace(/([a-zA-Z0-9_\-:@.]+)\s*(=)\s*(&quot;[\s\S]*?&quot;|&#39;[\s\S]*?&#39;|"[^"]*"|'[^']*'|[^\s&"'>=]+)/g, function(m, name, eq, val) {
+      return '<span class="token-attr-name">' + name + '</span>' +
+             '<span class="token-operator">' + eq + '</span>' +
+             '<span class="token-attr-value">' + val + '</span>';
+    }).replace(/(\s+)([a-zA-Z0-9_\-]+)(?=\s|\/|&gt;|$)/g, function(m, sp, boolAttr) {
+      return sp + '<span class="token-attr-name">' + boolAttr + '</span>';
+    });
+
+    return '<span class="token-tag-bracket">' + open + '</span>' +
+           '<span class="token-tag-name">' + tag + '</span>' +
+           highlightedAttrs +
+           '<span class="token-tag-bracket">' + close + '</span>';
+  });
+
+  // Restore comments and doctypes
+  highlighted = highlighted.replace(/___IDE_COMMENT_(\d+)___/g, function(m, idx) {
+    return comments[parseInt(idx, 10)] || '';
+  });
+
+  if (code.endsWith('\n')) {
+    highlighted += ' ';
+  }
+
+  return highlighted;
+}
+
+// Synchronize gutter line numbers with textarea content
+function updateLineNumbers() {
+  var ta = document.getElementById('pageContent');
+  var gutter = document.getElementById('ideGutter');
+  if (!ta || !gutter) return;
+
+  var lines = ta.value.split('\n');
+  var lineCount = lines.length;
+
+  if (gutter.children.length === lineCount) {
+    updateCursorPos();
+    return;
+  }
+
+  var html = '';
+  for (var i = 1; i <= lineCount; i++) {
+    html += '<div class="ide-gutter-line" data-line="' + i + '">' + i + '</div>';
+  }
+  gutter.innerHTML = html;
+
+  var countEl = document.getElementById('ideLineCount');
+  if (countEl) countEl.innerText = lineCount + (lineCount === 1 ? ' line' : ' lines');
+
+  updateCursorPos();
+}
+
+// Compute active line & column and highlight active gutter line
+function updateCursorPos() {
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  var pos = ta.selectionStart || 0;
+  var text = ta.value.substring(0, pos);
+  var lines = text.split('\n');
+  var currentLine = lines.length;
+  var currentCol = lines[lines.length - 1].length + 1;
+
+  var posEl = document.getElementById('ideCursorPos');
+  if (posEl) posEl.innerText = 'Ln ' + currentLine + ', Col ' + currentCol;
+
+  var charEl = document.getElementById('ideCharCount');
+  if (charEl) charEl.innerText = ta.value.length + (ta.value.length === 1 ? ' char' : ' chars');
+
+  var gutter = document.getElementById('ideGutter');
+  if (gutter) {
+    var prevActive = gutter.querySelector('.active-line');
+    if (prevActive) prevActive.classList.remove('active-line');
+    var currentDiv = gutter.children[currentLine - 1];
+    if (currentDiv) currentDiv.classList.add('active-line');
+  }
+}
+
+// Jump cursor when clicking any line in the gutter
+function handleGutterClick(e) {
+  var lineEl = e.target.closest('.ide-gutter-line');
+  if (!lineEl) return;
+  var lineNum = parseInt(lineEl.getAttribute('data-line'), 10);
+  if (!lineNum) return;
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  var lines = ta.value.split('\n');
+  var charIdx = 0;
+  for (var i = 0; i < lineNum - 1 && i < lines.length; i++) {
+    charIdx += lines[i].length + 1;
+  }
+  ta.focus();
+  ta.setSelectionRange(charIdx, charIdx);
+  updateCursorPos();
+}
+
+// Synchronize scroll between textarea, gutter, and syntax pre
+function syncCodeScroll() {
+  var ta = document.getElementById('pageContent');
+  var pre = document.getElementById('ideHighlightPre');
+  var gutter = document.getElementById('ideGutter');
+  if (!ta) return;
+  if (pre) {
+    pre.scrollTop = ta.scrollTop;
+    pre.scrollLeft = ta.scrollLeft;
+  }
+  if (gutter) {
+    gutter.scrollTop = ta.scrollTop;
+  }
+}
+
+// Full IDE Keyboard shortcuts: Tab, Shift+Tab, Enter auto-indent, Ctrl+/, Ctrl+F, auto-pair
+function handleCodeEditorKeyDown(e) {
+  var ta = e.target;
+
+  // Ctrl+F / Cmd+F -> Toggle Find Bar
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+    e.preventDefault();
+    toggleIDESearchBar();
+    return;
+  }
+
+  // Ctrl+/ / Cmd+/ -> Toggle HTML comment
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+    e.preventDefault();
+    toggleHTMLComment();
+    return;
+  }
+
+  // Tab & Shift+Tab
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    var start = ta.selectionStart;
+    var end = ta.selectionEnd;
+    var value = ta.value;
+
+    if (e.shiftKey) {
+      // Outdent 2 spaces
+      var lineStart = value.lastIndexOf('\n', start - 1) + 1;
+      if (value.substring(lineStart, lineStart + 2) === '  ') {
+        ta.value = value.substring(0, lineStart) + value.substring(lineStart + 2);
+        ta.selectionStart = ta.selectionEnd = Math.max(lineStart, start - 2);
+      }
+    } else {
+      if (start === end) {
+        // Insert 2 spaces
+        ta.value = value.substring(0, start) + '  ' + value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 2;
+      } else {
+        // Multi-line indent
+        var firstLineStart = value.lastIndexOf('\n', start - 1) + 1;
+        var lastLineEnd = value.indexOf('\n', end);
+        if (lastLineEnd === -1) lastLineEnd = value.length;
+        var selectedText = value.substring(firstLineStart, lastLineEnd);
+        var indentedText = selectedText.split('\n').map(function(l) { return '  ' + l; }).join('\n');
+        ta.value = value.substring(0, firstLineStart) + indentedText + value.substring(lastLineEnd);
+        ta.selectionStart = firstLineStart;
+        ta.selectionEnd = firstLineStart + indentedText.length;
+      }
+    }
+    handleCodeEditorInput();
+    return;
+  }
+
+  // Smart Enter: Preserves indentation and adds 2 spaces after opening tags
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    var start = ta.selectionStart;
+    var end = ta.selectionEnd;
+    var value = ta.value;
+    var lineStart = value.lastIndexOf('\n', start - 1) + 1;
+    var currentLineText = value.substring(lineStart, start);
+    var indentMatch = currentLineText.match(/^[\t ]*/);
+    var indent = indentMatch ? indentMatch[0] : '';
+
+    var trimmedLine = currentLineText.trim();
+    if (/<[a-zA-Z0-9\-]+(?:\s+[^>]*?)?>$/i.test(trimmedLine) && !trimmedLine.endsWith('/>') && !trimmedLine.startsWith('</')) {
+      indent += '  ';
+    }
+
+    var insertText = '\n' + indent;
+    ta.value = value.substring(0, start) + insertText + value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + insertText.length;
+    handleCodeEditorInput();
+    return;
+  }
+
+  // Auto-close pairs: quotes and brackets
+  var pairs = { '"': '"', "'": "'", '(': ')', '[': ']', '{': '}' };
+  if (pairs[e.key] && ta.selectionStart === ta.selectionEnd) {
+    var char = e.key;
+    var closeChar = pairs[char];
+    var start = ta.selectionStart;
+    var value = ta.value;
+    var nextChar = value.charAt(start);
+    if (!nextChar || /\s|>|\)|\]|\}/.test(nextChar)) {
+      e.preventDefault();
+      ta.value = value.substring(0, start) + char + closeChar + value.substring(start);
+      ta.selectionStart = ta.selectionEnd = start + 1;
+      handleCodeEditorInput();
+      return;
+    }
+  }
+}
+
+// Prettifies HTML code with clean tag hierarchy and 2-space indentation
+function formatHTMLCode() {
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  var html = ta.value.trim();
+  if (!html) return;
+
+  try {
+    var tab = '  ';
+    var result = '';
+    var indent = 0;
+    var voidTags = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
+
+    var tokens = html.replace(/>\s*</g, '><').split(/(<\/?[a-zA-Z0-9\-]+[^>]*>|<!--[\s\S]*?-->)/g);
+
+    for (var i = 0; i < tokens.length; i++) {
+      var token = tokens[i].trim();
+      if (!token) continue;
+
+      if (token.startsWith('<!--')) {
+        result += '\n' + tab.repeat(Math.max(0, indent)) + token;
+      } else if (token.startsWith('</')) {
+        indent = Math.max(0, indent - 1);
+        result += '\n' + tab.repeat(indent) + token;
+      } else if (token.startsWith('<')) {
+        var tagNameMatch = token.match(/^<([a-zA-Z0-9\-]+)/);
+        var tagName = tagNameMatch ? tagNameMatch[1] : '';
+        var isSelfClosing = token.endsWith('/>') || voidTags.test(tagName);
+
+        result += '\n' + tab.repeat(Math.max(0, indent)) + token;
+        if (!isSelfClosing) {
+          indent++;
+        }
+      } else {
+        result += '\n' + tab.repeat(Math.max(0, indent)) + token;
+      }
+    }
+
+    ta.value = result.trim();
+    handleCodeEditorInput();
+    if (window.cbToast) cbToast.show('HTML formatted with clean indentation', 'success');
+  } catch (err) {
+    console.error('Format error', err);
+    if (window.cbToast) cbToast.show('Formatting error: ' + err, 'warning');
+  }
+}
+
+// Minifies HTML code by stripping comments and compressing whitespace
+function minifyHTMLCode() {
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  var code = ta.value;
+  if (!code) return;
+
+  var minified = code
+    .replace(/<!--(?!\[if)[\s\S]*?-->/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/>\s+</g, '><')
+    .trim();
+
+  ta.value = minified;
+  handleCodeEditorInput();
+  if (window.cbToast) cbToast.show('HTML minified', 'success');
+}
+
+// Toggles HTML comment on current line or selection
+function toggleHTMLComment() {
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  var start = ta.selectionStart;
+  var end = ta.selectionEnd;
+  var value = ta.value;
+
+  if (start !== end) {
+    var selected = value.substring(start, end);
+    if (selected.startsWith('<!--') && selected.endsWith('-->')) {
+      var uncom = selected.replace(/^<!--\s?/, '').replace(/\s?-->$/, '');
+      ta.value = value.substring(0, start) + uncom + value.substring(end);
+      ta.selectionStart = start;
+      ta.selectionEnd = start + uncom.length;
+    } else {
+      var com = '<!-- ' + selected + ' -->';
+      ta.value = value.substring(0, start) + com + value.substring(end);
+      ta.selectionStart = start;
+      ta.selectionEnd = start + com.length;
+    }
+  } else {
+    var lineStart = value.lastIndexOf('\n', start - 1) + 1;
+    var lineEnd = value.indexOf('\n', start);
+    if (lineEnd === -1) lineEnd = value.length;
+    var lineText = value.substring(lineStart, lineEnd);
+    var trimmed = lineText.trim();
+    if (trimmed.startsWith('<!--') && trimmed.endsWith('-->')) {
+      var uncommented = lineText.replace(/<!--\s?/, '').replace(/\s?-->/, '');
+      ta.value = value.substring(0, lineStart) + uncommented + value.substring(lineEnd);
+    } else {
+      var commented = '<!-- ' + lineText + ' -->';
+      ta.value = value.substring(0, lineStart) + commented + value.substring(lineEnd);
+    }
+  }
+  handleCodeEditorInput();
+}
+
+// Word Wrap toggle
+var isLineWrapActive = false;
+function toggleLineWrap() {
+  isLineWrapActive = !isLineWrapActive;
+  var ta = document.getElementById('pageContent');
+  var pre = document.getElementById('ideHighlightPre');
+  var label = document.getElementById('ideWrapLabel');
+  var btn = document.getElementById('btnIdeToggleWrap');
+
+  if (ta) {
+    ta.style.whiteSpace = isLineWrapActive ? 'pre-wrap' : 'pre';
+    ta.style.overflowX = isLineWrapActive ? 'hidden' : 'auto';
+    ta.style.wordBreak = isLineWrapActive ? 'break-word' : 'normal';
+  }
+  if (pre) {
+    pre.style.whiteSpace = isLineWrapActive ? 'pre-wrap' : 'pre';
+    pre.style.overflowX = isLineWrapActive ? 'hidden' : 'auto';
+    pre.style.wordBreak = isLineWrapActive ? 'break-word' : 'normal';
+  }
+  if (label) label.innerText = isLineWrapActive ? 'Wrap: On' : 'Wrap: Off';
+  if (btn) btn.classList.toggle('active', isLineWrapActive);
+  syncCodeScroll();
+}
+
+// Syntax highlighting toggle
+var isSyntaxHighlightActive = true;
+function toggleSyntaxHighlight() {
+  isSyntaxHighlightActive = !isSyntaxHighlightActive;
+  var pre = document.getElementById('ideHighlightPre');
+  var ta = document.getElementById('pageContent');
+  var label = document.getElementById('ideSyntaxLabel');
+  var btn = document.getElementById('btnIdeToggleSyntax');
+
+  if (pre) pre.style.display = isSyntaxHighlightActive ? 'block' : 'none';
+  if (ta) ta.classList.toggle('syntax-off', !isSyntaxHighlightActive);
+  if (label) label.innerText = isSyntaxHighlightActive ? 'Syntax: On' : 'Syntax: Off';
+  if (btn) btn.classList.toggle('active', isSyntaxHighlightActive);
+}
+
+// Copy Code to Clipboard
+function copyCodeToClipboard() {
+  var ta = document.getElementById('pageContent');
+  if (!ta) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(function() {
+      if (window.cbToast) cbToast.show('HTML code copied to clipboard!', 'success');
+    }).catch(function() {
+      fallbackCopyText(ta);
+    });
+  } else {
+    fallbackCopyText(ta);
+  }
+}
+
+function fallbackCopyText(ta) {
+  ta.select();
+  document.execCommand('copy');
+  if (window.cbToast) cbToast.show('HTML code copied to clipboard!', 'success');
+}
+
+// ==========================================
+// INLINE SEARCH & REPLACE DRAWER
+// ==========================================
+var searchMatches = [];
+var searchCurrentIdx = -1;
+
+function toggleIDESearchBar(show) {
+  var bar = document.getElementById('ideSearchBar');
+  if (!bar) return;
+  var isVisible = (bar.style.display !== 'none');
+  var target = (typeof show === 'boolean') ? show : !isVisible;
+  bar.style.display = target ? 'flex' : 'none';
+
+  var btn = document.getElementById('btnIdeSearch');
+  if (btn) btn.classList.toggle('active', target);
+
+  if (target) {
+    var input = document.getElementById('ideSearchQuery');
+    if (input) {
+      var ta = document.getElementById('pageContent');
+      if (ta && ta.selectionStart !== ta.selectionEnd) {
+        input.value = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+      }
+      input.focus();
+      input.select();
+      handleSearchInputChange();
+    }
+  } else {
+    var ta = document.getElementById('pageContent');
+    if (ta) ta.focus();
+  }
+}
+
+function handleSearchInputChange() {
+  var query = (document.getElementById('ideSearchQuery').value || '');
+  var ta = document.getElementById('pageContent');
+  var counter = document.getElementById('ideSearchMatches');
+  searchMatches = [];
+  searchCurrentIdx = -1;
+
+  if (!query || !ta) {
+    if (counter) counter.innerText = '0/0';
+    return;
+  }
+
+  var text = ta.value;
+  var lowerText = text.toLowerCase();
+  var lowerQuery = query.toLowerCase();
+  var idx = 0;
+  while ((idx = lowerText.indexOf(lowerQuery, idx)) !== -1) {
+    searchMatches.push({ start: idx, end: idx + query.length });
+    idx += query.length;
+  }
+
+  if (searchMatches.length > 0) {
+    searchCurrentIdx = 0;
+    highlightSearchMatch(0);
+    if (counter) counter.innerText = '1/' + searchMatches.length;
+  } else {
+    if (counter) counter.innerText = '0/0';
+  }
+}
+
+function highlightSearchMatch(idx) {
+  var ta = document.getElementById('pageContent');
+  if (!ta || !searchMatches[idx]) return;
+  var match = searchMatches[idx];
+  ta.focus();
+  ta.setSelectionRange(match.start, match.end);
+
+  var lineHeight = 22;
+  var linesBefore = ta.value.substring(0, match.start).split('\n').length;
+  ta.scrollTop = Math.max(0, (linesBefore - 4) * lineHeight);
+  syncCodeScroll();
+  updateCursorPos();
+
+  var counter = document.getElementById('ideSearchMatches');
+  if (counter) counter.innerText = (idx + 1) + '/' + searchMatches.length;
+}
+
+function findNextMatch(dir) {
+  if (searchMatches.length === 0) {
+    handleSearchInputChange();
+    return;
+  }
+  searchCurrentIdx = (searchCurrentIdx + dir + searchMatches.length) % searchMatches.length;
+  highlightSearchMatch(searchCurrentIdx);
+}
+
+function replaceCurrentMatch() {
+  if (searchMatches.length === 0 || searchCurrentIdx === -1) return;
+  var ta = document.getElementById('pageContent');
+  var replaceWith = document.getElementById('ideReplaceQuery').value;
+  var match = searchMatches[searchCurrentIdx];
+
+  ta.value = ta.value.substring(0, match.start) + replaceWith + ta.value.substring(match.end);
+  handleCodeEditorInput();
+  handleSearchInputChange();
+}
+
+function replaceAllMatches() {
+  var query = document.getElementById('ideSearchQuery').value;
+  var replaceWith = document.getElementById('ideReplaceQuery').value;
+  var ta = document.getElementById('pageContent');
+  if (!query || !ta) return;
+
+  var count = searchMatches.length;
+  var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var regex = new RegExp(escaped, 'gi');
+  ta.value = ta.value.replace(regex, replaceWith);
+  handleCodeEditorInput();
+  handleSearchInputChange();
+  if (window.cbToast) cbToast.show('Replaced ' + count + ' occurrences', 'success');
+}
+
+function handleSearchKeyDown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    findNextMatch(e.shiftKey ? -1 : 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    toggleIDESearchBar(false);
+  }
+}
+
+function handleReplaceKeyDown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    replaceCurrentMatch();
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    toggleIDESearchBar(false);
+  }
+}
+
+function syncEditorContent() {
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var codeCanvas = document.getElementById('pageContent');
+  if (!visualCanvas || !codeCanvas) return;
+
+  if (currentEditorMode === 'visual') {
+    codeCanvas.value = visualCanvas.innerHTML;
+  } else {
+    visualCanvas.innerHTML = codeCanvas.value;
+  }
+  updateEditorStats();
+}
+
+function updateEditorStats() {
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var text = (visualCanvas ? visualCanvas.innerText : '') || '';
+  var trimmed = text.trim();
+  var words = trimmed ? trimmed.split(/\s+/).length : 0;
+  var chars = trimmed ? trimmed.length : 0;
+  var readTime = Math.max(1, Math.ceil(words / 200));
+
+  var elWord = document.getElementById('editorWordCount');
+  var elChar = document.getElementById('editorCharCount');
+  var elRead = document.getElementById('editorReadTime');
+  if (elWord) elWord.innerText = words + (words === 1 ? ' word' : ' words');
+  if (elChar) elChar.innerText = chars + (chars === 1 ? ' character' : ' characters');
+  if (elRead) elRead.innerText = '~' + readTime + ' min read';
+}
+
+function toggleEditorFullscreen() {
+  var container = document.getElementById('editorCardContainer');
+  if (!container) return;
+  container.classList.toggle('is-editor-fullscreen');
+  var isFull = container.classList.contains('is-editor-fullscreen');
+  var btn = document.getElementById('btnFullscreenToggle');
+  if (btn) {
+    btn.innerHTML = isFull
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  }
+}
+
+function execCmd(command, value) {
+  var canvas = document.getElementById('visualEditorCanvas');
+  if (!canvas) return;
+  canvas.focus();
+  document.execCommand(command, false, value || null);
+  handleVisualEditorInput();
+}
+
+function execFormatBlock(tag) {
+  var canvas = document.getElementById('visualEditorCanvas');
+  if (!canvas) return;
+  canvas.focus();
+  if (tag === 'pre') {
+    document.execCommand('formatBlock', false, '<pre>');
+  } else if (tag === 'blockquote') {
+    document.execCommand('formatBlock', false, '<blockquote>');
+  } else {
+    document.execCommand('formatBlock', false, '<' + tag + '>');
+  }
+  handleVisualEditorInput();
+}
+
+function saveEditorSelection() {
+  var sel = window.getSelection();
+  if (sel.getRangeAt && sel.rangeCount) {
+    savedSelectionRange = sel.getRangeAt(0);
+  } else {
+    savedSelectionRange = null;
+  }
+}
+
+function restoreEditorSelection() {
+  if (savedSelectionRange) {
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedSelectionRange);
+  }
+}
+
+function insertHTMLAtCursor(html) {
+  if (currentEditorMode === 'visual') {
+    var canvas = document.getElementById('visualEditorCanvas');
+    if (!canvas) return;
+    canvas.focus();
+    var sel = window.getSelection();
+    if (sel.getRangeAt && sel.rangeCount) {
+      var range = sel.getRangeAt(0);
+      range.deleteContents();
+      var el = document.createElement('div');
+      el.innerHTML = html;
+      var frag = document.createDocumentFragment(), node, lastNode;
+      while ((node = el.firstChild)) {
+        lastNode = frag.appendChild(node);
+      }
+      range.insertNode(frag);
+      if (lastNode) {
+        range = range.cloneRange();
+        range.setStartAfter(lastNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    } else {
+      canvas.innerHTML += html;
+    }
+    handleVisualEditorInput();
+  } else {
+    var ta = document.getElementById('pageContent');
+    if (!ta) return;
+    var startPos = ta.selectionStart;
+    var endPos = ta.selectionEnd;
+    ta.value = ta.value.substring(0, startPos) + html + ta.value.substring(endPos, ta.value.length);
+    handleCodeEditorInput();
+    ta.focus();
+  }
+}
+
+// Modal management
+function openModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = 'flex';
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+// Link Modal
+function openLinkDialog() {
+  saveEditorSelection();
+  var sel = window.getSelection();
+  var selText = sel ? sel.toString() : '';
+  document.getElementById('modalLinkUrl').value = '';
+  document.getElementById('modalLinkText').value = selText;
+  document.getElementById('modalLinkNewTab').checked = true;
+  openModal('wysiwygLinkModal');
+  setTimeout(() => { document.getElementById('modalLinkUrl').focus(); }, 50);
+}
+
+function confirmInsertLink() {
+  var url = document.getElementById('modalLinkUrl').value.trim();
+  if (!url) {
+    alert('Please enter a target URL.');
+    document.getElementById('modalLinkUrl').focus();
+    return;
+  }
+  var text = document.getElementById('modalLinkText').value.trim() || url;
+  var newTab = document.getElementById('modalLinkNewTab').checked;
+  var targetAttr = newTab ? ' target="_blank" rel="noopener noreferrer"' : '';
+  var linkHTML = '<a href="' + url + '"' + targetAttr + '>' + text + '</a>';
+
+  closeModal('wysiwygLinkModal');
+  restoreEditorSelection();
+  insertHTMLAtCursor(linkHTML);
+}
+
+// Image Modal
+var activeImgTab = 'url';
+function openImageDialog() {
+  saveEditorSelection();
+  document.getElementById('modalImageUrl').value = '';
+  var fileInput = document.getElementById('modalImageFileInput');
+  if (fileInput) fileInput.value = '';
+  document.getElementById('modalImageAlt').value = '';
+  document.getElementById('modalImagePreviewBox').style.display = 'none';
+  switchImageTab('url');
+  openModal('wysiwygImageModal');
+  setTimeout(() => { document.getElementById('modalImageUrl').focus(); }, 50);
+}
+
+function switchImageTab(tab) {
+  activeImgTab = tab;
+  var btnUrl = document.getElementById('tabBtnImgUrl');
+  var btnUp = document.getElementById('tabBtnImgUpload');
+  var contentUrl = document.getElementById('imgTabUrlContent');
+  var contentUp = document.getElementById('imgTabUploadContent');
+
+  if (tab === 'url') {
+    btnUrl.classList.add('active');
+    btnUp.classList.remove('active');
+    contentUrl.style.display = 'block';
+    contentUp.style.display = 'none';
+  } else {
+    btnUrl.classList.remove('active');
+    btnUp.classList.add('active');
+    contentUrl.style.display = 'none';
+    contentUp.style.display = 'block';
+  }
+}
+
+function previewModalImage(url) {
+  var box = document.getElementById('modalImagePreviewBox');
+  var img = document.getElementById('modalImagePreviewTag');
+  if (url && url.trim() !== '') {
+    img.src = url;
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+function handleModalImageFileSelect(input) {
+  if (input.files && input.files[0]) {
+    var file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WebP, SVG).');
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      previewModalImage(e.target.result);
+      // Auto-fill alt text if empty
+      var altInput = document.getElementById('modalImageAlt');
+      if (altInput && !altInput.value) {
+        altInput.value = file.name.replace(/\.[^/.]+$/, "");
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function confirmInsertImage() {
+  var src = '';
+  if (activeImgTab === 'url') {
+    src = document.getElementById('modalImageUrl').value.trim();
+  } else {
+    var imgTag = document.getElementById('modalImagePreviewTag');
+    src = imgTag ? imgTag.src : '';
+  }
+
+  if (!src) {
+    alert('Please enter an image URL or choose an image file.');
+    return;
+  }
+
+  var alt = document.getElementById('modalImageAlt').value.trim();
+  var widthVal = document.getElementById('modalImageWidth').value;
+  var styleWidth = (widthVal === 'auto') ? 'max-width: 100%;' : ('width: ' + widthVal + '; max-width: 100%;');
+
+  var imgHTML = '<div style="margin: 1.25rem 0; text-align: center;"><img src="' + src + '" alt="' + alt + '" style="' + styleWidth + ' height: auto; border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.06); display: inline-block;"></div>';
+
+  closeModal('wysiwygImageModal');
+  restoreEditorSelection();
+  insertHTMLAtCursor(imgHTML);
+}
+
+// Table Modal
+function insertTableDialog() {
+  saveEditorSelection();
+  openModal('wysiwygTableModal');
+}
+
+function confirmInsertTable() {
+  var rows = parseInt(document.getElementById('modalTableRows').value) || 3;
+  var cols = parseInt(document.getElementById('modalTableCols').value) || 3;
+  var hasHeader = document.getElementById('modalTableHeader').checked;
+
+  var html = '<table style="width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.92rem;">';
+  if (hasHeader) {
+    html += '<thead><tr>';
+    for (var c = 1; c <= cols; c++) {
+      html += '<th style="border: 1px solid var(--border); padding: 10px 14px; background: var(--bg-subtle); text-align: left; font-weight: 700;">Column ' + c + '</th>';
+    }
+    html += '</tr></thead>';
+  }
+  html += '<tbody>';
+  for (var r = 1; r <= rows; r++) {
+    html += '<tr>';
+    for (var c = 1; c <= cols; c++) {
+      html += '<td style="border: 1px solid var(--border); padding: 8px 14px;">Data ' + r + '.' + c + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+
+  closeModal('wysiwygTableModal');
+  restoreEditorSelection();
+  insertHTMLAtCursor(html);
+}
+
+// =======================================================================
+// AI PAGE GENERATOR STUDIO FUNCTIONS
+// =======================================================================
+function openAIPageModal() {
+  var modal = document.getElementById('aiPageModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+
+  var pBox = document.getElementById('aiModalProgressBox');
+  if (pBox) pBox.style.display = 'none';
+
+  var btn = document.getElementById('btnSubmitAIGen');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Generate Page ✨</span>';
+  }
+  var cancelBtn = document.getElementById('btnCancelAIGen');
+  if (cancelBtn) cancelBtn.disabled = false;
+
+  var promptInput = document.getElementById('aiModalPrompt');
+  if (promptInput) {
+    if (!promptInput.value) {
+      promptInput.value = 'Landing page modern untuk platform cloud enterprise dengan live metrics dashboard showcase, 3 fitur bento grid, testimoni klien fintech, dan pricing plan';
+    }
+    setTimeout(function() { promptInput.focus(); }, 60);
+  }
+
+  // Auto-fetch models if empty
+  var modelSelect = document.getElementById('aiModalModel');
+  if (modelSelect && modelSelect.options.length <= 1) {
+    fetchModalAIModels(false);
+  }
+}
+
+function fetchModalAIModels(showToast) {
+  var btn = document.getElementById('btnModalFetchModels');
+  var icon = document.getElementById('modalFetchIcon');
+  var select = document.getElementById('aiModalModel');
+  var hint = document.getElementById('aiModalModelHint');
+
+  if (btn) btn.disabled = true;
+  if (icon) icon.innerText = '⏳';
+
+  fetch('{{.AdminPath}}/settings/models', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (btn) btn.disabled = false;
+    if (icon) icon.innerText = '🔄';
+
+    if (res.success && res.models && res.models.length > 0) {
+      var current = select ? select.value : '';
+      select.innerHTML = '<option value="">⚙️ Default Configured Model</option>';
+      res.models.forEach(function(m) {
+        var opt = document.createElement('option');
+        opt.value = m;
+        opt.innerText = m;
+        if (m === current) opt.selected = true;
+        select.appendChild(opt);
+      });
+      if (hint) {
+        hint.innerHTML = '✅ <span style="color:var(--success);">' + res.count + ' model server aktif berhasil dimuat.</span>';
+      }
+      if (showToast && window.cbToast) {
+        cbToast.show('Berhasil memuat ' + res.count + ' model dari server!', 'success');
+      }
+    } else {
+      if (hint) {
+        hint.innerHTML = '<span style="color:#ef4444;">Gagal memuat model: ' + (res.error || 'Server offline') + '</span>';
+      }
+    }
+  })
+  .catch(function(err) {
+    if (btn) btn.disabled = false;
+    if (icon) icon.innerText = '🔄';
+  });
+}
+
+function closeAIPageModal() {
+  var modal = document.getElementById('aiPageModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function setAIPromptPreset(type) {
+  var pInput = document.getElementById('aiModalPrompt');
+  var tInput = document.getElementById('aiModalTemplate');
+  var toneInput = document.getElementById('aiModalTone');
+  var langInput = document.getElementById('aiModalLanguage');
+
+  if (type === 'saas') {
+    if (pInput) pInput.value = 'Landing page modern untuk platform cloud enterprise dengan live metrics dashboard showcase, 3 fitur bento grid, testimoni klien fintech, dan pricing plan';
+    if (tInput) tInput.value = 'landing';
+    if (toneInput) toneInput.value = 'professional';
+    if (langInput) langInput.value = 'id';
+  } else if (type === 'cyber') {
+    if (pInput) pInput.value = 'Halaman solusi cybersecurity & zero-trust architecture dengan diagram proteksi endpoint, audit kepatuhan ISO 27001, dan formulir konsultasi keamanan instan';
+    if (tInput) tInput.value = 'landing';
+    if (toneInput) toneInput.value = 'modern';
+    if (langInput) langInput.value = 'id';
+  } else if (type === 'analytics') {
+    if (pInput) pInput.value = 'Landing page untuk software business intelligence dan analytics realtime dengan fitur predictive AI, pipeline data otomatis, dan perbandingan paket harga';
+    if (tInput) tInput.value = 'landing';
+    if (toneInput) toneInput.value = 'modern';
+    if (langInput) langInput.value = 'id';
+  } else if (type === 'promo') {
+    if (pInput) pInput.value = 'Halaman promosi peluncuran produk baru dengan countdown banner, diskon spesial early-bird 50%, garansi uang kembali 30 hari, dan FAQ interaktif';
+    if (tInput) tInput.value = 'landing';
+    if (toneInput) toneInput.value = 'promotional';
+    if (langInput) langInput.value = 'id';
+  } else if (type === 'article') {
+    if (pInput) pInput.value = 'Whitepaper mendalam mengenai implementasi Microservices architecture performa tinggi dengan Golang, optimasi zero-memory alloc, dan benchmark latensi HTTP/2';
+    if (tInput) tInput.value = 'article';
+    if (toneInput) toneInput.value = 'professional';
+    if (langInput) langInput.value = 'id';
+  }
+  if (window.cbToast) cbToast.show('Inspiration prompt loaded!', 'info');
+}
+
+function executeAIPageGeneration() {
+  var promptVal = (document.getElementById('aiModalPrompt').value || '').trim();
+  if (!promptVal) {
+    alert('Please enter a description or topic for the page to generate.');
+    document.getElementById('aiModalPrompt').focus();
+    return;
+  }
+
+  var templateVal = document.getElementById('aiModalTemplate').value || 'landing';
+  var toneVal = document.getElementById('aiModalTone').value || 'professional';
+  var langVal = document.getElementById('aiModalLanguage').value || 'id';
+  var modelVal = document.getElementById('aiModalModel') ? document.getElementById('aiModalModel').value : '';
+
+  var btn = document.getElementById('btnSubmitAIGen');
+  var cancelBtn = document.getElementById('btnCancelAIGen');
+  var pBox = document.getElementById('aiModalProgressBox');
+  var pText = document.getElementById('aiProgressText');
+  var pSub = document.getElementById('aiProgressSub');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="cb-spinner-inline" style="display:inline-block;width:12px;height:12px;border:2px solid #fff;border-right-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:6px;"></span> Generating...';
+  }
+  if (cancelBtn) cancelBtn.disabled = true;
+  if (pBox) pBox.style.display = 'block';
+  if (pText) pText.innerText = 'Synthesizing page structure, SEO meta & semantic HTML...';
+  if (pSub) pSub.innerText = 'Consulting configured LLM engine ' + (modelVal ? '(' + modelVal + ')' : '') + '. Please allow 5-15 seconds for complete synthesis.';
+
+  fetch('{{.AdminPath}}/pages/generate-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: promptVal,
+      template: templateVal,
+      tone: toneVal,
+      language: langVal,
+      model: modelVal
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Generate Page ✨</span>';
+    }
+    if (cancelBtn) cancelBtn.disabled = false;
+
+    if (res.success && res.page) {
+      closeAIPageModal();
+      openStudioEditor(res.page);
+      if (window.cbToast) {
+        cbToast.show('✨ AI Page "' + (res.page.title || '') + '" generated successfully!', 'success');
+      } else {
+        alert('AI Page generated successfully! Review the content and click Save Page to publish.');
+      }
+    } else {
+      if (pBox) pBox.style.display = 'block';
+      if (pText) pText.innerHTML = '<span style="color:#ef4444;">Generation failed: ' + (res.error || 'Unknown error') + '</span>';
+      if (pSub) pSub.innerText = 'Check your AI API key and host endpoint under Platform Settings Studio.';
+      if (window.cbToast) cbToast.show('AI Generation Error: ' + (res.error || 'Failed'), 'error');
+    }
+  })
+  .catch(function(err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Generate Page ✨</span>';
+    }
+    if (cancelBtn) cancelBtn.disabled = false;
+    if (pBox) pBox.style.display = 'block';
+    if (pText) pText.innerHTML = '<span style="color:#ef4444;">Network error: ' + err + '</span>';
+    if (window.cbToast) cbToast.show('Network error calling AI generator: ' + err, 'error');
+  });
+}
+
+// =======================================================================
+// PAGE STUDIO ACTIONS & CRUD HANDLERS
+// =======================================================================
+function openStudioEditor(pageData) {
+  var form = document.getElementById('pageStudioForm');
+  form.reset();
+  document.getElementById('pageId').value = '';
+  document.getElementById('studioHeaderTitle').innerText = 'Create Custom Page';
+  document.getElementById('studioHeaderStatus').innerText = 'Draft';
+  document.getElementById('studioHeaderStatus').className = 'cb-badge cb-badge-warning';
+  document.getElementById('studioSaveBtnText').innerText = 'Save Page';
+
+  // Reset toggles
+  document.getElementById('toggleMetaPixel').checked = false;
+  document.getElementById('wrapMetaPixel').style.display = 'none';
+  document.getElementById('toggleGTM').checked = false;
+  document.getElementById('wrapGTM').style.display = 'none';
+  document.getElementById('toggleTikTok').checked = false;
+  document.getElementById('wrapTikTok').style.display = 'none';
+
+  removeOGImage();
+
+  var visualCanvas = document.getElementById('visualEditorCanvas');
+  var codeCanvas = document.getElementById('pageContent');
+
+  if (pageData) {
+    document.getElementById('pageId').value = pageData.id || '';
+    document.getElementById('studioHeaderTitle').innerText = 'Edit: ' + pageData.title;
+    document.getElementById('studioSaveBtnText').innerText = 'Update Changes';
+
+    document.getElementById('pageTitle').value = pageData.title || '';
+    document.getElementById('pageSlug').value = pageData.slug || '';
+    document.getElementById('pageRouteURL').value = pageData.route_url || '';
+    if (pageData.route_url === '/') {
+      isHomepageActive = true;
+      routeManuallyEdited = true;
+    } else {
+      isHomepageActive = false;
+      routeManuallyEdited = Boolean(pageData.route_url && pageData.route_url !== ('/' + pageData.slug));
+    }
+    document.getElementById('pageStatus').value = pageData.status || 'published';
+    updateStudioStatusBadge(pageData.status || 'published');
+
+    document.getElementById('pageAuthor').value = pageData.author || '';
+    document.getElementById('pageExcerpt').value = pageData.excerpt || '';
+    
+    codeCanvas.value = pageData.content || '';
+    if (visualCanvas) visualCanvas.innerHTML = pageData.content || '';
+
+    document.getElementById('pageCustomCSS').value = pageData.custom_css || '';
+
+    // Template Radio
+    var tpl = pageData.template || 'default';
+    var radio = form.querySelector('input[name="template"][value="' + tpl + '"]');
+    if (radio) radio.checked = true;
+
+    // SEO
+    document.getElementById('pageMetaTitle').value = pageData.meta_title || '';
+    document.getElementById('pageMetaDescription').value = pageData.meta_description || '';
+    document.getElementById('pageMetaKeywords').value = pageData.meta_keywords || '';
+    document.getElementById('pageCanonicalURL').value = pageData.canonical_url || '';
+    document.getElementById('pageRobots').value = pageData.robots || 'index, follow';
+    document.getElementById('pageSchemaJSON').value = pageData.schema_json || '';
+
+    // Social
+    document.getElementById('pageOGTitle').value = pageData.og_title || '';
+    document.getElementById('pageOGDescription').value = pageData.og_description || '';
+    document.getElementById('pageOGType').value = pageData.og_type || 'website';
+    document.getElementById('pageTwitterCard').value = pageData.twitter_card || 'summary_large_image';
+
+    if (pageData.og_image) {
+      setOGImageValue(pageData.og_image);
+    }
+
+    // Pixels
+    if (pageData.pixel_meta_id) {
+      document.getElementById('pagePixelMetaID').value = pageData.pixel_meta_id;
+      document.getElementById('toggleMetaPixel').checked = true;
+      document.getElementById('wrapMetaPixel').style.display = 'block';
+    }
+    if (pageData.pixel_gtm_id) {
+      document.getElementById('pagePixelGTMID').value = pageData.pixel_gtm_id;
+      document.getElementById('toggleGTM').checked = true;
+      document.getElementById('wrapGTM').style.display = 'block';
+    }
+    if (pageData.pixel_tiktok_id) {
+      document.getElementById('pagePixelTikTokID').value = pageData.pixel_tiktok_id;
+      document.getElementById('toggleTikTok').checked = true;
+      document.getElementById('wrapTikTok').style.display = 'block';
+    }
+
+    document.getElementById('pageHeaderScripts').value = pageData.header_scripts || '';
+    document.getElementById('pageFooterScripts').value = pageData.footer_scripts || '';
+
+    handleMetaTitleInput(pageData.meta_title || '');
+    handleMetaDescInput(pageData.meta_description || '');
+  } else {
+    isHomepageActive = false;
+    routeManuallyEdited = false;
+    codeCanvas.value = '';
+    if (visualCanvas) visualCanvas.innerHTML = '';
+    handleMetaTitleInput('');
+    handleMetaDescInput('');
+  }
+
+  updateHomepageUI();
+  setEditorMode('visual');
+  updateEditorStats();
+
+  // Update domain prefix
+  var prefixEl = document.getElementById('routeDomainPrefix');
+  if (prefixEl) prefixEl.innerText = 'https://' + window.location.host;
+
+  updateLivePreviews();
+
+  document.getElementById('pagesListView').style.display = 'none';
+  document.getElementById('pagesStudioView').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closeStudioEditor() {
+  document.getElementById('pagesStudioView').style.display = 'none';
+  document.getElementById('pagesListView').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStudioStatusBadge(status) {
+  var badge = document.getElementById('studioHeaderStatus');
+  if (!badge) return;
+  if (status === 'published') {
+    badge.innerText = 'Published';
+    badge.className = 'cb-badge cb-badge-success';
+  } else if (status === 'draft') {
+    badge.innerText = 'Draft';
+    badge.className = 'cb-badge cb-badge-warning';
+  } else {
+    badge.innerText = status;
+    badge.className = 'cb-badge cb-badge-secondary';
+  }
+}
+
+function handlePixelToggle(type, isChecked) {
+  var wrap = null;
+  var input = null;
+  if (type === 'meta') {
+    wrap = document.getElementById('wrapMetaPixel');
+    input = document.getElementById('pagePixelMetaID');
+  } else if (type === 'gtm') {
+    wrap = document.getElementById('wrapGTM');
+    input = document.getElementById('pagePixelGTMID');
+  } else if (type === 'tiktok') {
+    wrap = document.getElementById('wrapTikTok');
+    input = document.getElementById('pagePixelTikTokID');
+  }
+  if (wrap) {
+    wrap.style.display = isChecked ? 'block' : 'none';
+    if (isChecked && input) input.focus();
+  }
+}
+
+function toggleSection(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+}
+
+var routeManuallyEdited = false;
+var isHomepageActive = false;
+
+function toggleHomepageRoute() {
+  if (isHomepageActive) {
+    restoreSlugRoute();
+  } else {
+    setAsHomepage();
+  }
+}
+
+function setAsHomepage() {
+  document.getElementById('pageRouteURL').value = '/';
+  routeManuallyEdited = true;
+  isHomepageActive = true;
+  updateHomepageUI();
+  updateLivePreviews();
+  if (window.cbToast) cbToast.show('Halaman ini diatur sebagai Halaman Utama (Route: /)', 'info');
+}
+
+function restoreSlugRoute() {
+  var slug = document.getElementById('pageSlug').value || 'custom-page';
+  document.getElementById('pageRouteURL').value = '/' + slug;
+  routeManuallyEdited = false;
+  isHomepageActive = false;
+  updateHomepageUI();
+  updateLivePreviews();
+  if (window.cbToast) cbToast.show('Route URL dikembalikan ke /' + slug, 'info');
+}
+
+function handleRouteUrlInput(val) {
+  routeManuallyEdited = true;
+  isHomepageActive = (val.trim() === '/');
+  updateHomepageUI();
+  updateLivePreviews();
+}
+
+function handleSlugManualInput(val) {
+  var routeInput = document.getElementById('pageRouteURL');
+  if (!routeManuallyEdited && !isHomepageActive) {
+    routeInput.value = '/' + val;
+  }
+  updateLivePreviews();
+}
+
+function updateHomepageUI() {
+  var btn = document.getElementById('btnSetHomepage');
+  var badge = document.getElementById('routeHomepageBadge');
+  var instantBadge = document.getElementById('instantRouteBadge');
+  var val = (document.getElementById('pageRouteURL').value || '').trim();
+  if (val === '/') {
+    isHomepageActive = true;
+    if (btn) {
+      btn.innerHTML = '<span>↺ Kembalikan ke /slug</span>';
+      btn.classList.add('active');
+    }
+    if (badge) badge.style.display = 'inline-block';
+    if (instantBadge) instantBadge.style.display = 'none';
+  } else {
+    isHomepageActive = false;
+    if (btn) {
+      btn.innerHTML = '<span>🏠 Jadikan Halaman Utama (/)</span>';
+      btn.classList.remove('active');
+    }
+    if (badge) badge.style.display = 'none';
+    if (instantBadge) instantBadge.style.display = 'inline-block';
+  }
+}
+
+function handleTitleChange(val) {
+  var isNew = !document.getElementById('pageId').value;
+  if (isNew) {
+    var slug = val.toLowerCase().trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    document.getElementById('pageSlug').value = slug;
+
+    // HANYA auto-fill Route URL jika user belum mengubah route secara manual dan bukan homepage (/)
+    if (!routeManuallyEdited && !isHomepageActive) {
+      document.getElementById('pageRouteURL').value = '/' + slug;
+    }
+
+    var metaTitleInput = document.getElementById('pageMetaTitle');
+    if (!metaTitleInput.value) {
+      metaTitleInput.value = val;
+      handleMetaTitleInput(val);
+    }
+  }
+  updateLivePreviews();
+}
+
+function handleMetaTitleInput(val) {
+  var count = val ? val.length : 0;
+  var counter = document.getElementById('titleCounter');
+  var bar = document.getElementById('titleMeterBar');
+  if (counter) counter.innerText = count + ' / 60';
+  if (bar) {
+    var pct = Math.min(100, (count / 60) * 100);
+    bar.style.width = pct + '%';
+    bar.style.background = count > 60 ? 'var(--warning)' : (count >= 40 ? 'var(--success)' : 'var(--accent)');
+  }
+  updateLivePreviews();
+}
+
+function handleMetaDescInput(val) {
+  var count = val ? val.length : 0;
+  var counter = document.getElementById('descCounter');
+  var bar = document.getElementById('descMeterBar');
+  if (counter) counter.innerText = count + ' / 160';
+  if (bar) {
+    var pct = Math.min(100, (count / 160) * 100);
+    bar.style.width = pct + '%';
+    bar.style.background = count > 160 ? 'var(--warning)' : (count >= 120 ? 'var(--success)' : 'var(--accent)');
+  }
+  updateLivePreviews();
+}
+
+function updateLivePreviews() {
+  var title = document.getElementById('pageMetaTitle').value || document.getElementById('pageTitle').value || 'Custom Page Title';
+  var desc = document.getElementById('pageMetaDescription').value || document.getElementById('pageExcerpt').value || 'Summary description snippet for search engines & social media.';
+  var slug = document.getElementById('pageSlug').value || 'custom-page';
+  var routeInput = document.getElementById('pageRouteURL').value;
+  var route = (routeInput !== undefined && routeInput.trim() !== '') ? routeInput.trim() : ('/' + slug);
+
+  var uniLabel = document.getElementById('universalSlugLabel');
+  if (uniLabel) uniLabel.innerText = '/p/' + (slug || 'page');
+
+  // Google SERP Simulator
+  var gTitle = document.getElementById('googlePreviewTitle');
+  var gDesc = document.getElementById('googlePreviewDesc');
+  var gBread = document.getElementById('googleBreadcrumb');
+  if (gTitle) gTitle.innerText = title;
+  if (gDesc) gDesc.innerText = desc;
+  if (gBread) {
+    if (route === '/') {
+      gBread.innerText = 'https://' + window.location.host + ' › (Homepage)';
+    } else {
+      gBread.innerText = 'https://' + window.location.host + ' › ' + (slug || route.replace(/^\//, ''));
+    }
+  }
+
+  // Social Feed Simulator
+  var ogTitle = document.getElementById('pageOGTitle').value || title;
+  var ogDesc = document.getElementById('pageOGDescription').value || desc;
+  var ogImage = document.getElementById('pageOGImage').value;
+
+  var sTitle = document.getElementById('feedSimTitle');
+  var sDesc = document.getElementById('feedSimDesc');
+  var sDomain = document.getElementById('feedSimDomain');
+  var sImg = document.getElementById('feedSimImg');
+  var sPlaceholder = document.getElementById('feedSimPlaceholder');
+
+  if (sTitle) sTitle.innerText = ogTitle;
+  if (sDesc) sDesc.innerText = ogDesc;
+  if (sDomain) sDomain.innerText = window.location.host.toUpperCase();
+  if (sImg && sPlaceholder) {
+    if (ogImage && ogImage.trim() !== '') {
+      sImg.src = ogImage;
+      sImg.style.display = 'block';
+      sPlaceholder.style.display = 'none';
+    } else {
+      sImg.style.display = 'none';
+      sPlaceholder.style.display = 'inline';
+    }
+  }
+}
+
+// ==========================================
+// OG IMAGE UPLOAD & DROPZONE HANDLING
+// ==========================================
+function handleOGFileSelect(input) {
+  if (input.files && input.files[0]) {
+    readAndSetOGFile(input.files[0]);
+  }
+}
+
+function handleOGDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+    readAndSetOGFile(e.dataTransfer.files[0]);
+  }
+}
+
+function readAndSetOGFile(file) {
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file (PNG, JPG, WebP).');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    setOGImageValue(evt.target.result);
+    if (window.cbToast) cbToast.show('Image uploaded: ' + file.name, 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleOGUrlInput(val) {
+  setOGImageValue(val);
+}
+
+function setOGImageValue(url) {
+  document.getElementById('pageOGImage').value = url;
+  var prompt = document.getElementById('ogUploadPrompt');
+  var preview = document.getElementById('ogUploadPreview');
+  var img = document.getElementById('ogPreviewImg');
+
+  if (url && url.trim() !== '') {
+    if (img) img.src = url;
+    if (prompt) prompt.style.display = 'none';
+    if (preview) preview.style.display = 'block';
+  } else {
+    if (prompt) prompt.style.display = 'block';
+    if (preview) preview.style.display = 'none';
+  }
+  updateLivePreviews();
+}
+
+function removeOGImage() {
+  var fileInput = document.getElementById('ogImageFileInput');
+  if (fileInput) fileInput.value = '';
+  setOGImageValue('');
+}
+
+function setPresetOGImage(type) {
+  var url = type === 'promo'
+    ? 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&auto=format&fit=crop&q=80'
+    : 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80';
+  setOGImageValue(url);
+}
+
+function syncSocialFromSEO() {
+  var metaTitle = document.getElementById('pageMetaTitle').value || document.getElementById('pageTitle').value;
+  var metaDesc = document.getElementById('pageMetaDescription').value || document.getElementById('pageExcerpt').value;
+  if (metaTitle) document.getElementById('pageOGTitle').value = metaTitle;
+  if (metaDesc) document.getElementById('pageOGDescription').value = metaDesc;
+  updateLivePreviews();
+  if (window.cbToast) cbToast.show('Social metadata synchronized from SEO fields', 'success');
+}
+
+function insertSchemaPreset(type) {
+  var schemaBox = document.getElementById('pageSchemaJSON');
+  var title = document.getElementById('pageTitle').value || 'Custom Page';
+  var desc = document.getElementById('pageMetaDescription').value || 'Page description';
+
+  var preset = '';
+  if (type === 'Product') {
+    preset = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": title,
+      "description": desc,
+      "offers": { "@type": "Offer", "priceCurrency": "USD", "price": "99.00", "availability": "https://schema.org/InStock" }
+    }, null, 2);
+  } else if (type === 'Article') {
+    preset = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": title,
+      "description": desc,
+      "author": { "@type": "Person", "name": document.getElementById('pageAuthor').value || "Editorial Staff" }
+    }, null, 2);
+  } else {
+    preset = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": title,
+      "description": desc
+    }, null, 2);
+  }
+  schemaBox.value = preset;
+  if (window.cbToast) cbToast.show('Inserted Schema.org ' + type + ' preset', 'info');
+}
+
+function insertSnippet(type) {
+  var snippet = '';
+  if (type === 'h2') {
+    snippet = '<h2 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin: 1.75rem 0 1rem 0;">Section Headline</h2>';
+  } else if (type === 'p') {
+    snippet = '<p style="font-size: 1.05rem; line-height: 1.75; color: var(--text-muted); margin-bottom: 1.25rem;">Write compelling narrative paragraph here that engages your audience and highlights key product benefits.</p>';
+  } else if (type === 'button') {
+    snippet = '<div style="margin: 1.5rem 0;"><a href="#action" style="display: inline-block; background: #0284c7; color: #ffffff; padding: 12px 28px; border-radius: 10px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); transition: transform 0.15s ease;">Get Started Now &rarr;</a></div>';
+  } else if (type === 'card') {
+    snippet = '<div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.04); margin: 1.5rem 0;"><h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Feature Highlight Title</h3><p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0;">Clearly explain value proposition, guarantees, or exclusive offers for your visitors.</p></div>';
+  } else if (type === 'grid') {
+    snippet = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0;"><div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px;"><h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Feature Column One</h4><p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin: 0;">Highlight benefits, metrics, or service offerings.</p></div><div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px;"><h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Feature Column Two</h4><p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin: 0;">Highlight benefits, metrics, or service offerings.</p></div></div>';
+  } else if (type === 'grid3') {
+    snippet = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin: 2rem 0;"><div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center;"><div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div><h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Fast Performance</h4><p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">Sub-millisecond processing speed</p></div><div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center;"><div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div><h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Enterprise Security</h4><p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">End-to-end encryption guaranteed</p></div><div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center;"><div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div><h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">High Conversion</h4><p style="color: var(--text-muted); font-size: 0.88rem; margin: 0;">Designed for maximum ROI</p></div></div>';
+  } else if (type === 'alert') {
+    snippet = '<div style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; color: var(--accent);"><strong style="font-weight: 700;">Special Announcement:</strong> Limited time promotional deal currently active!</div>';
+  }
+
+  insertHTMLAtCursor(snippet);
+}
+
+function editPage(pageId) {
+  fetch('{{.AdminPath}}/pages/api/page?id=' + encodeURIComponent(pageId))
+    .then(r => r.json())
+    .then(data => {
+      openStudioEditor(data);
+    })
+    .catch(err => {
+      alert('Failed to load page data: ' + err);
+    });
+}
+
+function submitPageStudio() {
+  syncEditorContent();
+  var form = document.getElementById('pageStudioForm');
+  var title = document.getElementById('pageTitle').value.trim();
+  if (!title) {
+    alert('Please enter a Page Title.');
+    document.getElementById('pageTitle').focus();
+    return;
+  }
+
+  var formData = new FormData(form);
+  var payload = {};
+  formData.forEach((value, key) => { payload[key] = value; });
+
+  // If pixel toggles are unchecked, clear the pixel ID
+  if (!document.getElementById('toggleMetaPixel').checked) {
+    payload['pixel_meta_id'] = '';
+  }
+  if (!document.getElementById('toggleGTM').checked) {
+    payload['pixel_gtm_id'] = '';
+  }
+  if (!document.getElementById('toggleTikTok').checked) {
+    payload['pixel_tiktok_id'] = '';
+  }
+
+  fetch('{{.AdminPath}}/pages/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      if (window.cbToast) cbToast.show('Custom Page saved successfully', 'success');
+      setTimeout(() => { window.location.reload(); }, 400);
+    } else {
+      alert('Error saving page: ' + (res.error || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    alert('Network error saving page: ' + err);
+  });
+}
+
+function deletePage(pageId, pageTitle) {
+  if (!confirm('Are you sure you want to delete the custom page "' + pageTitle + '"? This will remove its custom route URL.')) {
+    return;
+  }
+
+  fetch('{{.AdminPath}}/pages/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: pageId })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      if (window.cbToast) cbToast.show('Page deleted successfully', 'success');
+      setTimeout(() => { window.location.reload(); }, 400);
+    } else {
+      alert('Error deleting page: ' + (res.error || 'Unknown error'));
+    }
+  })
+  .catch(err => {
+    alert('Network error deleting page: ' + err);
+  });
+}
+
+function previewCurrentDraft() {
+  var id = document.getElementById('pageId').value;
+  var route = document.getElementById('pageRouteURL').value || '/' + document.getElementById('pageSlug').value;
+  if (id) {
+    window.open('{{.AdminPath}}/pages/preview?id=' + encodeURIComponent(id), '_blank');
+  } else {
+    window.open(route + '?preview=1', '_blank');
+  }
+}
+
+function copyCurrentRoute() {
+  var route = document.getElementById('pageRouteURL').value || '/' + document.getElementById('pageSlug').value;
+  copyToClipboard(route);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (window.cbToast) cbToast.show('Copied URL ' + text + ' to clipboard', 'info');
+  });
+}
+
+function filterPagesByStatus(status, btn) {
+  document.querySelectorAll('.page-filter-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.background = 'transparent';
+    b.style.color = 'var(--text-muted)';
+  });
+  btn.classList.add('active');
+  btn.style.background = 'var(--bg-card)';
+  btn.style.color = 'var(--text-main)';
+
+  var rows = document.querySelectorAll('.page-row');
+  rows.forEach(r => {
+    if (status === 'all') {
+      r.style.display = '';
+    } else {
+      var s = r.getAttribute('data-status');
+      r.style.display = (s === status) ? '' : 'none';
+    }
+  });
+}
+
+function filterPageRows() {
+  var q = document.getElementById('pageSearchInput').value.toLowerCase();
+  var rows = document.querySelectorAll('.page-row');
+  rows.forEach(r => {
+    var title = (r.getAttribute('data-title') || '').toLowerCase();
+    var route = (r.getAttribute('data-route') || '').toLowerCase();
+    var slug = (r.getAttribute('data-slug') || '').toLowerCase();
+    if (title.includes(q) || route.includes(q) || slug.includes(q)) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+}
+</script>

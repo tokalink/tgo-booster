@@ -1,0 +1,2801 @@
+[
+  {
+    "id": "310",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791098097012395500",
+    "created_at": "2026-10-04 14:14:57"
+  },
+  {
+    "id": "309",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791098097012395500)",
+    "created_at": "2026-10-04 14:14:57"
+  },
+  {
+    "id": "308",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "307",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791098096959",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "306",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1791097650392)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "305",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791098096959)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "304",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "303",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "302",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "301",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "300",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "299",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "298",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "297",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "296",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 14:14:56"
+  },
+  {
+    "id": "295",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 14:09:27"
+  },
+  {
+    "id": "294",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791097767835",
+    "created_at": "2026-10-04 14:09:27"
+  },
+  {
+    "id": "293",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1791097650392)",
+    "created_at": "2026-10-04 14:09:27"
+  },
+  {
+    "id": "292",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791097767835)",
+    "created_at": "2026-10-04 14:09:27"
+  },
+  {
+    "id": "291",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791097650450223000",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "290",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791097650450223000)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "289",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "288",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791097608801",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "287",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1791097650392)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "286",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791097608801)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "285",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "284",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "283",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "282",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "281",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "280",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "279",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "278",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "277",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "276",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "275",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "274",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 14:07:30"
+  },
+  {
+    "id": "273",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791097608838935400",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "272",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791097608838935400)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "271",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791097608801)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "270",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "269",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "268",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "267",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "266",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "265",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "264",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "263",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "262",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "261",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "260",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "259",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 14:06:48"
+  },
+  {
+    "id": "258",
+    "ip": "[::1]:60441",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Kriva, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 14:01:45"
+  },
+  {
+    "id": "257",
+    "ip": "[::1]:60441",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Kriva, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 14:01:19"
+  },
+  {
+    "id": "256",
+    "ip": "[::1]:50799",
+    "user": "Super Administrator",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1790987429952",
+    "created_at": "2026-10-04 13:43:18"
+  },
+  {
+    "id": "255",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791096078580301200",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "254",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791096078580301200)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "253",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "252",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791096078522",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "251",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "250",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791096078522)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "249",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "248",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "247",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "246",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "245",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "244",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "243",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "242",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "241",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "240",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "239",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "238",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 13:41:18"
+  },
+  {
+    "id": "237",
+    "ip": "[::1]:63225",
+    "user": "Super Administrator",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Kriva POS: Solusi Kasir Modern Mulai Rp199/Bulan' (Route: /kriva-pos-solusi-kasir-modern, ID: 1791095513843)",
+    "created_at": "2026-10-04 13:31:53"
+  },
+  {
+    "id": "236",
+    "ip": "[::1]:63225",
+    "user": "Super Administrator",
+    "action": "AI_PAGE_GENERATE",
+    "module": "Pages Studio",
+    "description": "Generated custom page with AI: 'Kriva POS: Solusi Kasir Modern Mulai Rp199/Bulan' (Template: article)",
+    "created_at": "2026-10-04 13:31:08"
+  },
+  {
+    "id": "235",
+    "ip": "[::1]:63225",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 13:28:39"
+  },
+  {
+    "id": "234",
+    "ip": "[::1]:63225",
+    "user": "Super Administrator",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Julan Pos: Solusi Kasir Offline, Online \u0026 Hybrid Multiplatform' (Route: /julan-pos-kasir-offline-online-hybrid, ID: 1791095142114)",
+    "created_at": "2026-10-04 13:25:42"
+  },
+  {
+    "id": "233",
+    "ip": "[::1]:63225",
+    "user": "Super Administrator",
+    "action": "AI_PAGE_GENERATE",
+    "module": "Pages Studio",
+    "description": "Generated custom page with AI: 'Julan Pos: Solusi Kasir Offline, Online \u0026 Hybrid Multiplatform' (Template: landing)",
+    "created_at": "2026-10-04 13:25:11"
+  },
+  {
+    "id": "232",
+    "ip": "[::1]:62134",
+    "user": "Super Administrator",
+    "action": "AI_PAGE_GENERATE",
+    "module": "Pages Studio",
+    "description": "Generated custom page with AI: 'CloudMinimal – Infrastruktur Cloud Cerdas untuk Startup Modern' (Template: landing)",
+    "created_at": "2026-10-04 10:00:42"
+  },
+  {
+    "id": "231",
+    "ip": "[::1]:57173",
+    "user": "Super Administrator",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Kriva Pos Kasir Offline \u0026 Online' (Route: /pos, ID: 1791081869148)",
+    "created_at": "2026-10-04 09:44:52"
+  },
+  {
+    "id": "230",
+    "ip": "[::1]:57173",
+    "user": "Super Administrator",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Pos Kasir Offline \u0026 Online' (Route: /pos, ID: 1791081869148)",
+    "created_at": "2026-10-04 09:44:29"
+  },
+  {
+    "id": "229",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791078982183241100",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "228",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791078982183241100)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "227",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "226",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791078982132",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "225",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "224",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791078982132)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "223",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "222",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "221",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "220",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 08:56:22"
+  },
+  {
+    "id": "219",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "218",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "217",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "216",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "215",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "214",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "213",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "212",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 08:56:21"
+  },
+  {
+    "id": "211",
+    "ip": "[::1]:51505",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 08:46:52"
+  },
+  {
+    "id": "210",
+    "ip": "[::1]:51505",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 08:46:46"
+  },
+  {
+    "id": "209",
+    "ip": "[::1]:51505",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=obsidian",
+    "created_at": "2026-10-04 08:46:43"
+  },
+  {
+    "id": "208",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791077914169756600",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "207",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791077914169756600)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "206",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "205",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791077914113",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "204",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "203",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791077914113)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "202",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "201",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "200",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:38:34"
+  },
+  {
+    "id": "199",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "198",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "197",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "196",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "195",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "194",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "193",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "192",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "191",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 08:38:33"
+  },
+  {
+    "id": "190",
+    "ip": "[::1]:52164",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=emerald",
+    "created_at": "2026-10-04 08:37:58"
+  },
+  {
+    "id": "189",
+    "ip": "[::1]:50570",
+    "user": "Super Administrator",
+    "action": "SETTINGS_UPDATE",
+    "module": "Settings",
+    "description": "Platform configuration updated: AppName=Acme Global Cloud, ThemeSkin=light",
+    "created_at": "2026-10-04 08:33:01"
+  },
+  {
+    "id": "188",
+    "ip": "[::1]:58553",
+    "user": "System",
+    "action": "LOGIN",
+    "module": "Auth",
+    "description": "Admin user 'Super Administrator' (admin@tgo.io) authenticated from [::1]:58553",
+    "created_at": "2026-10-04 08:26:43"
+  },
+  {
+    "id": "187",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791075646142034000",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "186",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791075646142034000)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "185",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "184",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791075646090",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "183",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "182",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791075646090)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "181",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "180",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "179",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:00:46"
+  },
+  {
+    "id": "178",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "177",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "176",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "175",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "174",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "173",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "172",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "171",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "170",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 08:00:45"
+  },
+  {
+    "id": "169",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791075623287350800",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "168",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791075623287350800)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "167",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "166",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791075623227",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "165",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "164",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791075623227)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "163",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "162",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "161",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "160",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "159",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 08:00:23"
+  },
+  {
+    "id": "158",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "157",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "156",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "155",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "154",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "153",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "152",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 08:00:22"
+  },
+  {
+    "id": "151",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791066853943008500",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "150",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791066853943008500)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "149",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "148",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791066853887",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "147",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "146",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791066853887)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "145",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "144",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "143",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "142",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "141",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "140",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "139",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "138",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "137",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "136",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "135",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "134",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 05:34:13"
+  },
+  {
+    "id": "133",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791066831238701000",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "132",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791066831238701000)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "131",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "130",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791066831183",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "129",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "128",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791066831183)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "127",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "126",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "125",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "124",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "123",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "122",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "121",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "120",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "119",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-04 05:33:51"
+  },
+  {
+    "id": "118",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-04 05:33:50"
+  },
+  {
+    "id": "117",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-04 05:33:50"
+  },
+  {
+    "id": "116",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-04 05:33:50"
+  },
+  {
+    "id": "115",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037458977271400",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "114",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037458977271400)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "113",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "112",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037458931",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "111",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "110",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037458931)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "109",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "108",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "107",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "106",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "105",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "104",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "103",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "102",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "101",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "100",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "99",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "98",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:24:18"
+  },
+  {
+    "id": "97",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037371281170700",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "96",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037371281170700)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "95",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "94",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037371235",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "93",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "92",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037371235)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "91",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "90",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "89",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "88",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "87",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "86",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "85",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "84",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "83",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "82",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "81",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "80",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:22:51"
+  },
+  {
+    "id": "79",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037321882555700",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "78",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037321882555700)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "77",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "76",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037321833",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "75",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "74",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037321833)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "73",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "72",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "71",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "70",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "69",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "68",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "67",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "66",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "65",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "64",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "63",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "62",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:22:01"
+  },
+  {
+    "id": "61",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037294292094000",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "60",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037294292094000)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "59",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "58",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037294247",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "57",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "56",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037294247)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "55",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "54",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "53",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "52",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "51",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "50",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "49",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "48",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "47",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "46",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "45",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "44",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:21:34"
+  },
+  {
+    "id": "43",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037267806578500",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "42",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037267806578500)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "41",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "40",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037267755",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "39",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "38",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037267755)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "37",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "36",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "35",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "34",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "33",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "32",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "31",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "30",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "29",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "28",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "27",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "26",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:21:07"
+  },
+  {
+    "id": "25",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791037221405070200",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "24",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791037221405070200)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "23",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Selamat Datang di Halaman Utama' (Route: /, ID: 1791017977038)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "22",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_DELETE",
+    "module": "Pages Studio",
+    "description": "Deleted custom page ID: 1791037221356",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "21",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Secret Unreleased Feature' (Route: /secret-feature, ID: 1790987429952)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "20",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "PAGE_UPDATE",
+    "module": "Pages Studio",
+    "description": "Saved custom page 'Black Friday Exclusive Deal' (Route: /black-friday-2026, ID: 1791037221356)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "19",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered menu hierarchy tree",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "18",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Updated Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "17",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Executive Dashboard' (Type: url, ID: dashboard)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "16",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_DELETE",
+    "module": "Menus",
+    "description": "Deleted sidebar menu item ID: receipts_sub",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "15",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_REORDER",
+    "module": "Menus",
+    "description": "Reordered sidebar menu item 'receipts_sub' (Direction: up)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "14",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Payment Receipts' (Type: url, ID: receipts_sub)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "13",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Customer Invoices' (Type: url, ID: invoices_sub)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "12",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Invoicing Center' (Type: dropdown, ID: invoicing_folder)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "11",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "MENU_UPDATE",
+    "module": "Menus",
+    "description": "Saved sidebar menu item 'Finance \u0026 Billing' (Type: header, ID: group_finance)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "10",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_DELETE",
+    "module": "Privileges",
+    "description": "Deleted RBAC role 'Inventory Clerk' (ID: 4)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "9",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_SWITCH",
+    "module": "Privileges",
+    "description": "User switched active session role to 'Inventory Clerk'",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "8",
+    "ip": "192.0.2.1:1234",
+    "user": "Super Admin",
+    "action": "ROLE_UPDATE",
+    "module": "Privileges",
+    "description": "Saved RBAC role 'Inventory Clerk' (Slug: clerk, Superadmin: false)",
+    "created_at": "2026-10-03 21:20:21"
+  },
+  {
+    "id": "7",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791036750814720400",
+    "created_at": "2026-10-03 21:12:30"
+  },
+  {
+    "id": "6",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791036750814720400)",
+    "created_at": "2026-10-03 21:12:30"
+  },
+  {
+    "id": "5",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791036730696922600",
+    "created_at": "2026-10-03 21:12:10"
+  },
+  {
+    "id": "4",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791036730696922600)",
+    "created_at": "2026-10-03 21:12:10"
+  },
+  {
+    "id": "3",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_REVOKE",
+    "module": "API Generator",
+    "description": "Revoked and removed API token ID #token_1791036663681939700",
+    "created_at": "2026-10-03 21:11:03"
+  },
+  {
+    "id": "2",
+    "ip": "192.0.2.1:1234",
+    "user": "Root Superadmin",
+    "action": "TOKEN_CREATE",
+    "module": "API Generator",
+    "description": "Saved API client 'Mobile Storefront App' (Env: production, ID: token_1791036663681939700)",
+    "created_at": "2026-10-03 21:11:03"
+  },
+  {
+    "id": "1",
+    "ip": "127.0.0.1",
+    "user": "System Kernel",
+    "action": "SYSTEM_BOOT",
+    "module": "Core",
+    "description": "TGo Booster Enterprise Engine initialized successfully",
+    "created_at": "2026-10-03 21:10:30"
+  },
+  {
+    "id": "2",
+    "ip": "127.0.0.1",
+    "user": "Super Administrator",
+    "action": "LOGIN",
+    "module": "Auth",
+    "description": "Session authenticated via local administration console",
+    "created_at": "2026-10-03 21:10:30"
+  }
+]

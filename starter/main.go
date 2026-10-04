@@ -6,70 +6,37 @@ import (
 
 	"github.com/tokalink/tgo/pkg/app"
 	"github.com/tokalink/tgo-booster"
+	"github.com/tokalink/tgo-booster/starter/app/controllers"
+	"github.com/tokalink/tgo-booster/starter/app/models"
 )
 
 func main() {
+	// 0. Initialize Database from .env (MySQL or Memory fallback)
+	db, _ := models.InitDatabase()
+
 	application := app.New().SetAddr(":8080")
 
-	// 1. Initialize CRUDBooster Engine
+	// 1. Initialize TGo Booster Engine
 	admin := booster.NewEngine("TGo Enterprise Admin")
-
-	// 2. Register Products Module (CRUDBooster-Style)
-	productCtrl := &booster.Controller{
-		Title: "Products",
-		Table: "products",
-		Icon:  "🛍️",
+	if db != nil {
+		admin.SetDB(db)
 	}
-	productCtrl.
-		AddCol("ID", "id", booster.ColText, false, true).
-		AddCol("Product Name", "name", booster.ColText, true, true).
-		AddCol("Price", "price", booster.ColMoney, false, true).
-		AddCol("Stock", "stock", booster.ColNumber, false, true).
-		AddCol("Status", "status", booster.ColBadge, false, false)
 
-	productCtrl.
-		AddForm("Product Name", "name", booster.InputText, true, "Enter product name...").
-		AddForm("Price", "price", booster.InputMoney, true, "Rp 0").
-		AddForm("Stock", "stock", booster.InputNumber, true, "10").
-		AddForm("Description", "description", booster.InputWYSIWYG, false, "Product details...")
+	// 2. Register MVC Controllers
+	admin.Register(controllers.NewAdminProductController())
+	admin.Register(controllers.NewAdminCustomerController())
+	admin.Register(controllers.NewAdminOrderController())
 
-	// 3. Register Customers Module
-	customerCtrl := &booster.Controller{
-		Title: "Customers",
-		Table: "customers",
-		Icon:  "👥",
-	}
-	customerCtrl.
-		AddCol("ID", "id", booster.ColText, false, true).
-		AddCol("Full Name", "name", booster.ColText, true, true).
-		AddCol("Email", "email", booster.ColEmail, true, false).
-		AddCol("Status", "status", booster.ColBadge, false, false)
-
-	customerCtrl.
-		AddForm("Full Name", "name", booster.InputText, true, "Enter customer name...").
-		AddForm("Email Address", "email", booster.InputEmail, true, "user@company.com")
-
-	// 4. Register Orders Module
-	orderCtrl := &booster.Controller{
-		Title: "Orders",
-		Table: "orders",
-		Icon:  "📦",
-	}
-	orderCtrl.
-		AddCol("Order ID", "id", booster.ColText, false, true).
-		AddCol("Customer", "customer_name", booster.ColText, true, true).
-		AddCol("Total Amount", "total_amount", booster.ColMoney, false, true).
-		AddCol("Status", "status", booster.ColBadge, false, false)
-
-	admin.Register(productCtrl)
-	admin.Register(customerCtrl)
-	admin.Register(orderCtrl)
-
-	// 5. Mount Booster Dashboard to /admin
+	// 3. Mount Booster Dashboard to /admin
 	admin.Mount(application.Server(), "/admin")
 
-	// 6. Redirect root / to /admin
+	// 4. Root /: Serve custom homepage from Pages Studio if configured, else redirect to /admin
 	application.Server().Register("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" || r.URL.Path == "" {
+			if admin.ServePublicPage(w, r) {
+				return
+			}
+		}
 		http.Redirect(w, r, "/admin", http.StatusSeeOther)
 	}))
 

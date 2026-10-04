@@ -12,10 +12,22 @@ type (
 	User         = cb.User
 	MenuItem     = cb.MenuItem
 	StatWidget   = cb.StatWidget
+	WidgetCard   = cb.WidgetCard
+	TopAction    = cb.TopAction
+	RowAction    = cb.RowAction
+	FilterTab    = cb.FilterTab
 	Context      = cb.Context
 	HookFunc     = cb.HookFunc
 	ColumnType   = cb.ColumnType
 	InputType    = cb.InputType
+	DataProvider = cb.DataProvider
+	MemoryStore      = cb.MemoryStore
+	SQLStore         = cb.SQLStore
+	SQLDB            = cb.SQLDB
+	ModuleDefinition = cb.ModuleDefinition
+	Role             = cb.Role
+	PermissionMatrix = cb.PermissionMatrix
+	CustomAdminPage  = cb.CustomAdminPage
 )
 
 const (
@@ -43,9 +55,20 @@ const (
 	InputCheckbox = cb.InputCheckbox
 	InputRadio    = cb.InputRadio
 	InputHidden   = cb.InputHidden
+	InputLOV      = cb.InputLOV
 )
 
 // NewEngine creates a new Booster Engine
 func NewEngine(appName ...string) *Engine {
 	return cb.NewEngine(appName...)
+}
+
+// NewMemoryStore creates a thread-safe in-memory DataProvider
+func NewMemoryStore(initialRows ...map[string]interface{}) *MemoryStore {
+	return cb.NewMemoryStore(initialRows...)
+}
+
+// NewSQLStore creates a SQL DataProvider for a database table
+func NewSQLStore(db *cb.SQLDB, tableName string, idKey ...string) *SQLStore {
+	return cb.NewSQLStore(db, tableName, idKey...)
 }

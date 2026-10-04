@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "title": "Welcome New Administrator",
+    "slug": "auth.welcome_user",
+    "subject": "Welcome to the Enterprise Admin Console",
+    "content": "\u003cp\u003eDear \u003cstrong\u003e{{name}}\u003c/strong\u003e,\u003c/p\u003e\u003cp\u003eYour administrator access to TGo Booster has been activated. Please log in using your registered credentials.\u003c/p\u003e",
+    "status": "Active",
+    "created_at": "2026-10-03"
+  },
+  {
+    "id": "2",
+    "title": "Order Payment Confirmation",
+    "slug": "order.paid",
+    "subject": "Your Order #{{order_id}} has been paid successfully",
+    "content": "\u003cp\u003eHi \u003cstrong\u003e{{customer_name}}\u003c/strong\u003e,\u003c/p\u003e\u003cp\u003eWe have received your payment for order \u003cstrong\u003e#{{order_id}}\u003c/strong\u003e totaling \u003cstrong\u003e{{total_amount}}\u003c/strong\u003e. Your package is now in preparation.\u003c/p\u003e",
+    "status": "Active",
+    "created_at": "2026-10-03"
+  },
+  {
+    "id": "3",
+    "title": "Password Reset Notification",
+    "slug": "auth.password_reset",
+    "subject": "Security Notice: Password Reset Request",
+    "content": "\u003cp\u003eA request was made to reset your administrator password. If you did not make this request, please contact your Security Team immediately.\u003c/p\u003e",
+    "status": "Active",
+    "created_at": "2026-10-03"
+  }
+]

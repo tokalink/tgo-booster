@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="{{if and .Settings .Settings.DefaultLanguage}}{{.Settings.DefaultLanguage}}{{else}}en{{end}}" 
+      data-theme="{{if and .Settings .Settings.ThemeMode}}{{.Settings.ThemeMode}}{{else}}dark{{end}}" 
+      data-skin="{{if and .Settings .Settings.ThemeSkin}}{{.Settings.ThemeSkin}}{{else}}obsidian{{end}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.PageTitle}} • {{.AppName}}</title>
+  {{if and .Settings .Settings.AppFaviconURL}}
+  <link rel="icon" href="{{.Settings.AppFaviconURL}}">
+  {{end}}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    {{.ThemeCSS}}
+    {{if and .Settings .Settings.AccentColor}}
+    :root {
+      --accent: {{.Settings.AccentColor}} !important;
+      --accent-glow: {{.Settings.AccentColor}}33 !important;
+    }
+    {{end}}
+  </style>
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('tgo_booster_theme');
+        if (savedTheme) {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        var savedSkin = localStorage.getItem('tgo_booster_skin');
+        if (savedSkin) {
+          document.documentElement.setAttribute('data-skin', savedSkin);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- SIDEBAR NAVIGATION -->
+  {{template "sidebar" .}}
+
+  <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="cb-main">
+    <!-- TOPBAR -->
+    {{template "topbar" .}}
+
+    <!-- CONTENT WRAPPER -->
+    <div class="cb-content">
+      {{.Content}}
+    </div>
+
+    <!-- FOOTER COPYRIGHT & TELEMETRY -->
+    <footer class="cb-footer" style="padding: 1.25rem 2rem; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-top: auto; flex-wrap: wrap; gap: 0.75rem;">
+      <div>
+        {{if and .Settings .Settings.CopyrightText}}
+          {{.Settings.CopyrightText}}
+        {{else}}
+          &copy; 2026 {{.AppName}}. All rights reserved.
+        {{end}}
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        {{if and .Settings .Settings.DebugMode}}
+          <span style="display: inline-flex; align-items: center; gap: 5px; color: #f59e0b; font-weight: 600; font-family: var(--font-mono); font-size: 0.72rem; background: rgba(245, 158, 11, 0.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.25);">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b;"></span>
+            DEBUG ACTIVE
+          </span>
+        {{end}}
+        <span>Powered by <strong>TGo High-Performance Core</strong></span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- GLOBAL MODALS & TOAST COMPONENT -->
+  {{template "modals" .}}
+
+  <script>
+    // Live table search
+    function filterTable() {
+      const query = document.getElementById('tableSearch')?.value?.toLowerCase() || '';
+      const rows = document.querySelectorAll('.cb-table tbody tr:not(.empty-state-row)');
+      let matchCount = 0;
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const match = text.includes(query);
+        row.style.display = match ? '' : 'none';
+        if (match) matchCount++;
+      });
+      const emptyRow = document.getElementById('tableNoMatchesRow');
+      if (emptyRow) {
+        emptyRow.style.display = (rows.length > 0 && matchCount === 0) ? '' : 'none';
+      }
+    }
+
+    // Keyboard Shortcuts (Ctrl+K / Cmd+K)
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        toggleCmdPalette();
+      }
+      if (e.key === 'Escape') {
+        toggleMobileSidebar(false);
+        const pal = document.getElementById('cmdPalette');
+        if (pal && pal.style.display !== 'none') toggleCmdPalette();
+      }
+    });
+
+    // Mobile Sidebar Drawer Navigation
+    function toggleMobileSidebar(force) {
+      var sidebar = document.getElementById('cbSidebar') || document.querySelector('.cb-sidebar');
+      var backdrop = document.getElementById('sidebarBackdrop');
+      if (!sidebar) return;
+      var isOpen = sidebar.classList.contains('open');
+      var nextState = (typeof force === 'boolean') ? force : !isOpen;
+      if (nextState) {
+        sidebar.classList.add('open');
+        if (backdrop) backdrop.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      } else {
+        sidebar.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Auto-close mobile drawer when navigating via links
+    document.addEventListener('DOMContentLoaded', function() {
+      var sidebar = document.getElementById('cbSidebar') || document.querySelector('.cb-sidebar');
+      if (sidebar) {
+        sidebar.addEventListener('click', function(e) {
+          var link = e.target.closest('a');
+          if (link && window.innerWidth <= 1024) {
+            toggleMobileSidebar(false);
+          }
+        });
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 1024) {
+        toggleMobileSidebar(false);
+      }
+    });
+
+    function toggleCmdPalette() {
+      const pal = document.getElementById('cmdPalette');
+      if (!pal) return;
+      if (pal.style.display === 'none') {
+        pal.style.display = 'flex';
+        setTimeout(() => document.getElementById('cmdInput')?.focus(), 50);
+      } else {
+        pal.style.display = 'none';
+      }
+    }
+
+    function filterCmdPalette() {
+      const query = document.getElementById('cmdInput')?.value?.toLowerCase() || '';
+      const items = document.querySelectorAll('.cmd-item');
+      items.forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(query) ? 'flex' : 'none';
+      });
+    }
+
+    // Theme & Skin Switcher System
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme') || 'dark';
+      var next = current === 'light' ? 'dark' : 'light';
+      setTheme(next);
+    }
+
+    function setTheme(theme) {
+      if (theme === 'system') {
+        var isLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+        try { localStorage.removeItem('tgo_booster_theme'); } catch(e) {}
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem('tgo_booster_theme', theme); } catch(e) {}
+      }
+      var radio = document.querySelector('input[name="theme_mode"][value="' + theme + '"]');
+      if (radio) radio.checked = true;
+    }
+
+    function setSkin(skin) {
+      if (!skin || skin === 'obsidian' || skin === 'default' || skin === 'light') {
+        document.documentElement.removeAttribute('data-skin');
+        try { localStorage.removeItem('tgo_booster_skin'); } catch(e) {}
+      } else {
+        document.documentElement.setAttribute('data-skin', skin);
+        try { localStorage.setItem('tgo_booster_skin', skin); } catch(e) {}
+      }
+      var input = document.getElementById('settingThemeSkin');
+      if (input) input.value = skin || 'obsidian';
+    }
+
+    // Modern Floating Toast Notification Engine
+    function showToast(message, type, duration) {
+      type = type || 'success';
+      duration = duration || 4200;
+      const container = document.getElementById('cbToastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'cb-toast cb-toast-' + type;
+
+      let icon = '';
+      if (type === 'success') {
+        icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+      } else if (type === 'error' || type === 'danger') {
+        icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+      } else {
+        icon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+      }
+
+      toast.innerHTML = 
+        '<div class="cb-toast-icon">' + icon + '</div>' +
+        '<div class="cb-toast-msg">' + message + '</div>' +
+        '<button type="button" class="cb-toast-close" onclick="this.closest(\'.cb-toast\').remove()">✕</button>';
+
+      container.appendChild(toast);
+      setTimeout(function() { toast.classList.add('show'); }, 10);
+
+      setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 300);
+      }, duration);
+    }
+
+    // Auto-read URL query alerts (?alert=...&alert_type=...)
+    (function initUrlAlerts() {
+      const params = new URLSearchParams(window.location.search);
+      const alertMsg = params.get('alert') || params.get('message');
+      if (alertMsg) {
+        const alertType = params.get('alert_type') || params.get('type') || 'success';
+        showToast(decodeURIComponent(alertMsg.replace(/\+/g, ' ')), alertType);
+        params.delete('alert');
+        params.delete('message');
+        params.delete('alert_type');
+        params.delete('type');
+        const q = params.toString();
+        const cleanUrl = window.location.pathname + (q ? '?' + q : '');
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    })();
+
+    // Lightbox modal helpers
+    function openLightbox(src) {
+      const box = document.getElementById('cbLightbox');
+      const img = document.getElementById('cbLightboxImg');
+      if (box && img) {
+        img.src = src;
+        box.style.display = 'flex';
+      }
+    }
+
+    function closeLightbox() {
+      const box = document.getElementById('cbLightbox');
+      if (box) box.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

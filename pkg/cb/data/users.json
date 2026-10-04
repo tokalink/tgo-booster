@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100\u0026auto=format\u0026fit=crop\u0026q=80",
+    "name": "Super Administrator",
+    "email": "admin@tgo.io",
+    "password_hash": "9f13ec154c5eadd83b5db96471d72f537bfc5e676d0f3fb7b1b273364e4837ac",
+    "salt": "82ed491f8ffec4dabf424ba0a3e1fa74",
+    "role_id": "1",
+    "role": "Superadmin",
+    "status": "Active",
+    "created_at": "2026-01-10"
+  },
+  {
+    "id": "2",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100\u0026auto=format\u0026fit=crop\u0026q=80",
+    "name": "Budi Operations",
+    "email": "manager@tgo.io",
+    "password_hash": "38ca9122dd6b4f078bbea2c409551b906828c251817ea792342aaef83202bf0c",
+    "salt": "d40b98e1a6a0cc1e9edefa0a1a3a3b00",
+    "role_id": "2",
+    "role": "Operations Manager",
+    "status": "Active",
+    "created_at": "2026-02-14"
+  },
+  {
+    "id": "3",
+    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100\u0026auto=format\u0026fit=crop\u0026q=80",
+    "name": "Siti Auditor",
+    "email": "auditor@tgo.io",
+    "password_hash": "2a4e8277f19e232af7eb83572b830e908068b9c0aa595d077821fecfbeccd0e8",
+    "salt": "1bf455ef88d08e1d4089b945eda41519",
+    "role_id": "3",
+    "role": "Read-Only Auditor",
+    "status": "Active",
+    "created_at": "2026-03-01"
+  }
+]

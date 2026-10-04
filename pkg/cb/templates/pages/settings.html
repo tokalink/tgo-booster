@@ -1,0 +1,1515 @@
+<div class="settings-studio-container">
+
+  <!-- STUDIO TOP HEADER -->
+  <div class="settings-header">
+    <div class="settings-header-left">
+      <div class="settings-header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h1 class="settings-title">Platform Settings Studio</h1>
+          <span class="cb-badge cb-badge-primary" style="font-size: 0.72rem; font-weight: 700;">Active Core</span>
+        </div>
+        <p class="settings-subtitle">Manage branding, visual theme skins, security governance, notification mailers, and runtime diagnostics</p>
+      </div>
+    </div>
+    <div class="settings-header-actions">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="resetSettingsDefaults()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span>Reset Defaults</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveAllSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Changes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STUDIO MAIN CARD -->
+  <div class="cb-card settings-card">
+    
+    <!-- NAVIGATION TABS -->
+    <div class="settings-tabs-bar">
+      <button type="button" class="settings-tab-btn active" onclick="switchSettingsTab('general', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>General & Branding</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('appearance', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+        <span>Appearance & Theme</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('security', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Security & Auth</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('crud', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+        <span>Data Grid & CRUD</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('mail', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span>Mail & Alerts</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('ai', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <span>AI & LLM Services</span>
+      </button>
+      <button type="button" class="settings-tab-btn" onclick="switchSettingsTab('system', this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+        <span>System Diagnostics</span>
+      </button>
+    </div>
+
+    <!-- FORM BODY -->
+    <form id="platformSettingsForm" onsubmit="event.preventDefault(); saveAllSettings();">
+      
+      <!-- ================================================================= -->
+      <!-- TAB 1: GENERAL & BRANDING -->
+      <!-- ================================================================= -->
+      <div id="tab-general" class="settings-tab-content active">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">Identity & Platform Branding</h3>
+          <p class="settings-section-desc">Personalize application name, corporate metadata, logo assets, and regional localization</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Application Name <span class="required-mark">*</span></label>
+            <input type="text" id="settingAppName" name="app_name" class="cb-input" value="{{.Settings.AppName}}" placeholder="e.g. TGo Enterprise" required>
+            <span class="settings-hint">Displayed across topbar, browser window title, and email notifications</span>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Brand Tagline / Slogan</label>
+            <input type="text" id="settingAppTagline" name="app_tagline" class="cb-input" value="{{.Settings.AppTagline}}" placeholder="e.g. Next-Generation High-Performance Go Admin">
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Company / Entity Name</label>
+            <input type="text" id="settingCompanyName" name="company_name" class="cb-input" value="{{.Settings.CompanyName}}" placeholder="e.g. Acme Corporation Ltd">
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Copyright Footer Notice</label>
+            <input type="text" id="settingCopyrightText" name="copyright_text" class="cb-input" value="{{.Settings.CopyrightText}}" placeholder="e.g. © 2026 Acme Corp. All rights reserved.">
+          </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <!-- LOGO & BRAND ASSETS -->
+        <div class="settings-section-head" style="margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0;">Brand Visual Assets</h4>
+          <p class="settings-section-desc">Upload or specify image URLs for admin logos and web favicon</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <!-- Primary Logo -->
+          <div class="logo-upload-card">
+            <div class="logo-preview-box" id="logoPreviewBox">
+              {{if .Settings.AppLogoURL}}
+                <img id="logoPreviewImg" src="{{.Settings.AppLogoURL}}" alt="Logo Preview" style="max-height: 48px; max-width: 100%;">
+              {{else}}
+                <div class="logo-placeholder" id="logoPlaceholder">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <span>Default Logo</span>
+                </div>
+              {{end}}
+            </div>
+            <div style="flex: 1;">
+              <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Primary Header Logo URL</label>
+              <input type="text" id="settingAppLogoURL" name="app_logo_url" class="cb-input" value="{{.Settings.AppLogoURL}}" placeholder="https://... or /static/logo.svg" oninput="previewLogo(this.value, 'logoPreviewImg', 'logoPlaceholder')">
+              <span class="settings-hint">Used in sidebar and login card (SVG or PNG recommended)</span>
+            </div>
+          </div>
+
+          <!-- Favicon -->
+          <div class="logo-upload-card">
+            <div class="logo-preview-box" style="width: 48px; height: 48px; min-width: 48px;">
+              {{if .Settings.AppFaviconURL}}
+                <img id="faviconPreviewImg" src="{{.Settings.AppFaviconURL}}" alt="Favicon" style="width: 32px; height: 32px; object-fit: contain;">
+              {{else}}
+                <div style="font-size: 1.2rem;">🌐</div>
+              {{end}}
+            </div>
+            <div style="flex: 1;">
+              <label class="cb-form-label" style="font-size: 0.8rem; font-weight: 700;">Favicon Asset URL</label>
+              <input type="text" id="settingAppFaviconURL" name="app_favicon_url" class="cb-input" value="{{.Settings.AppFaviconURL}}" placeholder="https://... or /favicon.ico">
+              <span class="settings-hint">Displayed in web browser tabs (32x32px .ico or .png)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <!-- LOCALIZATION & REGIONAL DEFAULTS -->
+        <div class="settings-section-head" style="margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0;">Localization & Regional Settings</h4>
+          <p class="settings-section-desc">Date/time format conventions and default operating timezone</p>
+        </div>
+
+        <div class="settings-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <div class="cb-form-group">
+            <label class="cb-form-label">System Timezone</label>
+            <select id="settingTimezone" name="timezone" class="cb-input">
+              <option value="Asia/Jakarta" {{if eq .Settings.Timezone "Asia/Jakarta"}}selected{{end}}>Asia/Jakarta (WIB, UTC+7)</option>
+              <option value="Asia/Makassar" {{if eq .Settings.Timezone "Asia/Makassar"}}selected{{end}}>Asia/Makassar (WITA, UTC+8)</option>
+              <option value="Asia/Jayapura" {{if eq .Settings.Timezone "Asia/Jayapura"}}selected{{end}}>Asia/Jayapura (WIT, UTC+9)</option>
+              <option value="Asia/Singapore" {{if eq .Settings.Timezone "Asia/Singapore"}}selected{{end}}>Asia/Singapore (SGT, UTC+8)</option>
+              <option value="Asia/Tokyo" {{if eq .Settings.Timezone "Asia/Tokyo"}}selected{{end}}>Asia/Tokyo (JST, UTC+9)</option>
+              <option value="UTC" {{if eq .Settings.Timezone "UTC"}}selected{{end}}>UTC (Coordinated Universal Time)</option>
+              <option value="America/New_York" {{if eq .Settings.Timezone "America/New_York"}}selected{{end}}>America/New_York (EST/EDT)</option>
+              <option value="Europe/London" {{if eq .Settings.Timezone "Europe/London"}}selected{{end}}>Europe/London (GMT/BST)</option>
+            </select>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Date Format</label>
+            <select id="settingDateFormat" name="date_format" class="cb-input">
+              <option value="YYYY-MM-DD" {{if eq .Settings.DateFormat "YYYY-MM-DD"}}selected{{end}}>YYYY-MM-DD (2026-10-03)</option>
+              <option value="DD/MM/YYYY" {{if eq .Settings.DateFormat "DD/MM/YYYY"}}selected{{end}}>DD/MM/YYYY (03/10/2026)</option>
+              <option value="MM/DD/YYYY" {{if eq .Settings.DateFormat "MM/DD/YYYY"}}selected{{end}}>MM/DD/YYYY (10/03/2026)</option>
+              <option value="DD MMM YYYY" {{if eq .Settings.DateFormat "DD MMM YYYY"}}selected{{end}}>DD MMM YYYY (03 Oct 2026)</option>
+            </select>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Time Format</label>
+            <select id="settingTimeFormat" name="time_format" class="cb-input">
+              <option value="24h" {{if eq .Settings.TimeFormat "24h"}}selected{{end}}>24 Hours (17:30)</option>
+              <option value="12h" {{if eq .Settings.TimeFormat "12h"}}selected{{end}}>12 Hours AM/PM (05:30 PM)</option>
+            </select>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Default UI Language</label>
+            <select id="settingDefaultLanguage" name="default_language" class="cb-input">
+              <option value="id" {{if eq .Settings.DefaultLanguage "id"}}selected{{end}}>Bahasa Indonesia</option>
+              <option value="en" {{if eq .Settings.DefaultLanguage "en"}}selected{{end}}>English (US)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 2: APPEARANCE & THEME STUDIO -->
+      <!-- ================================================================= -->
+      <div id="tab-appearance" class="settings-tab-content">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">Visual Styling & Theme Studio</h3>
+          <p class="settings-section-desc">Select high-contrast color skins, accent highlights, and sidebar ergonomics</p>
+        </div>
+
+        <!-- THEME MODE TOGGLE -->
+        <div class="cb-form-group" style="margin-bottom: 1.5rem;">
+          <label class="cb-form-label">Color Scheme Mode</label>
+          <div class="theme-mode-pills">
+            <label class="theme-mode-pill" onclick="handleThemeModeChange('dark')">
+              <input type="radio" name="theme_mode" value="dark" {{if eq .Settings.ThemeMode "dark"}}checked{{end}} onchange="handleThemeModeChange('dark')">
+              <span class="pill-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <span>Dark Mode</span>
+              </span>
+            </label>
+            <label class="theme-mode-pill" onclick="handleThemeModeChange('light')">
+              <input type="radio" name="theme_mode" value="light" {{if eq .Settings.ThemeMode "light"}}checked{{end}} onchange="handleThemeModeChange('light')">
+              <span class="pill-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <span>Light Mode</span>
+              </span>
+            </label>
+            <label class="theme-mode-pill" onclick="handleThemeModeChange('system')">
+              <input type="radio" name="theme_mode" value="system" {{if eq .Settings.ThemeMode "system"}}checked{{end}} onchange="handleThemeModeChange('system')">
+              <span class="pill-content">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span>System Sync</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- THEME SKINS CARDS -->
+        <div class="cb-form-group">
+          <label class="cb-form-label">Theme Color Skin</label>
+          <div class="skin-selector-grid">
+            <!-- Obsidian -->
+            <div class="skin-card {{if eq .Settings.ThemeSkin "obsidian"}}active{{end}}" data-skin="obsidian" onclick="selectSkinPreset('obsidian', this)">
+              <div class="skin-card-header">
+                <div class="skin-swatch" style="background: linear-gradient(135deg, #090d16 0%, #0284c7 100%);"></div>
+                <div class="skin-card-meta">
+                  <span class="skin-card-title">Obsidian Glass</span>
+                  <span class="skin-card-sub">Deep dark navy & sky cyan</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Midnight Indigo -->
+            <div class="skin-card {{if eq .Settings.ThemeSkin "midnight"}}active{{end}}" data-skin="midnight" onclick="selectSkinPreset('midnight', this)">
+              <div class="skin-card-header">
+                <div class="skin-swatch" style="background: linear-gradient(135deg, #0f172a 0%, #6366f1 100%);"></div>
+                <div class="skin-card-meta">
+                  <span class="skin-card-title">Midnight Indigo</span>
+                  <span class="skin-card-sub">Refined dark slate & violet</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Emerald -->
+            <div class="skin-card {{if eq .Settings.ThemeSkin "emerald"}}active{{end}}" data-skin="emerald" onclick="selectSkinPreset('emerald', this)">
+              <div class="skin-card-header">
+                <div class="skin-swatch" style="background: linear-gradient(135deg, #064e3b 0%, #10b981 100%);"></div>
+                <div class="skin-card-meta">
+                  <span class="skin-card-title">Emerald Enterprise</span>
+                  <span class="skin-card-sub">Corporate forest & green</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Amethyst -->
+            <div class="skin-card {{if eq .Settings.ThemeSkin "amethyst"}}active{{end}}" data-skin="amethyst" onclick="selectSkinPreset('amethyst', this)">
+              <div class="skin-card-header">
+                <div class="skin-swatch" style="background: linear-gradient(135deg, #2e1065 0%, #a855f7 100%);"></div>
+                <div class="skin-card-meta">
+                  <span class="skin-card-title">Royal Amethyst</span>
+                  <span class="skin-card-sub">High-vibrancy luxury purple</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Clean Slate Light -->
+            <div class="skin-card {{if eq .Settings.ThemeSkin "light"}}active{{end}}" data-skin="light" onclick="selectSkinPreset('light', this)">
+              <div class="skin-card-header">
+                <div class="skin-swatch" style="background: linear-gradient(135deg, #f8fafc 0%, #0284c7 100%); border: 1px solid #cbd5e1;"></div>
+                <div class="skin-card-meta">
+                  <span class="skin-card-title">Clean Slate</span>
+                  <span class="skin-card-sub">Ultra-crisp daytime light</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" id="settingThemeSkin" name="theme_skin" value="{{.Settings.ThemeSkin}}">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-grid">
+          <!-- Accent Color Picker -->
+          <div class="cb-form-group">
+            <label class="cb-form-label">Brand Accent Color</label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="color" id="settingAccentColor" name="accent_color" value="{{if .Settings.AccentColor}}{{.Settings.AccentColor}}{{else}}#0284c7{{end}}" style="width: 44px; height: 38px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; padding: 2px; background: var(--bg-card);">
+              <input type="text" id="settingAccentHex" class="cb-input" value="{{if .Settings.AccentColor}}{{.Settings.AccentColor}}{{else}}#0284c7{{end}}" style="max-width: 140px; font-family: var(--font-mono); font-size: 0.85rem;" oninput="document.getElementById('settingAccentColor').value = this.value">
+              <div style="display: flex; gap: 4px;">
+                <button type="button" class="swatch-quick-btn" style="background: #0284c7;" onclick="setQuickAccent('#0284c7')" title="Sky Blue"></button>
+                <button type="button" class="swatch-quick-btn" style="background: #6366f1;" onclick="setQuickAccent('#6366f1')" title="Indigo"></button>
+                <button type="button" class="swatch-quick-btn" style="background: #10b981;" onclick="setQuickAccent('#10b981')" title="Emerald"></button>
+                <button type="button" class="swatch-quick-btn" style="background: #f59e0b;" onclick="setQuickAccent('#f59e0b')" title="Amber"></button>
+                <button type="button" class="swatch-quick-btn" style="background: #ec4899;" onclick="setQuickAccent('#ec4899')" title="Pink"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar Default Ergonomics -->
+          <div class="cb-form-group">
+            <label class="cb-form-label">Sidebar Default Layout</label>
+            <select id="settingSidebarStyle" name="sidebar_style" class="cb-input">
+              <option value="expanded" {{if eq .Settings.SidebarStyle "expanded"}}selected{{end}}>Standard Expanded (Full Title & Icons)</option>
+              <option value="compact" {{if eq .Settings.SidebarStyle "compact"}}selected{{end}}>Compact Slimline (Icon Focus)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 3: SECURITY & AUTHENTICATION -->
+      <!-- ================================================================= -->
+      <div id="tab-security" class="settings-tab-content">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">Security Governance & Authentication Policies</h3>
+          <p class="settings-section-desc">Session lifecycles, brute-force rate limiting, password complexity, and 2FA</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Session Idle Lifetime (Minutes)</label>
+            <input type="number" id="settingSessionTimeoutMinutes" name="session_timeout_minutes" class="cb-input" value="{{.Settings.SessionTimeoutMinutes}}" min="15" max="1440">
+            <span class="settings-hint">Administrators will be asked to re-authenticate after idle period</span>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Max Failed Login Attempts</label>
+            <input type="number" id="settingMaxLoginAttempts" name="max_login_attempts" class="cb-input" value="{{.Settings.MaxLoginAttempts}}" min="3" max="20">
+            <span class="settings-hint">Trigger temporary rate-limiting IP lockout upon consecutive bad credentials</span>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Lockout Quarantine Period (Minutes)</label>
+            <input type="number" id="settingLockoutDurationMin" name="lockout_duration_min" class="cb-input" value="{{.Settings.LockoutDurationMin}}" min="5" max="120">
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Minimum Password Length</label>
+            <input type="number" id="settingPasswordMinLength" name="password_min_length" class="cb-input" value="{{.Settings.PasswordMinLength}}" min="6" max="32">
+          </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-switches-list">
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingRequirePasswordSpecial" name="require_password_special" {{if .Settings.RequirePasswordSpecial}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Enforce Complex Password Entropy</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Require uppercase letters, numbers, and special symbols for all user accounts</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingEnableRememberMe" name="enable_remember_me" {{if .Settings.EnableRememberMe}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Allow "Remember Me" Extended Sessions</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Preserve user authentication cookies across browser restarts for up to 30 days</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingForce2FA" name="force_2fa" {{if .Settings.Force2FA}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Enforce Two-Factor Authentication (2FA / OTP)</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Require TOTP authenticator verification code for high-privilege administrative accounts</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingEnableRegistration" name="enable_registration" {{if .Settings.EnableRegistration}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Allow Public Self-Registration</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Allow visitors to register new accounts. If disabled, accounts can only be created by Admins</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 4: DATA GRID & CRUD DEFAULTS -->
+      <!-- ================================================================= -->
+      <div id="tab-crud" class="settings-tab-content">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">Data Grid Defaults & Record Governance</h3>
+          <p class="settings-section-desc">Default rows per page, batch export/import toggles, and deletion verification</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Default Table Records Per Page</label>
+            <select id="settingDefaultPageSize" name="default_page_size" class="cb-input">
+              <option value="10" {{if eq .Settings.DefaultPageSize 10}}selected{{end}}>10 Rows per page</option>
+              <option value="25" {{if eq .Settings.DefaultPageSize 25}}selected{{end}}>25 Rows per page (Standard)</option>
+              <option value="50" {{if eq .Settings.DefaultPageSize 50}}selected{{end}}>50 Rows per page</option>
+              <option value="100" {{if eq .Settings.DefaultPageSize 100}}selected{{end}}>100 Rows per page</option>
+            </select>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">Action Buttons Column Alignment</label>
+            <select id="settingDefaultActionPosition" name="default_action_position" class="cb-input">
+              <option value="right" {{if eq .Settings.DefaultActionPosition "right"}}selected{{end}}>Align Right (Standard)</option>
+              <option value="left" {{if eq .Settings.DefaultActionPosition "left"}}selected{{end}}>Align Left</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-switches-list">
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingEnableExportCSV" name="enable_export_csv" {{if .Settings.EnableExportCSV}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Enable Global CSV Export</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Displays the Export CSV button on all authorized module data grids</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingEnableImportCSV" name="enable_import_csv" {{if .Settings.EnableImportCSV}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Enable Batch CSV Import</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Allows administrative operators to upload CSV spreadsheets directly into modules</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingConfirmDelete" name="confirm_delete" {{if .Settings.ConfirmDelete}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Require Confirmation Before Delete</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Displays an alert modal before permanently deleting individual or bulk records</p>
+            </div>
+          </label>
+
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingEnableAuditLog" name="enable_audit_log" {{if .Settings.EnableAuditLog}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Immutable Audit Trail Logging</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Records user ID, IP address, timestamp, and payload for all Create, Update, and Delete operations</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 5: MAIL & NOTIFICATIONS (SMTP) -->
+      <!-- ================================================================= -->
+      <div id="tab-mail" class="settings-tab-content">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">SMTP Mailer & External Event Webhooks</h3>
+          <p class="settings-section-desc">Outbound email delivery credentials for verification, password resets, and notifications</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">Mail Delivery Driver</label>
+            <select id="settingMailDriver" name="mail_driver" class="cb-input">
+              <option value="smtp" {{if eq .Settings.MailDriver "smtp"}}selected{{end}}>Standard SMTP Server</option>
+              <option value="sendgrid" {{if eq .Settings.MailDriver "sendgrid"}}selected{{end}}>SendGrid API</option>
+              <option value="log" {{if eq .Settings.MailDriver "log"}}selected{{end}}>Development Mock (Log to Console)</option>
+            </select>
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">SMTP Encryption Protocol</label>
+            <select id="settingSMTPEncryption" name="smtp_encryption" class="cb-input">
+              <option value="tls" {{if eq .Settings.SMTPEncryption "tls"}}selected{{end}}>TLS (STARTTLS - Port 587)</option>
+              <option value="ssl" {{if eq .Settings.SMTPEncryption "ssl"}}selected{{end}}>SSL (Direct - Port 465)</option>
+              <option value="none" {{if eq .Settings.SMTPEncryption "none"}}selected{{end}}>None (Insecure / Local)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">SMTP Host Server</label>
+            <input type="text" id="settingSMTPHost" name="smtp_host" class="cb-input" value="{{.Settings.SMTPHost}}" placeholder="e.g. smtp.gmail.com or smtp.mailtrap.io">
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">SMTP Port Number</label>
+            <input type="number" id="settingSMTPPort" name="smtp_port" class="cb-input" value="{{.Settings.SMTPPort}}" placeholder="587">
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">SMTP Username / Account</label>
+            <input type="text" id="settingSMTPUser" name="smtp_user" class="cb-input" value="{{.Settings.SMTPUser}}" placeholder="e.g. apikey or user@domain.com">
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">SMTP Secret Password</label>
+            <div style="position: relative;">
+              <input type="password" id="settingSMTPPassword" name="smtp_password" class="cb-input" value="{{.Settings.SMTPPassword}}" placeholder="••••••••••••" style="padding-right: 36px;">
+              <button type="button" onclick="togglePasswordVisibility('settingSMTPPassword')" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;">
+                👁️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">From Sender Email Address</label>
+            <input type="email" id="settingMailSenderEmail" name="mail_sender_email" class="cb-input" value="{{.Settings.MailSenderEmail}}" placeholder="no-reply@domain.com">
+          </div>
+
+          <div class="cb-form-group">
+            <label class="cb-form-label">From Sender Display Name</label>
+            <input type="text" id="settingMailSenderName" name="mail_sender_name" class="cb-input" value="{{.Settings.MailSenderName}}" placeholder="e.g. TGo System Alerts">
+          </div>
+        </div>
+
+        <div class="cb-form-group">
+          <label class="cb-form-label">Incident Alert Webhook URL (Slack / Discord)</label>
+          <input type="url" id="settingWebhookURL" name="webhook_url" class="cb-input" value="{{.Settings.WebhookURL}}" placeholder="https://hooks.slack.com/services/...">
+          <span class="settings-hint">System will POST JSON notifications on critical server errors or security breaches</span>
+        </div>
+
+        <!-- TEST EMAIL DIAGNOSTIC CARD -->
+        <div class="test-email-box">
+          <div style="flex: 1;">
+            <strong style="color: var(--text-main); font-size: 0.9rem;">Test Outbound Email Handshake</strong>
+            <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">Dispatch an instant diagnostic test email to verify your SMTP server connectivity</p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="email" id="testEmailTarget" class="cb-input" placeholder="recipient@example.com" style="width: 240px; height: 34px; font-size: 0.8rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="sendTestEmailDiagnostic()">
+              <span>🚀 Send Test Email</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 6: AI & LLM SERVICES                                          -->
+      <!-- ================================================================= -->
+      <div id="tab-ai" class="settings-tab-content">
+        <div class="settings-section-head">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 class="settings-section-title">AI & LLM Integration Services</h3>
+            <span class="cb-badge cb-badge-pro" style="font-size: 0.72rem;">OpenAI Compatible</span>
+          </div>
+          <p class="settings-section-desc">Connect deep learning LLMs (DeepSeek, OpenAI, Azure, Anthropic proxy) to power automatic landing page synthesis, SEO generation, and AI copilots</p>
+        </div>
+
+        <!-- HYBRID NOTE BANNER -->
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 12px;">
+          <div style="font-size: 1.25rem; line-height: 1;">💡</div>
+          <div style="font-size: 0.82rem; color: var(--text-main); line-height: 1.5;">
+            <strong>Hybrid Architecture Fallback:</strong> Settings configured here take top priority and are persisted to <code class="cell-code">data/settings.json</code>. If any field is left blank, the engine automatically falls back to environment variables in your <code class="cell-code">.env</code> file (<code class="cell-code">OPENAI_HOST</code>, <code class="cell-code">OPENAI_APIKEY</code>, <code class="cell-code">OPENAI_DEFAULT_MODEL</code>).
+          </div>
+        </div>
+
+        <!-- QUICK PRESETS -->
+        <div style="margin-bottom: 1.25rem;">
+          <label class="cb-form-label" style="margin-bottom: 6px; font-size: 0.8rem; color: var(--text-muted);">Quick Provider Presets</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="applyAIPreset('sumopod')">
+              <span>🚀 SumoPod (DeepSeek v4)</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="applyAIPreset('openai_gpt4o')">
+              <span>🤖 OpenAI (GPT-4o)</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="applyAIPreset('openai_mini')">
+              <span>⚡ OpenAI (GPT-4o Mini)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="cb-form-group">
+            <label class="cb-form-label">AI Host Endpoint URL <span class="required-mark">*</span></label>
+            <input type="text" id="settingOpenAIHost" name="openai_host" class="cb-input" value="{{.Settings.OpenAIHost}}" placeholder="https://ai.sumopod.com">
+            <span class="settings-hint">Base URL of OpenAI-compatible API gateway. Sub-path <code class="cell-code">/v1/chat/completions</code> will be handled automatically.</span>
+          </div>
+
+          <div class="cb-form-group">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <label class="cb-form-label" style="margin-bottom: 0;">Default Model Identifier <span class="required-mark">*</span></label>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="fetchAIModelsList(true)" id="btnFetchModels" style="padding: 2px 9px; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 5px; font-weight: 600;">
+                <span id="fetchModelsIcon">🔄</span>
+                <span id="fetchModelsLabel">Auto-Get Server Models</span>
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="settingOpenAIDefaultModel" name="openai_default_model" class="cb-input" list="aiModelDatalist" value="{{.Settings.OpenAIDefaultModel}}" placeholder="deepseek-v4-flash-0731:netra" style="flex: 1;">
+              <select id="aiModelSelectDropdown" class="cb-input" style="width: 210px; font-size: 0.8rem; cursor: pointer;" onchange="onModelSelectChanged(this.value)" title="Choose from auto-fetched server models">
+                <option value="">-- Pick from List --</option>
+              </select>
+            </div>
+            <datalist id="aiModelDatalist"></datalist>
+            <span class="settings-hint" id="aiModelFetchHint">Ketik manual atau klik <strong>"Auto-Get Server Models"</strong> untuk memilih langsung dari daftar model provider.</span>
+          </div>
+        </div>
+
+        <div class="cb-form-group" style="margin-top: 1rem;">
+          <label class="cb-form-label">API Secret Key <span class="required-mark">*</span></label>
+          <div style="position: relative;">
+            <input type="password" id="settingOpenAIAPIKey" name="openai_api_key" class="cb-input" value="{{.Settings.OpenAIAPIKey}}" placeholder="sk-..." style="padding-right: 36px; font-family: monospace;">
+            <button type="button" onclick="togglePasswordVisibility('settingOpenAIAPIKey')" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px;" title="Toggle API Key visibility">
+              👁️
+            </button>
+          </div>
+          <span class="settings-hint">Secret bearer authorization token. Strictly protected on the server side and never leaked to public HTML.</span>
+        </div>
+
+        <!-- TEST AI DIAGNOSTIC CARD -->
+        <div class="test-email-box" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%); border-color: rgba(56, 189, 248, 0.3);">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong style="color: var(--text-main); font-size: 0.9rem;">Test AI Endpoint & Model Latency</strong>
+              <span id="aiPingBadge" class="cb-badge cb-badge-secondary" style="font-size: 0.7rem; display: none;">Ready</span>
+            </div>
+            <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">Perform a live roundtrip handshake with the configured LLM to test credentials, model availability, and response latency.</p>
+            <div id="aiTestFeedback" style="margin-top: 6px; font-size: 0.78rem; display: none;"></div>
+          </div>
+          <div>
+            <button type="button" id="btnTestAI" class="btn btn-secondary btn-sm" onclick="sendTestAIDiagnostic()" style="font-weight: 700; white-space: nowrap;">
+              <span>⚡ Test AI Connection</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- TAB 7: SYSTEM & DIAGNOSTICS -->
+      <!-- ================================================================= -->
+      <div id="tab-system" class="settings-tab-content">
+        <div class="settings-section-head">
+          <h3 class="settings-section-title">System Status & Kernel Diagnostics</h3>
+          <p class="settings-section-desc">Live runtime telemetry from the TGo zero-alloc HTTP/2 kernel</p>
+        </div>
+
+        <!-- TELEMETRY CARDS GRID -->
+        <div class="telemetry-grid">
+          <div class="telemetry-card">
+            <span class="telemetry-label">Go Kernel Version</span>
+            <span class="telemetry-value" id="diagGoVersion">{{.Diagnostics.GoVersion}}</span>
+            <span class="telemetry-sub">{{.Diagnostics.OS}} / {{.Diagnostics.Arch}} ({{.Diagnostics.NumCPU}} CPUs)</span>
+          </div>
+
+          <div class="telemetry-card">
+            <span class="telemetry-label">Active Goroutines</span>
+            <span class="telemetry-value" id="diagNumGoroutine">{{.Diagnostics.NumGoroutine}}</span>
+            <span class="telemetry-sub">Lightweight thread runtime</span>
+          </div>
+
+          <div class="telemetry-card">
+            <span class="telemetry-label">Memory Allocated (Heap)</span>
+            <span class="telemetry-value" id="diagAllocMB">{{.Diagnostics.AllocMB}}</span>
+            <span class="telemetry-sub">Sys: {{.Diagnostics.SysMB}} &bull; GC: {{.Diagnostics.NumGC}}</span>
+          </div>
+
+          <div class="telemetry-card">
+            <span class="telemetry-label">Engine Uptime</span>
+            <span class="telemetry-value" id="diagUptime">{{.Diagnostics.Uptime}}</span>
+            <span class="telemetry-sub">Continuous live process</span>
+          </div>
+
+          <div class="telemetry-card">
+            <span class="telemetry-label">Database Persistence</span>
+            <span class="telemetry-value" style="font-size: 0.95rem; color: #10b981;" id="diagDBState">{{.Diagnostics.DatabaseState}}</span>
+            <span class="telemetry-sub">Active modules: {{.Diagnostics.ActiveModules}}</span>
+          </div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <!-- MAINTENANCE MODE & FLUSH CACHE -->
+        <div class="settings-section-head" style="margin-top: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0 0 4px 0;">Maintenance Mode & Cache Governance</h4>
+          <p class="settings-section-desc">Take the platform offline for maintenance or purge system template caches</p>
+        </div>
+
+        <div class="settings-switches-list">
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingMaintenanceMode" name="maintenance_mode" {{if .Settings.MaintenanceMode}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Activate Platform Maintenance Mode</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Non-administrator visitors will be redirected to the maintenance notice page</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="cb-form-group" style="margin-top: 1rem;">
+          <label class="cb-form-label">Maintenance Notice Message</label>
+          <textarea id="settingMaintenanceMessage" name="maintenance_message" class="cb-input cb-textarea" rows="3">{{.Settings.MaintenanceMessage}}</textarea>
+        </div>
+
+        <div class="cb-form-group" style="margin-top: 1rem;">
+          <label class="cb-toggle-switch">
+            <input type="checkbox" id="settingDebugMode" name="debug_mode" {{if .Settings.DebugMode}}checked{{end}}>
+            <span class="cb-toggle-slider"></span>
+            <div>
+              <strong style="color: var(--text-main); font-size: 0.88rem;">Enable Debug & SQL Profiler Mode</strong>
+              <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">Prints full SQL queries and execution telemetry traces to standard output</p>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); align-items: center; justify-content: space-between;">
+          <div>
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-main);">Flush In-Memory Buffers & Caches</span>
+            <p style="margin: 2px 0 0 0; font-size: 0.74rem; color: var(--text-muted);">Purges template buffers and invokes Go runtime garbage collection</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="flushSystemCache()">
+            <span>🧹 Flush Cache & Run GC</span>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<style>
+/* ==========================================================================
+   SETTINGS STUDIO STYLES
+   ========================================================================== */
+.settings-studio-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.settings-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.settings-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+}
+.settings-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+.settings-subtitle {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 3px 0 0 0;
+}
+.settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+/* TABS */
+.settings-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  padding: 4px 8px 0 8px;
+  gap: 4px;
+}
+.settings-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.settings-tab-btn:hover {
+  color: var(--text-main);
+}
+.settings-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--bg-card);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  font-weight: 700;
+}
+
+/* TAB CONTENT */
+.settings-tab-content {
+  display: none;
+  padding: 1.75rem;
+}
+.settings-tab-content.active {
+  display: block;
+  animation: fadeIn 0.15s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-section-head {
+  margin-bottom: 1.5rem;
+}
+.settings-section-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+}
+.settings-section-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.settings-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}
+.settings-hint {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* LOGO UPLOAD CARD */
+.logo-upload-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+}
+.logo-preview-box {
+  width: 90px;
+  height: 64px;
+  min-width: 90px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6px;
+}
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  text-align: center;
+}
+
+/* THEME MODE PILLS */
+.theme-mode-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.theme-mode-pill {
+  cursor: pointer;
+}
+.theme-mode-pill input {
+  display: none;
+}
+.theme-mode-pill .pill-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.theme-mode-pill input:checked + .pill-content {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* SKIN CARDS */
+.skin-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.skin-card {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.skin-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.skin-card.active {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.skin-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.skin-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.skin-card-meta {
+  display: flex;
+  flex-direction: column;
+}
+.skin-card-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.skin-card-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.swatch-quick-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.1s;
+}
+.swatch-quick-btn:hover {
+  transform: scale(1.15);
+}
+
+/* SWITCHES LIST */
+.settings-switches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* TEST EMAIL BOX */
+.test-email-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* TELEMETRY CARDS */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.telemetry-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.telemetry-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.telemetry-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+}
+.telemetry-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+</style>
+
+<script>
+// ==========================================
+// SETTINGS STUDIO JAVASCRIPT ENGINE
+// ==========================================
+function switchSettingsTab(tabId, btn) {
+  var contents = document.querySelectorAll('.settings-tab-content');
+  contents.forEach(function(c) { c.classList.remove('active'); });
+
+  var tabs = document.querySelectorAll('.settings-tab-btn');
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+
+  var target = document.getElementById('tab-' + tabId);
+  if (target) target.classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  if (tabId === 'ai') {
+    var select = document.getElementById('aiModelSelectDropdown');
+    if (select && select.options.length <= 1) {
+      fetchAIModelsList(false);
+    }
+  }
+}
+
+function handleThemeModeChange(mode) {
+  var radio = document.querySelector('input[name="theme_mode"][value="' + mode + '"]');
+  if (radio) radio.checked = true;
+
+  if (mode === 'light') {
+    setTheme('light');
+  } else if (mode === 'dark') {
+    setTheme('dark');
+  } else {
+    // System
+    var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(isDark ? 'dark' : 'light');
+    try { localStorage.setItem('tgo_booster_theme_pref', 'system'); } catch(e) {}
+  }
+}
+
+function selectSkinPreset(skinName, cardElement) {
+  var cards = document.querySelectorAll('.skin-card');
+  cards.forEach(function(c) { c.classList.remove('active'); });
+
+  var input = document.getElementById('settingThemeSkin');
+  if (input) input.value = skinName;
+
+  var current = cardElement || (window.event ? (window.event.currentTarget || (window.event.target ? window.event.target.closest('.skin-card') : null)) : null);
+  if (!current) {
+    cards.forEach(function(c) {
+      if (c.getAttribute('data-skin') === skinName) current = c;
+    });
+  }
+  if (current) current.classList.add('active');
+
+  if (skinName === 'light') {
+    // Clean Slate preset: Clean daytime light with obsidian/default skin
+    setSkin('obsidian');
+    handleThemeModeChange('light');
+  } else {
+    // Keep user's chosen theme mode (light/dark/system), only apply the skin accent
+    setSkin(skinName);
+  }
+  if (window.cbToast) cbToast.show('Applied theme skin: ' + skinName, 'info');
+}
+
+function setQuickAccent(colorHex) {
+  document.getElementById('settingAccentColor').value = colorHex;
+  document.getElementById('settingAccentHex').value = colorHex;
+  document.documentElement.style.setProperty('--accent', colorHex);
+}
+
+function previewLogo(url, imgId, placeholderId) {
+  var img = document.getElementById(imgId);
+  var holder = document.getElementById(placeholderId);
+  if (url && url.trim() !== '') {
+    if (!img) {
+      var box = document.getElementById('logoPreviewBox');
+      if (box) {
+        box.innerHTML = '<img id="' + imgId + '" src="' + url + '" alt="Logo" style="max-height: 48px; max-width: 100%;">';
+      }
+    } else {
+      img.src = url;
+      img.style.display = 'block';
+    }
+    if (holder) holder.style.display = 'none';
+  } else {
+    if (img) img.style.display = 'none';
+    if (holder) holder.style.display = 'flex';
+  }
+}
+
+function togglePasswordVisibility(inputId) {
+  var el = document.getElementById(inputId);
+  if (el) {
+    el.type = (el.type === 'password') ? 'text' : 'password';
+  }
+}
+
+function saveAllSettings() {
+  var form = document.getElementById('platformSettingsForm');
+  if (!form) return;
+
+  var formData = new FormData(form);
+  var payload = {};
+
+  formData.forEach(function(value, key) {
+    payload[key] = value;
+  });
+
+  // Checkboxes
+  payload['require_password_special'] = document.getElementById('settingRequirePasswordSpecial').checked;
+  payload['enable_remember_me'] = document.getElementById('settingEnableRememberMe').checked;
+  payload['force_2fa'] = document.getElementById('settingForce2FA').checked;
+  payload['enable_registration'] = document.getElementById('settingEnableRegistration').checked;
+  payload['enable_export_csv'] = document.getElementById('settingEnableExportCSV').checked;
+  payload['enable_import_csv'] = document.getElementById('settingEnableImportCSV').checked;
+  payload['confirm_delete'] = document.getElementById('settingConfirmDelete').checked;
+  payload['enable_audit_log'] = document.getElementById('settingEnableAuditLog').checked;
+  payload['maintenance_mode'] = document.getElementById('settingMaintenanceMode').checked;
+  payload['debug_mode'] = document.getElementById('settingDebugMode').checked;
+
+  // Numeric fields
+  payload['session_timeout_minutes'] = parseInt(payload['session_timeout_minutes'], 10) || 120;
+  payload['max_login_attempts'] = parseInt(payload['max_login_attempts'], 10) || 5;
+  payload['lockout_duration_min'] = parseInt(payload['lockout_duration_min'], 10) || 15;
+  payload['password_min_length'] = parseInt(payload['password_min_length'], 10) || 8;
+  payload['default_page_size'] = parseInt(payload['default_page_size'], 10) || 25;
+  payload['smtp_port'] = parseInt(payload['smtp_port'], 10) || 587;
+
+  fetch('{{.AdminPath}}/settings/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      if (payload.theme_mode) {
+        if (payload.theme_mode === 'system') {
+          try { localStorage.removeItem('tgo_booster_theme'); } catch(e) {}
+        } else {
+          try { localStorage.setItem('tgo_booster_theme', payload.theme_mode); } catch(e) {}
+        }
+      }
+      if (payload.theme_skin) {
+        try { localStorage.setItem('tgo_booster_skin', payload.theme_skin); } catch(e) {}
+      }
+      if (window.cbToast) {
+        cbToast.show('Platform settings saved and persisted successfully!', 'success');
+      } else {
+        alert('Platform settings saved successfully!');
+      }
+      // Update app branding in sidebar header immediately
+      var brandText = document.querySelector('.cb-brand-text');
+      if (brandText && payload.app_name) {
+        brandText.innerText = payload.app_name;
+      }
+    } else {
+      alert('Error saving settings: ' + (res.error || 'Unknown error'));
+    }
+  })
+  .catch(function(err) {
+    alert('Network error saving settings: ' + err);
+  });
+}
+
+function resetSettingsDefaults() {
+  if (!confirm('Are you sure you want to reset all platform settings to enterprise defaults?')) {
+    return;
+  }
+
+  fetch('{{.AdminPath}}/settings/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      if (window.cbToast) cbToast.show('Settings reset to defaults', 'success');
+      setTimeout(function() { window.location.reload(); }, 300);
+    } else {
+      alert('Error: ' + (res.error || 'Failed to reset'));
+    }
+  })
+  .catch(function(err) {
+    alert('Network error resetting settings: ' + err);
+  });
+}
+
+function sendTestEmailDiagnostic() {
+  var target = (document.getElementById('testEmailTarget').value || '').trim();
+  if (!target) {
+    alert('Please enter a target email address for diagnostic test.');
+    document.getElementById('testEmailTarget').focus();
+    return;
+  }
+
+  if (window.cbToast) cbToast.show('Sending diagnostic email to ' + target + '...', 'info');
+
+  fetch('{{.AdminPath}}/settings/test-mail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_email: target })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      if (window.cbToast) cbToast.show(res.message, 'success');
+    } else {
+      alert('Mail Error: ' + (res.error || 'Failed to send test email'));
+    }
+  })
+  .catch(function(err) {
+    alert('Network error: ' + err);
+  });
+}
+
+function applyAIPreset(type) {
+  var hostInput = document.getElementById('settingOpenAIHost');
+  var modelInput = document.getElementById('settingOpenAIDefaultModel');
+  if (type === 'sumopod') {
+    if (hostInput) hostInput.value = 'https://ai.sumopod.com';
+    if (modelInput) modelInput.value = 'deepseek-v4-flash-0731:netra';
+    if (window.cbToast) cbToast.show('Applied SumoPod / DeepSeek Preset', 'info');
+    setTimeout(function() { fetchAIModelsList(false); }, 150);
+  } else if (type === 'openai_gpt4o') {
+    if (hostInput) hostInput.value = 'https://api.openai.com/v1';
+    if (modelInput) modelInput.value = 'gpt-4o';
+    if (window.cbToast) cbToast.show('Applied OpenAI GPT-4o Preset', 'info');
+    setTimeout(function() { fetchAIModelsList(false); }, 150);
+  } else if (type === 'openai_mini') {
+    if (hostInput) hostInput.value = 'https://api.openai.com/v1';
+    if (modelInput) modelInput.value = 'gpt-4o-mini';
+    if (window.cbToast) cbToast.show('Applied OpenAI GPT-4o Mini Preset', 'info');
+    setTimeout(function() { fetchAIModelsList(false); }, 150);
+  }
+}
+
+function onModelSelectChanged(val) {
+  if (!val) return;
+  var input = document.getElementById('settingOpenAIDefaultModel');
+  if (input) input.value = val;
+  if (window.cbToast) cbToast.show('Selected model: ' + val, 'info');
+}
+
+function fetchAIModelsList(showToastNotification) {
+  var host = (document.getElementById('settingOpenAIHost').value || '').trim();
+  var apiKey = (document.getElementById('settingOpenAIAPIKey').value || '').trim();
+
+  var btn = document.getElementById('btnFetchModels');
+  var icon = document.getElementById('fetchModelsIcon');
+  var label = document.getElementById('fetchModelsLabel');
+  var hint = document.getElementById('aiModelFetchHint');
+  var select = document.getElementById('aiModelSelectDropdown');
+  var datalist = document.getElementById('aiModelDatalist');
+  var currentVal = (document.getElementById('settingOpenAIDefaultModel').value || '').trim();
+
+  if (btn) btn.disabled = true;
+  if (icon) icon.innerText = '⏳';
+  if (label) label.innerText = 'Fetching...';
+
+  fetch('{{.AdminPath}}/settings/models', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ host: host, api_key: apiKey })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (btn) btn.disabled = false;
+    if (icon) icon.innerText = '🔄';
+    if (label) label.innerText = 'Auto-Get Server Models';
+
+    if (res.success && res.models && res.models.length > 0) {
+      if (select) {
+        select.innerHTML = '<option value="">-- Pick from ' + res.count + ' Models --</option>';
+        res.models.forEach(function(m) {
+          var opt = document.createElement('option');
+          opt.value = m;
+          opt.innerText = m;
+          if (m === currentVal) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+      if (datalist) {
+        datalist.innerHTML = '';
+        res.models.forEach(function(m) {
+          var opt = document.createElement('option');
+          opt.value = m;
+          datalist.appendChild(opt);
+        });
+      }
+      if (hint) {
+        hint.innerHTML = '✅ <span style="color:var(--success);">Berhasil memuat <strong>' + res.count + ' model</strong> aktif dari server! Pilih dari dropdown di samping atau gunakan autocomplete.</span>';
+      }
+      if (showToastNotification && window.cbToast) {
+        cbToast.show('Berhasil menarik ' + res.count + ' model dari server!', 'success');
+      }
+    } else {
+      if (hint) {
+        hint.innerHTML = '<span style="color:#ef4444;">Gagal mengambil model: ' + (res.error || 'Server tidak merespons') + '</span>';
+      }
+      if (showToastNotification && window.cbToast) {
+        cbToast.show('Gagal memuat model: ' + (res.error || 'Unknown error'), 'error');
+      }
+    }
+  })
+  .catch(function(err) {
+    if (btn) btn.disabled = false;
+    if (icon) icon.innerText = '🔄';
+    if (label) label.innerText = 'Auto-Get Server Models';
+    if (hint) {
+      hint.innerHTML = '<span style="color:#ef4444;">Network error saat menghubungi server model: ' + err + '</span>';
+    }
+  });
+}
+
+function sendTestAIDiagnostic() {
+  var host = (document.getElementById('settingOpenAIHost').value || '').trim();
+  var apiKey = (document.getElementById('settingOpenAIAPIKey').value || '').trim();
+  var model = (document.getElementById('settingOpenAIDefaultModel').value || '').trim();
+
+  var btn = document.getElementById('btnTestAI');
+  var badge = document.getElementById('aiPingBadge');
+  var feedback = document.getElementById('aiTestFeedback');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="cb-spinner-inline" style="display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;margin-right:6px;"></span> Pinging LLM...';
+  }
+  if (badge) {
+    badge.style.display = 'inline-block';
+    badge.className = 'cb-badge cb-badge-warning';
+    badge.innerText = 'Connecting...';
+  }
+  if (feedback) {
+    feedback.style.display = 'block';
+    feedback.style.color = 'var(--text-muted)';
+    feedback.innerText = 'Sending test ping handshake to ' + (host || 'configured host') + '...';
+  }
+
+  fetch('{{.AdminPath}}/settings/test-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ host: host, api_key: apiKey, model: model })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>⚡ Test AI Connection</span>';
+    }
+    if (res.success) {
+      if (badge) {
+        badge.className = 'cb-badge cb-badge-success';
+        badge.innerText = res.latency_ms + 'ms';
+      }
+      if (feedback) {
+        feedback.style.color = 'var(--success)';
+        feedback.innerHTML = '✅ <strong>Handshake Successful:</strong> ' + res.message;
+      }
+      if (window.cbToast) cbToast.show('AI handshake successful (' + res.latency_ms + 'ms)', 'success');
+    } else {
+      if (badge) {
+        badge.className = 'cb-badge cb-badge-danger';
+        badge.innerText = 'Failed';
+      }
+      if (feedback) {
+        feedback.style.color = '#ef4444';
+        feedback.innerHTML = '❌ <strong>Connection Error:</strong> ' + (res.error || 'Failed to reach AI service');
+      }
+      if (window.cbToast) cbToast.show('AI Error: ' + (res.error || 'Connection failed'), 'error');
+    }
+  })
+  .catch(function(err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>⚡ Test AI Connection</span>';
+    }
+    if (badge) {
+      badge.className = 'cb-badge cb-badge-danger';
+      badge.innerText = 'Offline';
+    }
+    if (feedback) {
+      feedback.style.color = '#ef4444';
+      feedback.innerText = 'Network error: ' + err;
+    }
+  });
+}
+
+function flushSystemCache() {
+  if (window.cbToast) cbToast.show('Flushing in-memory template caches and running GC...', 'info');
+
+  fetch('{{.AdminPath}}/settings/clear-cache', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      if (window.cbToast) cbToast.show(res.message, 'success');
+      refreshSystemTelemetry();
+    } else {
+      alert('Error: ' + (res.error || 'Failed to flush cache'));
+    }
+  })
+  .catch(function(err) {
+    alert('Network error: ' + err);
+  });
+}
+
+function refreshSystemTelemetry() {
+  fetch('{{.AdminPath}}/settings/api/system-info')
+    .then(function(r) { return r.json(); })
+    .then(function(diag) {
+      if (document.getElementById('diagGoVersion')) document.getElementById('diagGoVersion').innerText = diag.go_version;
+      if (document.getElementById('diagNumGoroutine')) document.getElementById('diagNumGoroutine').innerText = diag.num_goroutine;
+      if (document.getElementById('diagAllocMB')) document.getElementById('diagAllocMB').innerText = diag.alloc_mb;
+      if (document.getElementById('diagUptime')) document.getElementById('diagUptime').innerText = diag.uptime;
+      if (document.getElementById('diagDBState')) document.getElementById('diagDBState').innerText = diag.database_state;
+    })
+    .catch(function(err) { console.error('Failed to refresh telemetry', err); });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  var radio = document.querySelector('input[name="theme_mode"][value="' + activeTheme + '"]');
+  if (radio) radio.checked = true;
+
+  var activeSkin = document.documentElement.getAttribute('data-skin') || 'obsidian';
+  var skinInput = document.getElementById('settingThemeSkin');
+  if (skinInput) skinInput.value = activeSkin;
+  var cards = document.querySelectorAll('.skin-card');
+  cards.forEach(function(c) {
+    if (c.getAttribute('data-skin') === activeSkin) {
+      c.classList.add('active');
+    } else {
+      c.classList.remove('active');
+    }
+  });
+});
+</script>

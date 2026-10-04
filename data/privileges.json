@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1",
+    "name": "Super Administrator",
+    "slug": "superadmin",
+    "is_superadmin": true,
+    "description": "Unrestricted administrative privileges across all modules, matrix configurations, and settings.",
+    "users_count": 1,
+    "permissions": {},
+    "created_at": "2026-10-02T21:38:58.186985+07:00"
+  },
+  {
+    "id": "2",
+    "name": "Operations Manager",
+    "slug": "ops_manager",
+    "is_superadmin": false,
+    "description": "Day-to-day operations and catalog management. Full create, read, and update permissions.",
+    "users_count": 4,
+    "permissions": {
+      "logs": {
+        "is_visible": true,
+        "can_create": false,
+        "can_read": true,
+        "can_update": false,
+        "can_delete": false
+      },
+      "pages": {
+        "is_visible": true,
+        "can_create": true,
+        "can_read": true,
+        "can_update": true,
+        "can_delete": false
+      },
+      "users": {
+        "is_visible": true,
+        "can_create": false,
+        "can_read": true,
+        "can_update": false,
+        "can_delete": false
+      }
+    },
+    "created_at": "2026-10-02T21:38:58.186985+07:00"
+  },
+  {
+    "id": "3",
+    "name": "Read-Only Auditor",
+    "slug": "auditor",
+    "is_superadmin": false,
+    "description": "Compliance and auditing read-only access. Cannot create, edit, or delete any data.",
+    "users_count": 2,
+    "permissions": {
+      "logs": {
+        "is_visible": true,
+        "can_create": false,
+        "can_read": true,
+        "can_update": false,
+        "can_delete": false
+      }
+    },
+    "created_at": "2026-10-02T21:38:58.186985+07:00"
+  }
+]

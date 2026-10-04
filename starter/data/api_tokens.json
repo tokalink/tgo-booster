@@ -1,0 +1,46 @@
+[
+  {
+    "id": "token_1",
+    "name": "Production Web & Mobile Client",
+    "token": "tgo_live_8f3a9b1c2d4e5f6a7b8c9d0e",
+    "secret_mask": "tgo_live_••••••••••••••••7b8c9d0e",
+    "environment": "production",
+    "scopes": [
+      "*"
+    ],
+    "rate_limit": 300,
+    "status": "active",
+    "created_at": "2026-03-01 10:00:00",
+    "last_used_at": "Just now"
+  },
+  {
+    "id": "token_2",
+    "name": "Storefront Public Catalog",
+    "token": "tgo_live_3c2d1e0f9a8b7c6d5e4f3a2b",
+    "secret_mask": "tgo_live_••••••••••••••••5e4f3a2b",
+    "environment": "production",
+    "scopes": [
+      "read:products",
+      "read:categories"
+    ],
+    "rate_limit": 1000,
+    "status": "active",
+    "created_at": "2026-03-15 14:30:00",
+    "last_used_at": "12 mins ago"
+  },
+  {
+    "id": "token_3",
+    "name": "Developer Sandbox & Testing",
+    "token": "tgo_test_7a6b5c4d3e2f1a0b9c8d7e6f",
+    "secret_mask": "tgo_test_••••••••••••••••9c8d7e6f",
+    "environment": "sandbox",
+    "scopes": [
+      "read:all",
+      "write:all"
+    ],
+    "rate_limit": 60,
+    "status": "active",
+    "created_at": "2026-04-01 09:15:00",
+    "last_used_at": "2 days ago"
+  }
+]

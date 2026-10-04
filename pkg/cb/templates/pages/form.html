@@ -1,0 +1,510 @@
+{{if .PreFormHTML}}
+<div class="cb-pre-html" style="max-width: 760px; margin: 0 auto 1.25rem auto;">
+  {{.PreFormHTML}}
+</div>
+{{end}}
+
+<div class="cb-card cb-form-card">
+  <!-- FORM HEADER -->
+  <div class="cb-card-header">
+    <div>
+      <h2 class="cb-card-title">
+        <span>{{if .IsEdit}}Edit {{.Title}} <span class="cell-id">#{{.RecordID}}</span>{{else}}Create New {{.Title}}{{end}}</span>
+      </h2>
+      <p class="cb-card-sub">Complete the form below to {{if .IsEdit}}update existing record attributes{{else}}insert a new record into {{.Title}}{{end}}</p>
+    </div>
+    <a href="{{.BasePath}}" class="btn btn-secondary btn-sm">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <span>Back to List</span>
+    </a>
+  </div>
+
+  <!-- FORM BODY -->
+  <form method="POST" action="{{.FormAction}}" class="cb-form-body">
+    {{range .Forms}}
+    <div class="cb-form-group">
+      <label class="cb-form-label">
+        <span>{{.Label}}</span>
+        {{if .Required}}<span class="required-mark">*</span>{{end}}
+      </label>
+
+      {{if eq .Type "textarea"}}
+        <textarea name="{{.Name}}" class="cb-input cb-textarea" placeholder="{{.Placeholder}}" {{if .Required}}required{{end}}>{{.Value}}</textarea>
+      {{else if eq .Type "wysiwyg"}}
+        <div class="cb-wysiwyg-container" id="wysiwyg_box_{{.Name}}">
+          <input type="hidden" name="{{.Name}}" id="wysiwyg_input_{{.Name}}" value="{{.Value}}">
+          <div class="cb-wysiwyg-toolbar">
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'bold')" title="Bold"><b>B</b></button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'italic')" title="Italic"><i>I</i></button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'underline')" title="Underline"><u>U</u></button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'strikeThrough')" title="Strikethrough"><s>S</s></button>
+            <span class="tb-sep"></span>
+            <button type="button" class="btn-tb" onclick="execWYSIWYGBlock('wysiwyg_editor_{{.Name}}', 'h2')" title="Heading 2">H2</button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYGBlock('wysiwyg_editor_{{.Name}}', 'h3')" title="Heading 3">H3</button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYGBlock('wysiwyg_editor_{{.Name}}', 'p')" title="Paragraph">¶</button>
+            <span class="tb-sep"></span>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'insertUnorderedList')" title="Bullet List">• List</button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'insertOrderedList')" title="Numbered List">1. List</button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYGBlock('wysiwyg_editor_{{.Name}}', 'blockquote')" title="Quote">“ Quote</button>
+            <span class="tb-sep"></span>
+            <button type="button" class="btn-tb" onclick="insertWYSIWYGLink('wysiwyg_editor_{{.Name}}')" title="Insert Link">🔗 Link</button>
+            <button type="button" class="btn-tb" onclick="insertWYSIWYGImage('wysiwyg_editor_{{.Name}}')" title="Insert Image">🖼️ Image</button>
+            <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'removeFormat')" title="Clear Formatting">🧹</button>
+            <button type="button" class="btn-tb btn-tb-mode" onclick="toggleWYSIWYGSource('wysiwyg_box_{{.Name}}', 'wysiwyg_editor_{{.Name}}', 'wysiwyg_raw_{{.Name}}', 'wysiwyg_input_{{.Name}}')" title="Toggle HTML Code">‹/› Code</button>
+          </div>
+          <div class="cb-wysiwyg-editor" id="wysiwyg_editor_{{.Name}}" contenteditable="true" oninput="syncWYSIWYG('wysiwyg_editor_{{.Name}}', 'wysiwyg_input_{{.Name}}')" placeholder="{{.Placeholder}}">{{if .Value}}{{.Value | safeHTML}}{{end}}</div>
+          <textarea class="cb-wysiwyg-raw" id="wysiwyg_raw_{{.Name}}" style="display: none;" oninput="syncWYSIWYGRaw('wysiwyg_raw_{{.Name}}', 'wysiwyg_editor_{{.Name}}', 'wysiwyg_input_{{.Name}}')">{{.Value}}</textarea>
+        </div>
+      {{else if eq .Type "select"}}
+        <select name="{{.Name}}" class="cb-input" {{if .Required}}required{{end}}>
+          {{if .Placeholder}}<option value="">{{.Placeholder}}</option>{{end}}
+          {{$currVal := .Value}}
+          {{range .Options}}
+            <option value="{{.Value}}" {{if eq (printf "%v" $currVal) (printf "%v" .Value)}}selected{{end}}>{{.Label}}</option>
+          {{end}}
+        </select>
+      {{else if eq .Type "money"}}
+        <div class="cb-input-group">
+          <span class="cb-input-prefix">Rp</span>
+          <input type="text" name="{{.Name}}" class="cb-input cb-input-with-prefix" placeholder="{{if .Placeholder}}{{.Placeholder}}{{else}}0{{end}}" value="{{.Value}}" {{if .Required}}required{{end}}>
+        </div>
+      {{else if or (eq .Type "upload") (eq .Type "image")}}
+        <div class="cb-upload-zone" id="uploadZone_{{.Name}}">
+          <input type="file" name="{{.Name}}_file" id="input_{{.Name}}" class="cb-file-input" onchange="previewUpload(this, 'preview_{{.Name}}', 'input_val_{{.Name}}')" accept="image/*">
+          <input type="hidden" name="{{.Name}}" id="input_val_{{.Name}}" value="{{.Value}}">
+          <div class="cb-upload-placeholder" onclick="document.getElementById('input_{{.Name}}').click()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span class="cb-upload-title">Choose image file or drag here</span>
+            <span class="cb-upload-hint">PNG, JPG, WebP supported</span>
+          </div>
+          <div class="cb-upload-preview" id="preview_{{.Name}}" style="{{if not .Value}}display: none;{{end}}">
+            <img src="{{.Value}}" alt="Preview" class="cb-preview-img">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearUpload('input_{{.Name}}', 'preview_{{.Name}}', 'input_val_{{.Name}}')">Remove</button>
+          </div>
+        </div>
+      {{else if eq .Type "checkbox"}}
+        <label class="cb-toggle-switch">
+          <input type="checkbox" name="{{.Name}}" value="Active" {{if or (eq .Value "Active") (eq .Value "1") (eq .Value "true")}}checked{{end}}>
+          <span class="cb-toggle-slider"></span>
+          <span class="cb-toggle-label">{{if .Placeholder}}{{.Placeholder}}{{else}}Enable {{.Label}}{{end}}</span>
+        </label>
+      {{else if eq .Type "radio"}}
+        <div class="cb-radio-group">
+          {{$currVal := .Value}}
+          {{range .Options}}
+            <label class="cb-radio-card">
+              <input type="radio" name="{{$.Name}}" value="{{.Value}}" {{if eq (printf "%v" $currVal) (printf "%v" .Value)}}checked{{end}}>
+              <span>{{.Label}}</span>
+            </label>
+          {{end}}
+        </div>
+      {{else if eq .Type "number"}}
+        <input type="number" name="{{.Name}}" class="cb-input" placeholder="{{.Placeholder}}" value="{{.Value}}" {{if .Required}}required{{end}}>
+      {{else if eq .Type "email"}}
+        <input type="email" name="{{.Name}}" class="cb-input" placeholder="{{.Placeholder}}" value="{{.Value}}" {{if .Required}}required{{end}}>
+      {{else if eq .Type "password"}}
+        <input type="password" name="{{.Name}}" class="cb-input" placeholder="{{.Placeholder}}" {{if and .Required (not $.IsEdit)}}required{{end}}>
+      {{else if eq .Type "date"}}
+        <input type="date" name="{{.Name}}" class="cb-input" value="{{.Value}}" {{if .Required}}required{{end}}>
+      {{else if eq .Type "datetime"}}
+        <input type="datetime-local" name="{{.Name}}" class="cb-input" value="{{.Value}}" {{if .Required}}required{{end}}>
+      {{else if eq .Type "hidden"}}
+        <input type="hidden" name="{{.Name}}" value="{{.Value}}">
+      {{else if eq .Type "lov"}}
+        <div class="cb-lov-wrap">
+          <input type="hidden" name="{{.Name}}" id="lov_val_{{.Name}}" value="{{.Value}}">
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <input type="text" id="lov_display_{{.Name}}" class="cb-input" value="{{if .DisplayValue}}{{.DisplayValue}}{{else if .Value}}{{.Value}}{{end}}" placeholder="{{if .Placeholder}}{{.Placeholder}}{{else}}Klik untuk memilih {{.Label}}...{{end}}" readonly onclick="openLOVModal('{{.Name}}', '{{.DataTable}}', '{{.Label}}', '{{.Format}}')" style="cursor: pointer;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="openLOVModal('{{.Name}}', '{{.DataTable}}', '{{.Label}}', '{{.Format}}')" title="Browse {{.Label}}" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Cari...</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="clearLOV('{{.Name}}')" title="Clear selection" style="padding: 6px 10px; color: var(--danger);">✕</button>
+          </div>
+        </div>
+      {{else}}
+        <input type="text" name="{{.Name}}" class="cb-input" placeholder="{{.Placeholder}}" value="{{.Value}}" {{if .Required}}required{{end}}>
+      {{end}}
+    </div>
+    {{end}}
+
+    <!-- FORM ACTIONS -->
+    <div class="cb-form-footer">
+      <a href="{{.BasePath}}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Record</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+{{if .PostFormHTML}}
+<div class="cb-post-html" style="max-width: 760px; margin: 1.25rem auto 0 auto;">
+  {{.PostFormHTML}}
+</div>
+{{end}}
+
+<style>
+  .cb-wysiwyg-container {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .cb-wysiwyg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    background: var(--bg-subtle);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .cb-wysiwyg-toolbar .btn-tb {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    color: var(--text-main);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .cb-wysiwyg-toolbar .btn-tb:hover {
+    background: var(--bg-hover);
+    border-color: var(--border);
+  }
+  .cb-wysiwyg-toolbar .tb-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+  .cb-wysiwyg-editor {
+    min-height: 140px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 12px 14px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    outline: none;
+  }
+  .cb-wysiwyg-editor:empty:before {
+    content: attr(placeholder);
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  .cb-wysiwyg-raw {
+    width: 100%;
+    min-height: 140px;
+    max-height: 400px;
+    border: none;
+    background: #0f172a;
+    color: #38bdf8;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    padding: 12px 14px;
+    outline: none;
+    resize: vertical;
+  }
+</style>
+
+<script>
+  function execWYSIWYG(editorId, cmd, val) {
+    const el = document.getElementById(editorId);
+    if (!el) return;
+    el.focus();
+    document.execCommand(cmd, false, val || null);
+    const box = el.closest('.cb-wysiwyg-container');
+    const input = box ? box.querySelector('input[type="hidden"]') : null;
+    if (input) input.value = el.innerHTML;
+  }
+
+  function execWYSIWYGBlock(editorId, tag) {
+    const el = document.getElementById(editorId);
+    if (!el) return;
+    el.focus();
+    document.execCommand('formatBlock', false, tag);
+    const box = el.closest('.cb-wysiwyg-container');
+    const input = box ? box.querySelector('input[type="hidden"]') : null;
+    if (input) input.value = el.innerHTML;
+  }
+
+  function insertWYSIWYGLink(editorId) {
+    const url = prompt('Enter URL (e.g. https://example.com):');
+    if (url) execWYSIWYG(editorId, 'createLink', url);
+  }
+
+  function insertWYSIWYGImage(editorId) {
+    const url = prompt('Enter Image URL:');
+    if (url) execWYSIWYG(editorId, 'insertImage', url);
+  }
+
+  function syncWYSIWYG(editorId, inputId) {
+    const editor = document.getElementById(editorId);
+    const input = document.getElementById(inputId);
+    if (editor && input) input.value = editor.innerHTML;
+  }
+
+  function syncWYSIWYGRaw(rawId, editorId, inputId) {
+    const raw = document.getElementById(rawId);
+    const editor = document.getElementById(editorId);
+    const input = document.getElementById(inputId);
+    if (raw && editor && input) {
+      editor.innerHTML = raw.value;
+      input.value = raw.value;
+    }
+  }
+
+  function toggleWYSIWYGSource(boxId, editorId, rawId, inputId) {
+    const box = document.getElementById(boxId);
+    const editor = document.getElementById(editorId);
+    const raw = document.getElementById(rawId);
+    if (!box || !editor || !raw) return;
+
+    if (raw.style.display === 'none') {
+      raw.value = editor.innerHTML;
+      raw.style.display = 'block';
+      editor.style.display = 'none';
+    } else {
+      editor.innerHTML = raw.value;
+      editor.style.display = 'block';
+      raw.style.display = 'none';
+      syncWYSIWYG(editorId, inputId);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.cb-form-body');
+    if (form) {
+      form.addEventListener('submit', function() {
+        document.querySelectorAll('.cb-wysiwyg-container').forEach(box => {
+          const editor = box.querySelector('.cb-wysiwyg-editor');
+          const raw = box.querySelector('.cb-wysiwyg-raw');
+          const input = box.querySelector('input[type="hidden"]');
+          if (input) {
+            if (raw && raw.style.display !== 'none') {
+              input.value = raw.value;
+            } else if (editor) {
+              input.value = editor.innerHTML;
+            }
+          }
+        });
+      });
+    }
+  });
+
+  function previewUpload(input, previewId, valInputId) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById(previewId);
+        if (preview) {
+          const img = preview.querySelector('img');
+          if (img) img.src = e.target.result;
+          preview.style.display = 'flex';
+        }
+        const valInput = document.getElementById(valInputId);
+        if (valInput) {
+          valInput.value = e.target.result;
+        }
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function clearUpload(inputId, previewId, valInputId) {
+    const fileInput = document.getElementById(inputId);
+    if (fileInput) fileInput.value = '';
+    const preview = document.getElementById(previewId);
+    if (preview) preview.style.display = 'none';
+    const valInput = document.getElementById(valInputId);
+    if (valInput) valInput.value = '';
+  }
+
+  // LOV (List of Values) Modal Picker Logic
+  let currentLOVTarget = null;
+  let currentLOVFormat = '';
+  let currentLOVKeyCol = 'id';
+  let currentLOVLabelCol = 'name';
+
+  function openLOVModal(fieldName, dataTableDef, fieldLabel, formatStr) {
+    currentLOVTarget = fieldName;
+    currentLOVFormat = formatStr || '';
+    const modalTitle = document.getElementById('lovModalTitle');
+    if (modalTitle) modalTitle.innerText = 'Pilih ' + (fieldLabel || 'Data');
+    const searchInput = document.getElementById('lovSearchInput');
+    if (searchInput) searchInput.value = '';
+
+    const parts = (dataTableDef || '').split(',');
+    const tbl = parts[0].trim();
+    const labelCol = parts.length > 1 && parts[1].trim() !== '' ? parts[1].trim() : 'name';
+    const keyCol = parts.length > 2 && parts[2].trim() !== '' ? parts[2].trim() : 'id';
+    currentLOVKeyCol = keyCol;
+    currentLOVLabelCol = labelCol;
+
+    const thKey = document.getElementById('lovThKey');
+    const thLabel = document.getElementById('lovThLabel');
+    if (thKey) {
+      if (keyCol.toLowerCase().includes('code') || keyCol.toLowerCase().includes('kode') || keyCol.toLowerCase().includes('acc')) {
+        thKey.innerText = 'Kode';
+        thKey.style.width = '120px';
+      } else {
+        thKey.innerText = 'ID';
+        thKey.style.width = '80px';
+      }
+    }
+    if (thLabel) {
+      thLabel.innerText = (fieldLabel || 'Nama / Deskripsi');
+    }
+
+    const adminPath = '{{.AdminPath}}' || '/admin';
+    const fetchUrl = adminPath + '/api/lov?table=' + encodeURIComponent(tbl) + '&label=' + encodeURIComponent(labelCol) + '&key=' + encodeURIComponent(keyCol);
+
+    const tbody = document.getElementById('lovTableBody');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>';
+    }
+    const modal = document.getElementById('lovModal');
+    if (modal) modal.style.display = 'flex';
+
+    fetch(fetchUrl, { headers: { 'Accept': 'application/json' } })
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(rows => {
+        renderLOVRows(rows, labelCol, keyCol);
+      })
+      .catch(() => {
+        // Fallback to table data endpoint
+        fetch(adminPath + '/' + tbl + '/data', { headers: { 'Accept': 'application/json' } })
+          .then(r => r.json())
+          .then(rows => renderLOVRows(rows, labelCol, keyCol))
+          .catch(err => {
+            if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--danger);">Gagal memuat data: ' + err + '</td></tr>';
+          });
+      });
+  }
+
+  function renderLOVRows(rows, labelCol, keyCol) {
+    const tbody = document.getElementById('lovTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-dim);">Tidak ada rekaman ditemukan</td></tr>';
+      return;
+    }
+    const isCode = keyCol.toLowerCase().includes('code') || keyCol.toLowerCase().includes('kode') || keyCol.toLowerCase().includes('acc');
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      const keyVal = row[keyCol] || row['id'] || '';
+      const labelVal = row[labelCol] || row['name'] || row['title'] || keyVal;
+      
+      const badgeHtml = isCode 
+        ? '<span class="badge badge-primary font-mono" style="font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;">' + keyVal + '</span>'
+        : '<span class="cell-id">#' + keyVal + '</span>';
+
+      const rowJson = encodeURIComponent(JSON.stringify(row));
+      
+      tr.innerHTML = '<td>' + badgeHtml + '</td>' +
+        '<td><strong>' + labelVal + '</strong></td>' +
+        '<td style="text-align: right;"><button type="button" class="btn btn-primary btn-sm" onclick="selectLOVItem(\'' + keyVal + '\', \'' + encodeURIComponent(labelVal) + '\', \'' + rowJson + '\')">Pilih</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function selectLOVItem(val, encodedLabel, rawRowJson) {
+    const label = decodeURIComponent(encodedLabel);
+    let row = {};
+    if (rawRowJson) {
+      try { row = JSON.parse(decodeURIComponent(rawRowJson)); } catch(e){}
+    }
+    
+    let displayText = label;
+    if (currentLOVFormat) {
+      displayText = currentLOVFormat
+        .replace(/\{(\w+)\}/g, (match, k) => {
+          if (row[k] !== undefined) return row[k];
+          if (k === currentLOVKeyCol || k === 'key' || k === 'code' || k === 'id') return val;
+          if (k === currentLOVLabelCol || k === 'name' || k === 'label') return label;
+          return match;
+        })
+        .replace(/\[(\w+)\]/g, (match, k) => {
+          if (row[k] !== undefined) return row[k];
+          if (k === currentLOVKeyCol || k === 'key' || k === 'code' || k === 'id') return val;
+          if (k === currentLOVLabelCol || k === 'name' || k === 'label') return label;
+          return match;
+        });
+    }
+
+    if (currentLOVTarget) {
+      const valInput = document.getElementById('lov_val_' + currentLOVTarget);
+      const displayInput = document.getElementById('lov_display_' + currentLOVTarget);
+      if (valInput) valInput.value = val;
+      if (displayInput) displayInput.value = displayText;
+      if (window.showToast) showToast('Data "' + displayText + '" berhasil dipilih', 'success');
+    }
+    closeLOVModal();
+  }
+
+  function clearLOV(fieldName) {
+    const valInput = document.getElementById('lov_val_' + fieldName);
+    const displayInput = document.getElementById('lov_display_' + fieldName);
+    if (valInput) valInput.value = '';
+    if (displayInput) displayInput.value = '';
+    if (window.showToast) showToast('Pilihan dihapus', 'info');
+  }
+
+  function filterLOVTable() {
+    const q = document.getElementById('lovSearchInput')?.value?.toLowerCase() || '';
+    const rows = document.querySelectorAll('#lovTableBody tr');
+    rows.forEach(r => {
+      r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function closeLOVModal() {
+    const modal = document.getElementById('lovModal');
+    if (modal) modal.style.display = 'none';
+  }
+</script>
+
+<!-- LOV (LIST OF VALUES) MODAL PICKER -->
+<div id="lovModal" class="modal-backdrop" style="display: none;" onclick="if(event.target===this) closeLOVModal()">
+  <div class="modal-card" style="max-width: 650px;">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="lovModalTitle">Pilih Data</h3>
+        <p class="modal-sub">Cari dan pilih rekaman dari database</p>
+      </div>
+      <button type="button" class="btn-modal-close" onclick="closeLOVModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 1rem 1.25rem;">
+      <div class="cb-search-wrap" style="width: 100%; margin-bottom: 1rem;">
+        <svg class="cb-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="lovSearchInput" class="cb-search" placeholder="Ketik kata kunci untuk mencari..." onkeyup="filterLOVTable()" style="width: 100%;">
+      </div>
+      <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md);">
+        <table class="cb-table" id="lovTable">
+          <thead>
+            <tr><th id="lovThKey" style="width: 100px;">Kode / ID</th><th id="lovThLabel">Rekaman / Deskripsi</th><th style="width: 80px; text-align: right;">Aksi</th></tr>
+          </thead>
+          <tbody id="lovTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeLOVModal()">Batal</button>
+    </div>
+  </div>
+</div>
