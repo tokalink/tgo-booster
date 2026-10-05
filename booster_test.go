@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tokalink/tgo/pkg/transport/connect"
 	"github.com/tokalink/tgo-booster/pkg/cb"
+	"github.com/tokalink/tgo/pkg/transport/connect"
 )
 
 func TestBoosterFullFlow(t *testing.T) {
@@ -785,20 +785,20 @@ func TestCustomPagesAndSEOPixelFlow(t *testing.T) {
 
 	// 6. Test Create New Page with Custom Route, SEO, and Pixels via POST /admin/pages/save
 	newPagePayload := map[string]interface{}{
-		"title":             "Black Friday Exclusive Deal",
-		"slug":              "black-friday",
-		"route_url":         "/black-friday-2026",
-		"template":          "landing",
-		"status":            "published",
-		"author":            "Growth Hacker",
-		"meta_title":        "Black Friday 2026: 80% Discount Platform",
-		"meta_description":  "Massive flash sale. Claim instant access now.",
-		"canonical_url":     "https://example.com/black-friday-2026",
-		"robots":            "index, follow",
-		"pixel_meta_id":     "555444333222",
-		"pixel_tiktok_id":   "TTK998877",
-		"content":           "<div class=\"bf-hero\"><h1>Black Friday Massive Offer</h1></div>",
-		"custom_css":        ".bf-hero { background: #000; color: #ff0; }",
+		"title":            "Black Friday Exclusive Deal",
+		"slug":             "black-friday",
+		"route_url":        "/black-friday-2026",
+		"template":         "landing",
+		"status":           "published",
+		"author":           "Growth Hacker",
+		"meta_title":       "Black Friday 2026: 80% Discount Platform",
+		"meta_description": "Massive flash sale. Claim instant access now.",
+		"canonical_url":    "https://example.com/black-friday-2026",
+		"robots":           "index, follow",
+		"pixel_meta_id":    "555444333222",
+		"pixel_tiktok_id":  "TTK998877",
+		"content":          "<div class=\"bf-hero\"><h1>Black Friday Massive Offer</h1></div>",
+		"custom_css":       ".bf-hero { background: #000; color: #ff0; }",
 	}
 	newPageJSON, _ := json.Marshal(newPagePayload)
 	reqSave := httptest.NewRequest(http.MethodPost, "/admin/pages/save", bytes.NewReader(newPageJSON))
@@ -975,7 +975,7 @@ func TestPlatformSettingsStudioFlow(t *testing.T) {
 
 	// 3. POST /admin/settings/save to update app settings
 	savePayload := cb.AppSettings{
-		AppName:               "Acme Global Cloud",
+		AppName:               "Tgo Booster",
 		AppTagline:            "Enterprise Cloud Orchestration",
 		CompanyName:           "Acme Industries International",
 		CopyrightText:         "© 2026 Acme Global Corp",
@@ -1002,8 +1002,8 @@ func TestPlatformSettingsStudioFlow(t *testing.T) {
 	if recSave.Code != http.StatusOK {
 		t.Fatalf("expected 200 on settings save, got %d: %s", recSave.Code, recSave.Body.String())
 	}
-	if engine.AppName != "Acme Global Cloud" {
-		t.Fatalf("expected engine.AppName to be updated live to 'Acme Global Cloud', got %s", engine.AppName)
+	if engine.AppName != "Tgo Booster" {
+		t.Fatalf("expected engine.AppName to be updated live to 'Tgo Booster', got %s", engine.AppName)
 	}
 
 	// Verify persistence in GetSettings
@@ -1211,7 +1211,3 @@ func TestAPIGeneratorAndPublicRESTFlow(t *testing.T) {
 		t.Fatalf("expected 401 Unauthorized after token revoked, got %d", recAfterDel.Code)
 	}
 }
-
-
-
-
