@@ -106,6 +106,8 @@
         toggleMobileSidebar(false);
         const pal = document.getElementById('cmdPalette');
         if (pal && pal.style.display !== 'none') toggleCmdPalette();
+        const drop = document.getElementById('cbTenantDropdown');
+        if (drop) drop.classList.remove('show');
       }
     });
 

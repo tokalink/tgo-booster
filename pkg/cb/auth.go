@@ -6,21 +6,66 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 const SessionCookieName = "cb_session_token"
 
-var hmacSessionSecret = []byte("tgo-booster-enterprise-session-hmac-v1-supersecret")
+// hmacSessionSecret: rahasia penandatangan sesi. WAJIB diganti lewat SetSessionSecret di aplikasi nyata;
+// nilai bawaan hanya untuk pengujian/pengembangan lokal dan memicu peringatan di log.
+var (
+	hmacSessionSecret   = []byte("tgo-booster-dev-only-session-secret-change-me")
+	sessionSecretCustom bool
+	sessionSecretMu     sync.RWMutex
+)
+
+// SetSessionSecret mengganti rahasia penandatangan sesi (minimal 32 byte).
+func SetSessionSecret(b []byte) error {
+	if len(b) < 32 {
+		return errors.New("session secret minimal 32 byte")
+	}
+	sessionSecretMu.Lock()
+	hmacSessionSecret = append([]byte(nil), b...)
+	sessionSecretCustom = true
+	sessionSecretMu.Unlock()
+	return nil
+}
+
+// SessionSecretIsDefault: true bila rahasia sesi masih nilai bawaan (tidak aman untuk produksi).
+func SessionSecretIsDefault() bool {
+	sessionSecretMu.RLock()
+	defer sessionSecretMu.RUnlock()
+	return !sessionSecretCustom
+}
 
 // AuthManager handles admin authentication, rate limiting, and session security
 type AuthManager struct {
 	Engine    *Engine
 	AdminPath string
 	AppName   string
+
+	// SecureCookies menandai cookie sesi Secure (aktifkan di belakang HTTPS).
+	SecureCookies bool
+	// SessionMaxAge: umur maksimum sesi (default 24 jam), ditegakkan di sisi server lewat waktu terbit.
+	SessionMaxAge time.Duration
+	// StrictSessions: sesi hanya sah bila akunnya masih ada, aktif, dan tidak dicabut (SessionsValidFrom).
+	StrictSessions bool
+	// TrustProxy: percayai X-Forwarded-For/X-Real-IP untuk alamat klien (hanya di belakang proxy tepercaya).
+	TrustProxy bool
+	// PostLoginRedirect: tujuan setelah login berhasil (mis. pemilih tenant). Kosong = beranda admin.
+	PostLoginRedirect func(r *http.Request, u *User) string
+	// SecondFactor: bila diisi, akun yang memerlukannya harus lolos verifikasi langkah kedua sebelum sesi dibuat.
+	SecondFactor SecondFactorProvider
+
+	tfMu    sync.Mutex
+	tfFails map[string][]time.Time
 }
 
 func NewAuthManager(adminPath, appName string) *AuthManager {
@@ -31,12 +76,19 @@ func NewAuthManager(adminPath, appName string) *AuthManager {
 }
 
 func signSessionPayload(payload string) string {
-	mac := hmac.New(sha256.New, hmacSessionSecret)
+	sessionSecretMu.RLock()
+	key := hmacSessionSecret
+	sessionSecretMu.RUnlock()
+	mac := hmac.New(sha256.New, key)
 	mac.Write([]byte(payload))
 	return hex.EncodeToString(mac.Sum(nil))
 }
 
 func verifySessionSignature(payload, signature string) bool {
+	return verifySessionSignatureRaw(payload, signature)
+}
+
+func verifySessionSignatureRaw(payload, signature string) bool {
 	expectedSig := signSessionPayload(payload)
 	return hmac.Equal([]byte(expectedSig), []byte(signature))
 }
@@ -49,26 +101,24 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, a.AdminPath, http.StatusSeeOther)
 			return
 		}
-		a.renderLogin(w, "", "admin@tgo.io")
+		a.renderLogin(w, "", "")
 		return
 	}
 
 	// Handle POST Login
 	_ = r.ParseForm()
 	email := strings.TrimSpace(r.FormValue("email"))
+	if email == "" {
+		email = strings.TrimSpace(r.FormValue("login"))
+	}
 	password := strings.TrimSpace(r.FormValue("password"))
 
 	if email == "" || password == "" {
-		a.renderLogin(w, "Email and password are required.", email)
+		a.renderLogin(w, "Username/email and password are required.", email)
 		return
 	}
 
-	clientIP := r.RemoteAddr
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		clientIP = strings.Split(xff, ",")[0]
-	} else if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
-		clientIP = xrip
-	}
+	clientIP := a.clientIP(r)
 
 	maxAttempts := 5
 	lockoutMin := 15
@@ -105,13 +155,23 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 		}
 
 		user := &User{
-			ID:          acc.ID,
-			Name:        acc.Name,
-			Email:       acc.Email,
-			Photo:       acc.Avatar,
-			PrivilegeID: acc.RoleID,
-			RoleName:    acc.Role,
-			CreatedAt:   time.Now(),
+			ID:           acc.ID,
+			Name:         acc.Name,
+			Email:        acc.Email,
+			Photo:        acc.Avatar,
+			PrivilegeID:  acc.RoleID,
+			RoleName:     acc.Role,
+			Tenants:      acc.Tenants,
+			ActiveTenant: acc.DefaultTenant,
+			CreatedAt:    time.Now(),
+		}
+		if user.ActiveTenant == "" && len(user.Tenants) > 0 && user.Tenants[0] != "*" {
+			user.ActiveTenant = user.Tenants[0]
+		}
+		if a.SecondFactor != nil && a.SecondFactor.Required(user.Email) {
+			a.setPending2FA(w, user)
+			http.Redirect(w, r, a.AdminPath+"/login/2fa", http.StatusSeeOther)
+			return
 		}
 		a.SetSessionUser(w, user)
 
@@ -119,12 +179,12 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 			a.Engine.LogAudit(r, "LOGIN", "Auth", fmt.Sprintf("Admin user '%s' (%s) authenticated from %s", user.Name, user.Email, clientIP))
 		}
 
-		http.Redirect(w, r, a.AdminPath, http.StatusSeeOther)
+		http.Redirect(w, r, a.afterLogin(r, user), http.StatusSeeOther)
 		return
 	}
 
 	// Fallback check for standalone tests without full engine
-	if (email == "admin@tgo.io" || email == "admin@example.com") && password == "admin123" {
+	if a.Engine == nil && os.Getenv("APP_ENV") != "production" && (email == "admin@tgo.io" || email == "admin@example.com") && password == "admin123" {
 		user := &User{
 			ID:          "1",
 			Name:        "Super Administrator",
@@ -138,7 +198,7 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.renderLogin(w, "Invalid email address or password.", email)
+	a.renderLogin(w, "Invalid username/email or password.", email)
 }
 
 // ServeLogout handles logout, session invalidation, and audit logging
@@ -153,6 +213,7 @@ func (a *AuthManager) ServeLogout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
+		Secure:   a.SecureCookies,
 	})
 	http.Redirect(w, r, a.AdminPath+"/login", http.StatusSeeOther)
 }
@@ -176,6 +237,9 @@ func (a *AuthManager) renderLogin(w http.ResponseWriter, errMsg, defaultEmail st
 
 // SetSessionUser issues an HMAC-SHA256 signed session cookie
 func (a *AuthManager) SetSessionUser(w http.ResponseWriter, user *User) {
+	if user.CreatedAt.IsZero() {
+		user.CreatedAt = time.Now()
+	}
 	userData, _ := json.Marshal(user)
 	payload := base64.RawURLEncoding.EncodeToString(userData)
 	sig := signSessionPayload(payload)
@@ -185,47 +249,84 @@ func (a *AuthManager) SetSessionUser(w http.ResponseWriter, user *User) {
 		Name:     SessionCookieName,
 		Value:    token,
 		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(a.maxAge()),
 		HttpOnly: true,
+		Secure:   a.SecureCookies,
 		SameSite: http.SameSiteLaxMode,
 	})
 }
 
-// GetSessionUser decodes and verifies user from signed session cookie
+// GetSessionUser decodes and verifies user from signed session cookie.
+// Cookie tanpa tanda tangan ditolak; umur sesi, status akun, dan pencabutan sesi ditegakkan di server.
 func (a *AuthManager) GetSessionUser(r *http.Request) *User {
 	cookie, err := r.Cookie(SessionCookieName)
 	if err != nil || cookie.Value == "" {
 		return nil
 	}
-
 	parts := strings.Split(cookie.Value, ".")
-	if len(parts) == 2 {
-		payload := parts[0]
-		signature := parts[1]
-		if !verifySessionSignature(payload, signature) {
-			return nil // Tampered session token
-		}
-		decoded, err := base64.RawURLEncoding.DecodeString(payload)
-		if err != nil {
-			return nil
-		}
-		var user User
-		if err := json.Unmarshal(decoded, &user); err != nil {
-			return nil
-		}
-		return &user
+	if len(parts) != 2 {
+		return nil
 	}
-
-	// Backward compatibility fallback for legacy unsigned cookies
-	if len(parts) == 1 {
-		decoded, err := base64.RawURLEncoding.DecodeString(parts[0])
-		if err == nil {
-			var user User
-			if json.Unmarshal(decoded, &user) == nil {
-				return &user
+	if !verifySessionSignature(parts[0], parts[1]) {
+		return nil // Tampered / unsigned session token
+	}
+	decoded, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil
+	}
+	var user User
+	if err := json.Unmarshal(decoded, &user); err != nil {
+		return nil
+	}
+	if user.CreatedAt.IsZero() || time.Since(user.CreatedAt) > a.maxAge() || user.CreatedAt.After(time.Now().Add(5*time.Minute)) {
+		return nil
+	}
+	if a.Engine != nil && a.Engine.UserManager != nil {
+		acc := a.Engine.UserManager.FindByID(user.ID)
+		switch {
+		case acc == nil:
+			if a.StrictSessions {
+				return nil
+			}
+		case strings.EqualFold(acc.Status, "Suspended") && a.StrictSessions:
+			return nil
+		case acc.SessionsValidFrom != "":
+			if from, err := time.Parse(time.RFC3339, acc.SessionsValidFrom); err == nil && user.CreatedAt.Before(from) {
+				return nil
 			}
 		}
 	}
+	return &user
+}
 
-	return nil
+func (a *AuthManager) maxAge() time.Duration {
+	if a.SessionMaxAge > 0 {
+		return a.SessionMaxAge
+	}
+	return 24 * time.Hour
+}
+
+func (a *AuthManager) clientIP(r *http.Request) string {
+	if a.TrustProxy {
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			return strings.TrimSpace(strings.Split(xff, ",")[0])
+		}
+		if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
+			return strings.TrimSpace(xrip)
+		}
+	}
+	if h, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return h
+	}
+	return r.RemoteAddr
+}
+
+// afterLogin menentukan tujuan setelah sesi dibuat (PostLoginRedirect bila ada; hanya path lokal yang diterima).
+func (a *AuthManager) afterLogin(r *http.Request, u *User) string {
+	if a.PostLoginRedirect != nil {
+		if p := a.PostLoginRedirect(r, u); strings.HasPrefix(p, "/") && !strings.HasPrefix(p, "//") {
+			return p
+		}
+	}
+	return a.AdminPath
 }

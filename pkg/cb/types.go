@@ -127,8 +127,10 @@ type User struct {
 	Email       string    `json:"email"`
 	Photo       string    `json:"photo"`
 	PrivilegeID string    `json:"privilege_id"`
-	RoleName    string    `json:"role_name"`
-	CreatedAt   time.Time `json:"created_at"`
+	RoleName     string    `json:"role_name"`
+	Tenants      []string  `json:"tenants,omitempty"`
+	ActiveTenant string    `json:"active_tenant,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // Log represents an audit trail activity log (cb_logs)

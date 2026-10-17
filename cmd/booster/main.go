@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/tokalink/tgo-booster/pkg/cb"
 )
 
 const version = "1.0.0"
@@ -26,6 +28,8 @@ func main() {
 		handleNewProject(args[1:])
 	case "make:controller", "controller":
 		handleMakeController(args[1:])
+	case "vendor:publish", "publish":
+		handleVendorPublish(args[1:])
 	case "version", "-v", "--version":
 		fmt.Printf("⚡ TGo Booster CLI v%s\n", version)
 	case "help", "-h", "--help":
@@ -46,6 +50,7 @@ Usage:
 Commands:
   new <project-name>           Scaffold a complete, production-ready TGo Booster project
   make:controller <Name>       Generate a new declarative CRUD controller
+  vendor:publish               Publish embedded templates or assets to project for customization
   version                      Display CLI version
   help                         Display this help message
 
@@ -55,10 +60,19 @@ Options for 'new':
   --title <title>              Custom project display title
   --db <sqlite|mysql|memory>   Default database driver (default: sqlite)
 
+Options for 'vendor:publish':
+  --tag <landing|layouts|auth|pages|css|all> Component tag to publish (default: layouts)
+  --dir <path>                 Target templates directory (default: templates)
+  --force                      Overwrite existing local files
+
 Examples:
   booster new my-portal
   booster new erp-system --port 8085 --db sqlite
   booster make:controller Products
+  booster vendor:publish --tag landing
+  booster vendor:publish --tag layouts
+  booster vendor:publish --tag pages
+  booster vendor:publish --tag all --force
 `
 	fmt.Println(banner)
 }
@@ -245,7 +259,8 @@ func handleNewProject(args []string) {
 	fmt.Printf("  URL:      http://localhost:%s/admin\n", port)
 	fmt.Println("  Email:    admin@tgo.io")
 	fmt.Println("  Password: admin123")
-	fmt.Println("==================================================================\n")
+	fmt.Println("==================================================================")
+	fmt.Println()
 }
 
 func handleMakeController(args []string) {
@@ -575,7 +590,7 @@ func initMySQL() (*sql.DB, error) {
 	serverDB, err := sql.Open("mysql", serverDSN)
 	if err == nil {
 		_, _ = serverDB.Exec(fmt.Sprintf(
-			"CREATE DATABASE IF NOT EXISTS `+"`%s`"+` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
+			"CREATE DATABASE IF NOT EXISTS `+"`%%s`"+` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci",
 			dbName,
 		))
 		_ = serverDB.Close()
@@ -747,3 +762,53 @@ data/*.db-wal
 data/*.db-shm
 .env
 `
+
+func handleVendorPublish(args []string) {
+	tag := "layouts"
+	dir := "templates"
+	force := false
+
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--tag":
+			if i+1 < len(args) {
+				tag = args[i+1]
+				i++
+			}
+		case "--dir":
+			if i+1 < len(args) {
+				dir = args[i+1]
+				i++
+			}
+		case "--force", "-f":
+			force = true
+		default:
+			if !strings.HasPrefix(args[i], "-") && i == 0 {
+				tag = args[i]
+			}
+		}
+	}
+
+	fmt.Printf("📦 Publishing TGo Booster '%s' templates to '%s'...\n", tag, dir)
+
+	res, err := cb.PublishTemplates(dir, tag, force)
+	if err != nil {
+		fmt.Printf("❌ Publish error: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, p := range res.Published {
+		fmt.Printf("   ✓ Published: %s\n", p)
+	}
+	for _, s := range res.Skipped {
+		fmt.Printf("   ⊘ Skipped (already exists): %s (use --force to overwrite)\n", s)
+	}
+
+	fmt.Printf("\n✨ Successfully published %d file(s)", len(res.Published))
+	if len(res.Skipped) > 0 {
+		fmt.Printf(" (%d skipped)", len(res.Skipped))
+	}
+	fmt.Println("!")
+	fmt.Printf("💡 TGo Booster automatically loads and hot-reloads your custom templates from '%s'!\n", dir)
+}
+

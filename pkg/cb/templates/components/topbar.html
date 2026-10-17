@@ -10,6 +10,57 @@
       </svg>
     </button>
 
+    {{if .MultiTenancyEnabled}}
+    <!-- SAAS WORKSPACE / TENANT DROPDOWN SWITCHER -->
+    <div class="cb-tenant-switcher" id="cbTenantSwitcher">
+      <button type="button" class="btn-tenant-pill" onclick="toggleTenantDropdown(event)" aria-expanded="false" title="Active Workspace: {{if .ActiveTenant}}{{.ActiveTenant.Name}}{{else}}Primary Workspace{{end}}">
+        <span class="tenant-pill-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg>
+        </span>
+        <span class="tenant-pill-name">{{if .ActiveTenant}}{{.ActiveTenant.Name}}{{else}}Workspace{{end}}</span>
+        {{if and .ActiveTenant .ActiveTenant.Plan}}
+          <span class="tenant-plan-badge plan-{{.ActiveTenant.Plan}}">{{.ActiveTenant.Plan}}</span>
+        {{end}}
+        <svg class="tenant-caret" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <div class="cb-tenant-dropdown" id="cbTenantDropdown">
+        <div class="tenant-dropdown-header">
+          <span class="tenant-header-title">Active Workspace</span>
+          <span class="tenant-header-count">{{len .AvailableTenants}} workspaces</span>
+        </div>
+        <div class="tenant-dropdown-list">
+          {{range .AvailableTenants}}
+          <a href="{{$.AdminPath}}/tenants/switch/{{.Slug}}" class="tenant-dropdown-item {{if and $.ActiveTenant (eq .Slug $.ActiveTenant.Slug)}}active{{end}}">
+            <div class="tenant-item-main">
+              <div class="tenant-item-title">{{.Name}}</div>
+              <div class="tenant-item-sub">
+                {{if .Domain}}<span class="tenant-domain-tag">{{.Domain}}</span> • {{end}}
+                <span class="tenant-slug-tag">{{.Slug}}</span>
+              </div>
+            </div>
+            <div class="tenant-item-side">
+              <span class="tenant-plan-badge plan-{{.Plan}}">{{.Plan}}</span>
+              {{if and $.ActiveTenant (eq .Slug $.ActiveTenant.Slug)}}
+              <svg class="tenant-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              {{end}}
+            </div>
+          </a>
+          {{end}}
+        </div>
+        {{if .IsSuperadmin}}
+        <div class="tenant-dropdown-footer">
+          <a href="{{.AdminPath}}/tenants" class="btn-tenant-manage">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Manage All Organizations</span>
+          </a>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    <span class="breadcrumb-separator" style="margin: 0 4px; opacity: 0.5;">/</span>
+    {{end}}
+
     <!-- BREADCRUMB -->
     <div class="cb-breadcrumb">
       <a href="{{.AdminPath}}" class="breadcrumb-root">
@@ -72,4 +123,22 @@
     </a>
   </div>
 </header>
+<script>
+function toggleTenantDropdown(e) {
+  if (e) e.stopPropagation();
+  var drop = document.getElementById('cbTenantDropdown');
+  if (!drop) return;
+  var isOpen = drop.classList.contains('show');
+  document.querySelectorAll('.cb-tenant-dropdown.show').forEach(function(d){ d.classList.remove('show'); });
+  if (!isOpen) {
+    drop.classList.add('show');
+  }
+}
+document.addEventListener('click', function(e) {
+  var drop = document.getElementById('cbTenantDropdown');
+  if (drop && !e.target.closest('#cbTenantSwitcher')) {
+    drop.classList.remove('show');
+  }
+});
+</script>
 {{end}}

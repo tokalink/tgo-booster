@@ -13,27 +13,32 @@ import (
 	"time"
 
 	"github.com/tokalink/tgo/pkg/transport/connect"
+	"github.com/tokalink/tgo/pkg/transport/middleware"
 )
 
 // Engine is the central Booster management system
 type Engine struct {
-	AppName     string
-	AdminPath   string
-	Auth        *AuthManager
-	Dashboard   *DashboardHandler
-	UserManager *UserManager
-	AuditLogger *AuditLogger
-	EmailTemplates *EmailTemplateManager
-	controllers []*Controller
-	systemCtrls []*Controller
-	menus       []*MenuItem
-	roles       []*Role
-	pages       []*Page
-	settings    *AppSettings
-	apiTokens   []*APIToken
-	customAdminPages []*CustomAdminPage
-	db          *sql.DB
-	server      connect.Server
+	AppName             string
+	AdminPath           string
+	Auth                *AuthManager
+	Dashboard           *DashboardHandler
+	UserManager         *UserManager
+	AuditLogger         *AuditLogger
+	EmailTemplates      *EmailTemplateManager
+	controllers         []*Controller
+	systemCtrls         []*Controller
+	menus               []*MenuItem
+	roles               []*Role
+	roleResolver        RoleResolverFunc
+	roleLookup          RoleLookupFunc
+	pages               []*Page
+	settings            *AppSettings
+	apiTokens           []*APIToken
+	customAdminPages    []*CustomAdminPage
+	db                  *sql.DB
+	server              connect.Server
+	MultiTenancyEnabled bool
+	TenantManager       *TenantManager
 }
 
 // NewEngine creates a new Booster Engine
@@ -44,12 +49,12 @@ func NewEngine(appName ...string) *Engine {
 	}
 
 	e := &Engine{
-		AppName:   name,
-		AdminPath: "/admin",
-		menus:     make([]*MenuItem, 0),
-		roles:     make([]*Role, 0),
-		pages:     make([]*Page, 0),
-		apiTokens: make([]*APIToken, 0),
+		AppName:          name,
+		AdminPath:        "/admin",
+		menus:            make([]*MenuItem, 0),
+		roles:            make([]*Role, 0),
+		pages:            make([]*Page, 0),
+		apiTokens:        make([]*APIToken, 0),
 		customAdminPages: make([]*CustomAdminPage, 0),
 	}
 	e.Auth = NewAuthManager(e.AdminPath, e.AppName)
@@ -58,6 +63,7 @@ func NewEngine(appName ...string) *Engine {
 	e.UserManager = NewUserManager(e)
 	e.AuditLogger = NewAuditLogger(e)
 	e.EmailTemplates = NewEmailTemplateManager(e)
+	e.TenantManager = NewTenantManager(e)
 	e.LoadDynamicRoles()
 	e.LoadDynamicMenus()
 	e.LoadDynamicPages()
@@ -283,6 +289,7 @@ func (e *Engine) Mount(server connect.Server, prefix ...string) {
 
 	// 1. Auth routes
 	server.Register(e.AdminPath+"/login", http.HandlerFunc(e.Auth.ServeLogin))
+	server.Register(e.AdminPath+"/login/2fa", http.HandlerFunc(e.Auth.ServeLogin2FA))
 	server.Register(e.AdminPath+"/logout", http.HandlerFunc(e.Auth.ServeLogout))
 
 	// 2. Dashboard route
@@ -453,6 +460,14 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 
 	// 9. Application Settings Studio (/admin/settings)
 	e.registerSettingsRoutes(server)
+
+	// 10. SaaS Organizations & Tenants Studio (/admin/tenants)
+	if e.MultiTenancyEnabled && !hasModule("tenants") && e.TenantManager != nil {
+		tenantCtrl := e.TenantManager.NewController()
+		e.registerSystemController(server, tenantCtrl)
+	}
+	server.Register(e.AdminPath+"/tenants/switch", http.HandlerFunc(e.handleTenantSwitch))
+	server.Register(e.AdminPath+"/tenants/switch/", http.HandlerFunc(e.handleTenantSwitch))
 }
 
 // RenderLayout renders a page inside the master Booster layout
@@ -475,17 +490,31 @@ func (e *Engine) RenderLayout(w http.ResponseWriter, r *http.Request, pageTitle 
 	currentPath := r.URL.Path
 	activeMenus := e.buildActiveMenus(r, currentPath, user)
 
+	var activeTenant *Tenant
+	var availableTenants []*Tenant
+	if e.MultiTenancyEnabled && e.TenantManager != nil {
+		activeSlug := e.ResolveTenant(r, user)
+		activeTenant = e.TenantManager.GetBySlug(activeSlug)
+		if activeTenant == nil {
+			activeTenant = e.TenantManager.GetDefaultTenant()
+		}
+		availableTenants = e.TenantManager.GetAvailableTenantsForUser(user)
+	}
+
 	data := map[string]interface{}{
-		"AppName":      e.AppName,
-		"AdminPath":    e.AdminPath,
-		"PageTitle":    pageTitle,
-		"ActivePath":   currentPath,
-		"User":         user,
-		"UserInitials": initials,
-		"MenuItems":    activeMenus,
-		"IsSuperadmin": e.IsUserSuperadmin(user),
-		"Content":      content,
-		"Settings":     e.GetSettings(),
+		"AppName":             e.AppName,
+		"AdminPath":           e.AdminPath,
+		"PageTitle":           pageTitle,
+		"ActivePath":          currentPath,
+		"User":                user,
+		"UserInitials":        initials,
+		"MenuItems":           activeMenus,
+		"IsSuperadmin":        e.IsUserSuperadmin(user),
+		"Content":             content,
+		"Settings":            e.GetSettings(),
+		"MultiTenancyEnabled": e.MultiTenancyEnabled,
+		"ActiveTenant":        activeTenant,
+		"AvailableTenants":    availableTenants,
 	}
 
 	htmlBytes, err := RenderMasterLayout(data)
@@ -637,7 +666,6 @@ func (e *Engine) AutoMigrateAll() error {
 	}
 	return nil
 }
-
 
 // DeleteModuleDefinition removes a module definition from persistent disk storage
 func (e *Engine) DeleteModuleDefinition(table string) error {
@@ -1407,14 +1435,74 @@ func (e *Engine) CheckPermission(r *http.Request, moduleTable, action string) bo
 		return false
 	}
 
-	role := e.FindRole(user.PrivilegeID)
-	if role == nil {
-		role = e.FindRole(user.RoleName)
-	}
+	role := e.EffectiveRole(r, user)
 	if role == nil {
 		return false
 	}
 	return role.CanAccess(moduleTable, action)
+}
+
+// RoleResolverFunc menentukan slug peran efektif pengguna untuk request ini (mis. peran per tenant).
+// Mengembalikan "" bila tidak ada penggantian (dipakai peran bawaan akun).
+type RoleResolverFunc func(r *http.Request, user *User) string
+
+// SetRoleResolver memasang resolver peran efektif (peran per tenant).
+func (e *Engine) SetRoleResolver(f RoleResolverFunc) { e.roleResolver = f }
+
+// RoleLookupFunc mencari peran kustom (mis. per tenant) berdasarkan slug yang dikembalikan resolver.
+// Mengembalikan nil bila slug bukan peran kustom (lalu dicari di daftar peran global).
+type RoleLookupFunc func(r *http.Request, slug string) *Role
+
+// SetRoleLookup memasang pencarian peran kustom. Hasilnya didahulukan atas peran global dengan slug yang sama.
+func (e *Engine) SetRoleLookup(f RoleLookupFunc) { e.roleLookup = f }
+
+// EffectiveRole mengembalikan peran yang berlaku untuk pengguna pada request ini: hasil resolver (jika ada)
+// atau peran bawaan akun. Superadmin tidak pernah diganti.
+func (e *Engine) EffectiveRole(r *http.Request, user *User) *Role {
+	if user == nil {
+		return nil
+	}
+	if slug := e.resolvedSlug(r, user); slug != "" {
+		if e.roleLookup != nil {
+			if role := e.roleLookup(r, slug); role != nil {
+				return role
+			}
+		}
+		if role := e.FindRole(slug); role != nil {
+			return role
+		}
+		return nil // peran terdaftar tetapi tidak dikenal: tolak, jangan jatuh ke peran global
+	}
+	role := e.FindRole(user.PrivilegeID)
+	if role == nil {
+		role = e.FindRole(user.RoleName)
+	}
+	return role
+}
+
+// resolvedSlug: slug dari resolver peran (kosong bila tidak ada resolver/penggantian atau pengguna superadmin).
+func (e *Engine) resolvedSlug(r *http.Request, user *User) string {
+	if user == nil || e.roleResolver == nil || e.IsUserSuperadmin(user) {
+		return ""
+	}
+	return e.roleResolver(r, user)
+}
+
+// ResolvedRoleSlug mengembalikan peran per tenant dari resolver (kosong bila tidak ada). Dipakai untuk kebijakan seperti "khusus Owner".
+func (e *Engine) ResolvedRoleSlug(r *http.Request, user *User) string { return e.resolvedSlug(r, user) }
+
+// EffectiveRoleName: nama peran efektif untuk tampilan/keputusan kebijakan (kosong bila tidak ada).
+func (e *Engine) EffectiveRoleName(r *http.Request, user *User) string {
+	if user == nil {
+		return ""
+	}
+	if e.IsUserSuperadmin(user) {
+		return "Superadmin"
+	}
+	if role := e.EffectiveRole(r, user); role != nil {
+		return role.Name
+	}
+	return user.RoleName
 }
 
 // RenderForbidden presents an executive CRUDBooster 403 Forbidden screen
@@ -1785,7 +1873,7 @@ func (e *Engine) initDefaultMenus() {
 				Path:     e.AdminPath + "/menus",
 				ParentID: "group_tools",
 				Roles:    []string{"superadmin"},
-				Order:      2,
+				Order:    2,
 			},
 			{
 				ID:       "privileges",
@@ -1874,6 +1962,9 @@ func (e *Engine) initDefaultMenus() {
 }
 
 func (e *Engine) syncControllerMenu(c *Controller) {
+	if c.HideFromMenu {
+		return
+	}
 	if len(e.menus) == 0 {
 		e.LoadDynamicMenus()
 	}
@@ -2088,7 +2179,7 @@ func (e *Engine) buildActiveMenus(r *http.Request, currentPath string, user *Use
 	roleSlug := ""
 	if user != nil {
 		roleSlug = user.RoleName
-		if rObj := e.FindRole(user.PrivilegeID); rObj != nil {
+		if rObj := e.EffectiveRole(r, user); rObj != nil {
 			roleSlug = rObj.Slug
 		}
 	}
@@ -2520,5 +2611,214 @@ func (e *Engine) handleMenuReset(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Menus reset to default configuration"})
 }
 
+// EnableMultiTenancy turns on or off native SaaS multi-tenancy support across the framework
+func (e *Engine) EnableMultiTenancy(enabled bool) *Engine {
+	e.MultiTenancyEnabled = enabled
+	return e
+}
 
+// ResolveTenant determines the active tenant slug for a request based on:
+// 1. Query parameter (?tenant=... or ?tenant_id=...)
+// 2. Custom Domain (matching Host header against registered tenant domains)
+// 3. Subdomain (e.g. client1.domain.com)
+// 4. HTTP Headers (X-Tenant-Slug, X-Tenant-ID)
+// 5. Session cookie (cb_active_tenant)
+// 6. User account's active or default workspace
+// 7. Fallback to default tenant
+func (e *Engine) ResolveTenant(r *http.Request, user *User) string {
+	if r == nil {
+		return "default"
+	}
 
+	// 1. Check query parameter
+	if q := strings.TrimSpace(r.URL.Query().Get("tenant")); q != "" {
+		if e.TenantManager != nil {
+			if t := e.TenantManager.GetBySlug(q); t != nil {
+				if e.TenantManager.UserCanAccess(user, t) {
+					return t.Slug
+				}
+			}
+		}
+	}
+	if q := strings.TrimSpace(r.URL.Query().Get("tenant_id")); q != "" {
+		if e.TenantManager != nil {
+			if t := e.TenantManager.GetByID(q); t != nil {
+				if e.TenantManager.UserCanAccess(user, t) {
+					return t.Slug
+				}
+			}
+		}
+	}
+
+	// 2. Custom Domain & Subdomain resolution
+	host := r.Host
+	if colon := strings.Index(host, ":"); colon != -1 {
+		host = host[:colon]
+	}
+	host = strings.ToLower(strings.TrimSpace(host))
+
+	if e.TenantManager != nil && host != "" && host != "localhost" && host != "127.0.0.1" {
+		// Check exact custom domain (e.g. "erp.client.com")
+		// Domain/subdomain hanya menentukan tenant bila pengguna (bila ada sesi) memang berhak atas tenant itu; tanpa
+		// pemeriksaan ini pengguna tenant A dapat membaca tenant B dengan mengirim Host: b.domain (akses lintas tenant).
+		if t := e.TenantManager.GetByDomain(host); t != nil && e.TenantManager.UserCanAccess(user, t) {
+			return t.Slug
+		}
+		// Check subdomain prefix (e.g. "client1.kriva.id")
+		parts := strings.Split(host, ".")
+		if len(parts) >= 2 && parts[0] != "www" {
+			if t := e.TenantManager.GetBySubdomain(parts[0]); t != nil && e.TenantManager.UserCanAccess(user, t) {
+				return t.Slug
+			}
+		}
+	}
+
+	// 3. HTTP Header — pengguna terautentikasi non-superadmin hanya boleh memilih tenant yang menjadi haknya
+	// (mencegah akses lintas tenant lewat header yang dipalsukan). Permintaan tanpa sesi (publik/internal) tetap dilayani.
+	if h := strings.TrimSpace(r.Header.Get("X-Tenant-Slug")); h != "" && e.userMayUseTenantHeader(user, h) {
+		if e.TenantManager != nil {
+			if t := e.TenantManager.GetBySlug(h); t != nil {
+				return t.Slug
+			}
+		}
+		return h
+	}
+	if h := strings.TrimSpace(r.Header.Get("X-Tenant-ID")); h != "" {
+		if e.TenantManager != nil {
+			if t := e.TenantManager.GetByID(h); t != nil {
+				if e.userMayUseTenantHeader(user, t.Slug) {
+					return t.Slug
+				}
+			} else if e.userMayUseTenantHeader(user, h) {
+				return h
+			}
+		} else if e.userMayUseTenantHeader(user, h) {
+			return h
+		}
+	}
+
+	// 4. Session cookie cb_active_tenant
+	if cookie, err := r.Cookie("cb_active_tenant"); err == nil && cookie.Value != "" {
+		cSlug := strings.ToLower(strings.TrimSpace(cookie.Value))
+		if e.TenantManager != nil {
+			if t := e.TenantManager.GetBySlug(cSlug); t != nil {
+				if e.TenantManager.UserCanAccess(user, t) {
+					return t.Slug
+				}
+			}
+		} else {
+			return cSlug
+		}
+	}
+
+	// 5. User Account default/active tenant
+	if user != nil {
+		if user.ActiveTenant != "" {
+			return user.ActiveTenant
+		}
+		if len(user.Tenants) > 0 && user.Tenants[0] != "*" {
+			return user.Tenants[0]
+		}
+	}
+
+	// 6. Context value from upstream middleware
+	if slug := middleware.GetTenant(r.Context()); slug != "" {
+		return slug
+	}
+
+	// 7. Fallback to default tenant
+	if e.TenantManager != nil {
+		if def := e.TenantManager.GetDefaultTenant(); def != nil {
+			return def.Slug
+		}
+	}
+
+	return "default"
+}
+
+func (e *Engine) handleTenantSwitch(w http.ResponseWriter, r *http.Request) {
+	user := e.Auth.GetSessionUser(r)
+	if user == nil {
+		http.Redirect(w, r, e.AdminPath+"/login", http.StatusSeeOther)
+		return
+	}
+
+	slug := ""
+	path := strings.TrimPrefix(r.URL.Path, e.AdminPath+"/tenants/switch")
+	path = strings.Trim(path, "/")
+	if path != "" {
+		slug = path
+	} else {
+		slug = r.URL.Query().Get("slug")
+		if slug == "" {
+			slug = r.FormValue("slug")
+		}
+	}
+
+	slug = strings.ToLower(strings.TrimSpace(slug))
+	if slug == "" {
+		http.Redirect(w, r, e.AdminPath, http.StatusSeeOther)
+		return
+	}
+
+	var targetTenant *Tenant
+	if e.TenantManager != nil {
+		targetTenant = e.TenantManager.GetBySlug(slug)
+		if targetTenant == nil {
+			targetTenant = e.TenantManager.GetByID(slug)
+		}
+	}
+
+	if targetTenant == nil {
+		http.Redirect(w, r, e.AdminPath+"?alert=Workspace+not+found&alert_type=error", http.StatusSeeOther)
+		return
+	}
+
+	if !e.TenantManager.UserCanAccess(user, targetTenant) {
+		http.Redirect(w, r, e.AdminPath+"?alert=Access+denied+to+this+workspace&alert_type=error", http.StatusSeeOther)
+		return
+	}
+
+	// Set active tenant cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "cb_active_tenant",
+		Value:    targetTenant.Slug,
+		Path:     "/",
+		Expires:  time.Now().Add(30 * 24 * time.Hour),
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	// Update user session
+	user.ActiveTenant = targetTenant.Slug
+	e.Auth.SetSessionUser(w, user)
+
+	e.LogAudit(r, "TENANT_SWITCH", "Tenants", fmt.Sprintf("User '%s' switched active workspace to '%s' (%s)", user.Name, targetTenant.Name, targetTenant.Slug))
+
+	// Tujuan eksplisit (hanya path lokal) didahulukan, mis. dari halaman pemilih tenant
+	if next := r.FormValue("next"); strings.HasPrefix(next, "/") && !strings.HasPrefix(next, "//") && !strings.Contains(next, "\\") {
+		http.Redirect(w, r, next, http.StatusSeeOther)
+		return
+	}
+
+	// Return to Referer or Admin home
+	ref := r.Header.Get("Referer")
+	if ref != "" && !strings.Contains(ref, "/switch") {
+		http.Redirect(w, r, ref, http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, e.AdminPath+"?alert=Switched+to+"+targetTenant.Name+"&alert_type=success", http.StatusSeeOther)
+}
+
+// userMayUseTenantHeader: true bila tidak ada pengguna (permintaan non-sesi), pengguna superadmin, atau tenant ada di hak akses pengguna.
+func (e *Engine) userMayUseTenantHeader(user *User, slug string) bool {
+	if user == nil || e.IsUserSuperadmin(user) {
+		return true
+	}
+	for _, t := range user.Tenants {
+		if t == "*" || strings.EqualFold(t, slug) {
+			return true
+		}
+	}
+	return len(user.Tenants) == 0 && strings.EqualFold(slug, "default")
+}

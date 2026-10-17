@@ -34,6 +34,8 @@
 - [7. Siklus Hook (Lifecycle Hooks)](#7-siklus-hook-lifecycle-hooks)
 - [8. Autentikasi & Command Palette (Ctrl+K)](#8-autentikasi--command-palette-ctrlk)
 - [9. Contoh Lengkap Controller MVC](#9-contoh-lengkap-controller-mvc)
+- [10. Multi-Tenancy & Arsitektur SaaS](#10-multi-tenancy--arsitektur-saas)
+- [11. Kustomisasi Layout & Template Publisher (`vendor:publish`)](#11-kustomisasi-layout--template-publisher-vendorpublish)
 
 ---
 
@@ -437,6 +439,59 @@ func NewAdminProductController() *booster.Controller {
 
 ---
 
+## 10. Multi-Tenancy & Arsitektur SaaS
+
+TGo Booster menyediakan fondasi SaaS Multi-Tenancy kelas enterprise secara terintegrasi:
+
+- **Single-Domain by Default**: Pengguna dapat mengelola beberapa organisasi/perusahaan sekaligus dan berpindah secara instan melalui **Workspace Switcher Dropdown** di navbar atas.
+- **Dukungan Custom Domain & Subdomain**: Setiap tenant dapat dihubungkan ke domain khusus mereka (misal: `erp.client-corp.com` atau `acme.kriva.id`).
+- **Row-Level Tenant Isolation**: Cukup panggil `store.SetTenantScoped(true)`, framework otomatis menambahkan kolom `tenant_id` dan mengisolasi operasi query `FindAll`, `FindByID`, `Create`, `Update`, dan `Delete`.
+- **Manajemen Tenant Terpusat**: Kelola seluruh organisasi pelanggan di `/admin/tenants`.
+
+```go
+// Aktifkan Multi-Tenancy di level aplikasi
+admin := cb.NewEngine(cb.EngineConfig{
+    AppName:   "SaaS ERP Control Plane",
+    AdminPath: "/admin",
+})
+admin.EnableMultiTenancy(true)
+```
+
+> 📖 **Pelajari panduan lengkap arsitektur multi-tenancy di**:  
+> **[Panduan SaaS Multi-Tenancy & Isolasi Data (docs/multi-tenancy-saas.md)](docs/multi-tenancy-saas.md)**.
+
+---
+
+## 11. Kustomisasi Layout & Template Publisher (`vendor:publish`)
+
+Mirip dengan fitur `vendor:publish` pada Laravel / CRUDBooster, Anda dapat mengekspor template framework ke folder proyek Anda (`./templates/`) dan memodifikasinya dengan fitur **Live Hot-Reloading** tanpa perlu restart server:
+
+```bash
+# 1. Terbitkan hanya landing page (cocok jika tiap proyek punya desain depan berbeda)
+booster vendor:publish --tag landing
+
+# 2. Terbitkan layouts & components admin (main.html, topbar, sidebar, modals)
+booster vendor:publish --tag layouts
+
+# 3. Terbitkan custom stylesheet CSS
+booster vendor:publish --tag css
+
+# 4. Terbitkan template tabel dan form CRUD
+booster vendor:publish --tag pages
+
+# 5. Terbitkan seluruh bundle template
+booster vendor:publish --tag all
+```
+
+- **Local-First Resolution**: Framework memeriksa berkas di `./templates/` terlebih dahulu sebelum fallback ke embedded `boosterFS`.
+- **Live Hot-Reloading**: Setiap kali berkas template lokal diedit, perubahan langsung aktif pada refresh browser berikutnya.
+
+> 📖 **Pelajari panduan lengkap kustomisasi template dan layout di**:  
+> **[Panduan Kustomisasi Layout & Template Overrides (docs/layout-and-template-overrides.md)](docs/layout-and-template-overrides.md)**.
+
+---
+
 ## 📜 Lisensi
 
 Didistribusikan di bawah lisensi MIT. Hak Cipta © 2026 [Tokalink](https://github.com/tokalink).
+

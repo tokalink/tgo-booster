@@ -7,8 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -17,17 +20,25 @@ import (
 
 // UserAccount represents a persistent user identity in data/users.json
 type UserAccount struct {
-	ID           string `json:"id"`
-	Avatar       string `json:"avatar"`
-	Name         string `json:"name"`
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	Salt         string `json:"salt"`
-	RoleID       string `json:"role_id"`
-	Role         string `json:"role"`
-	Status       string `json:"status"` // "Active", "Suspended"
-	CreatedAt    string `json:"created_at"`
-	LastLoginAt  string `json:"last_login_at,omitempty"`
+	ID     string `json:"id"`
+	Avatar string `json:"avatar"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	// Username: nama masuk opsional, unik se-platform (tanpa huruf besar, tanpa '@'). Login boleh memakai email atau username.
+	Username      string   `json:"username,omitempty"`
+	PasswordHash  string   `json:"password_hash"`
+	Salt          string   `json:"salt"`
+	RoleID        string   `json:"role_id"`
+	Role          string   `json:"role"`
+	Status        string   `json:"status"` // "Active", "Suspended"
+	Tenants       []string `json:"tenants,omitempty"`
+	DefaultTenant string   `json:"default_tenant,omitempty"`
+	CreatedAt     string   `json:"created_at"`
+	LastLoginAt   string   `json:"last_login_at,omitempty"`
+	// PasswordAlgo: "" (legacy SHA-256+salt, otomatis ditingkatkan saat login) | "bcrypt".
+	PasswordAlgo string `json:"password_algo,omitempty"`
+	// SessionsValidFrom: sesi yang diterbitkan sebelum waktu ini (RFC3339) ditolak (ganti sandi, cabut sesi).
+	SessionsValidFrom string `json:"sessions_valid_from,omitempty"`
 }
 
 // HashUserPassword computes SHA-256 with user-specific salt
@@ -42,6 +53,69 @@ func GenerateRandomSalt() string {
 	b := make([]byte, 16)
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)
+}
+
+// hashPassword membuat hash bcrypt (cost 12). Salt lama dipertahankan kosong untuk algoritma baru.
+func hashPassword(password string) (hash, salt, algo string, err error) {
+	b, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return "", "", "", err
+	}
+	return string(b), "", "bcrypt", nil
+}
+
+// checkPassword memverifikasi sandi terhadap akun (bcrypt atau SHA-256 lama). legacy=true bila perlu ditingkatkan.
+func checkPassword(u *UserAccount, password string) (ok, legacy bool) {
+	if u.PasswordAlgo == "bcrypt" {
+		return bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) == nil, false
+	}
+	return VerifyUserPassword(password, u.Salt, u.PasswordHash), true
+}
+
+// setPasswordLocked mengganti sandi akun (bcrypt) dan mencabut semua sesi sebelumnya. um.mu harus dipegang.
+func setPasswordLocked(u *UserAccount, password string) error {
+	h, salt, algo, err := hashPassword(password)
+	if err != nil {
+		return err
+	}
+	u.PasswordHash, u.Salt, u.PasswordAlgo = h, salt, algo
+	u.SessionsValidFrom = time.Now().UTC().Format(time.RFC3339)
+	return nil
+}
+
+var reservedUsernames = map[string]bool{
+	"admin": true, "administrator": true, "root": true, "support": true, "system": true, "superadmin": true, "owner": true,
+	"finance": true, "billing": true, "auditor": true, "kriva": true, "help": true, "api": true, "www": true, "mail": true,
+	"null": true, "undefined": true, "me": true, "login": true, "logout": true, "signup": true, "security": true,
+}
+
+var usernameRe = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{2,31}$`)
+
+// ValidateUsername menormalkan (huruf kecil, spasi dipangkas) dan memvalidasi nama masuk: 3–32 karakter a-z 0-9 . _ -,
+// diawali huruf/angka, tanpa '@', bukan nama yang dicadangkan.
+func ValidateUsername(u string) (string, error) {
+	u = strings.ToLower(strings.TrimSpace(u))
+	if !usernameRe.MatchString(u) {
+		return "", errors.New("Username 3–32 karakter: huruf kecil, angka, titik, garis bawah, atau strip; diawali huruf/angka")
+	}
+	if strings.Contains(u, "..") || strings.HasSuffix(u, ".") {
+		return "", errors.New("Username tidak boleh memuat titik berurutan atau diakhiri titik")
+	}
+	if reservedUsernames[u] {
+		return "", errors.New("Username itu dicadangkan, pilih yang lain")
+	}
+	return u, nil
+}
+
+// dummyHash dipakai untuk menyamakan waktu respons saat akun tidak ditemukan (mencegah enumerasi lewat waktu).
+var (
+	dummyHashOnce sync.Once
+	dummyHash     []byte
+)
+
+func burnPasswordCheck(password string) {
+	dummyHashOnce.Do(func() { dummyHash, _ = bcrypt.GenerateFromPassword([]byte("kriva-dummy"), 12) })
+	_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
 }
 
 // VerifyUserPassword checks password validity against hash
@@ -92,48 +166,32 @@ func (um *UserManager) loadUsers() {
 		}
 	}
 
-	// Seed default enterprise accounts
-	salt1 := GenerateRandomSalt()
-	salt2 := GenerateRandomSalt()
-	salt3 := GenerateRandomSalt()
-
+	// Seed akun awal. Produksi (APP_ENV=production): HANYA superadmin dengan kata sandi dari BOOSTER_ADMIN_PASSWORD
+	// atau acak (dicetak sekali di log). Pengembangan: akun contoh dengan kata sandi lemah untuk demo lokal.
+	prod := os.Getenv("APP_ENV") == "production"
+	adminPass := os.Getenv("BOOSTER_ADMIN_PASSWORD")
+	if prod && adminPass == "" {
+		b := make([]byte, 12)
+		_, _ = rand.Read(b)
+		adminPass = hex.EncodeToString(b)
+		log.Printf("[SECURITY] Kata sandi awal superadmin admin@tgo.io (ganti segera): %s", adminPass)
+	}
+	if adminPass == "" {
+		adminPass = "admin123"
+	}
+	mk := func(id, avatar, name, email, pass, roleID, role string, tenants []string, created string) *UserAccount {
+		h, salt, algo, _ := hashPassword(pass)
+		return &UserAccount{ID: id, Avatar: avatar, Name: name, Email: email, PasswordHash: h, Salt: salt, PasswordAlgo: algo,
+			RoleID: roleID, Role: role, Status: "Active", Tenants: tenants, DefaultTenant: "default", CreatedAt: created}
+	}
 	defaultUsers := []*UserAccount{
-		{
-			ID:           "1",
-			Avatar:       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-			Name:         "Super Administrator",
-			Email:        "admin@tgo.io",
-			PasswordHash: HashUserPassword("admin123", salt1),
-			Salt:         salt1,
-			RoleID:       "1",
-			Role:         "Superadmin",
-			Status:       "Active",
-			CreatedAt:    "2026-01-10",
-		},
-		{
-			ID:           "2",
-			Avatar:       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-			Name:         "Budi Operations",
-			Email:        "manager@tgo.io",
-			PasswordHash: HashUserPassword("manager123", salt2),
-			Salt:         salt2,
-			RoleID:       "2",
-			Role:         "Operations Manager",
-			Status:       "Active",
-			CreatedAt:    "2026-02-14",
-		},
-		{
-			ID:           "3",
-			Avatar:       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-			Name:         "Siti Auditor",
-			Email:        "auditor@tgo.io",
-			PasswordHash: HashUserPassword("auditor123", salt3),
-			Salt:         salt3,
-			RoleID:       "3",
-			Role:         "Read-Only Auditor",
-			Status:       "Active",
-			CreatedAt:    "2026-03-01",
-		},
+		mk("1", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80", "Super Administrator", "admin@tgo.io", adminPass, "1", "Superadmin", []string{"*"}, "2026-01-10"),
+	}
+	if !prod {
+		defaultUsers = append(defaultUsers,
+			mk("2", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80", "Budi Operations", "manager@tgo.io", "manager123", "2", "Operations Manager", []string{"default", "demo-enterprise"}, "2026-02-14"),
+			mk("3", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80", "Siti Auditor", "auditor@tgo.io", "auditor123", "3", "Read-Only Auditor", []string{"default"}, "2026-03-01"),
+		)
 	}
 
 	um.users = defaultUsers
@@ -190,7 +248,66 @@ func (um *UserManager) FindByEmail(email string) *UserAccount {
 	return nil
 }
 
-// Authenticate verifies email and password against stored hash with rate limit checking
+// FindByLogin mencari akun dari email (bila memuat '@') atau username.
+func (um *UserManager) FindByLogin(login string) *UserAccount {
+	login = strings.ToLower(strings.TrimSpace(login))
+	if login == "" {
+		return nil
+	}
+	if strings.Contains(login, "@") {
+		return um.FindByEmail(login)
+	}
+	um.mu.RLock()
+	defer um.mu.RUnlock()
+	for _, u := range um.users {
+		if u.Username != "" && strings.ToLower(u.Username) == login {
+			c := *u
+			return &c
+		}
+	}
+	return nil
+}
+
+// UsernameTaken: username sudah dipakai akun lain (exceptID dikecualikan).
+func (um *UserManager) UsernameTaken(username, exceptID string) bool {
+	username = strings.ToLower(strings.TrimSpace(username))
+	um.mu.RLock()
+	defer um.mu.RUnlock()
+	for _, u := range um.users {
+		if u.ID != exceptID && u.Username != "" && strings.ToLower(u.Username) == username {
+			return true
+		}
+	}
+	return false
+}
+
+// SetUsername mengatur (atau mengosongkan bila "") username akun. Unik se-platform.
+func (um *UserManager) SetUsername(id, username string) (string, error) {
+	username = strings.TrimSpace(username)
+	if username != "" {
+		var err error
+		if username, err = ValidateUsername(username); err != nil {
+			return "", err
+		}
+	}
+	um.mu.Lock()
+	defer um.mu.Unlock()
+	var target *UserAccount
+	for _, u := range um.users {
+		if u.ID == id {
+			target = u
+		} else if username != "" && strings.EqualFold(u.Username, username) {
+			return "", errors.New("Username sudah dipakai")
+		}
+	}
+	if target == nil {
+		return "", errors.New("user not found")
+	}
+	target.Username = username
+	return username, um.saveUnlocked()
+}
+
+// Authenticate verifies email or username and password against stored hash with rate limit checking
 func (um *UserManager) Authenticate(email, password, clientIP string, maxAttempts, lockoutMin int) (*UserAccount, error) {
 	emailClean := strings.ToLower(strings.TrimSpace(email))
 	lockKey := emailClean + "@" + clientIP
@@ -210,11 +327,12 @@ func (um *UserManager) Authenticate(email, password, clientIP string, maxAttempt
 	um.trackerMu.Unlock()
 
 	// 2. Lookup User
-	user := um.FindByEmail(emailClean)
+	user := um.FindByLogin(emailClean)
 	if user == nil {
-		// Record failed attempt
+		// Samakan waktu respons dan pesan dengan kata sandi salah (tidak membocorkan keberadaan akun)
+		burnPasswordCheck(password)
 		um.recordFailure(lockKey, maxAttempts, lockoutMin)
-		return nil, errors.New("Invalid email address or password")
+		return nil, errors.New("Invalid username/email or password")
 	}
 
 	// 3. Check Account Status
@@ -222,16 +340,24 @@ func (um *UserManager) Authenticate(email, password, clientIP string, maxAttempt
 		return nil, errors.New("This administrator account has been suspended. Please contact Super Administrator")
 	}
 
-	// 4. Verify Password
-	if !VerifyUserPassword(password, user.Salt, user.PasswordHash) {
-		// Backward compatibility: check if initial seed without salt or default admin fallback
-		if (emailClean == "admin@tgo.io" || emailClean == "admin@example.com") && password == "admin123" {
-			// Upgrade password hash in storage
-			_ = um.UpdatePassword(user.ID, password)
-		} else {
-			um.recordFailure(lockKey, maxAttempts, lockoutMin)
-			return nil, errors.New("Invalid email address or password")
+	// 4. Verify Password (bcrypt atau SHA-256 lama; tanpa kata sandi bawaan/pintu belakang)
+	ok, legacy := checkPassword(user, password)
+	if !ok {
+		um.recordFailure(lockKey, maxAttempts, lockoutMin)
+		return nil, errors.New("Invalid username/email or password")
+	}
+	if legacy {
+		// Tingkatkan hash lama ke bcrypt secara transparan (tanpa mencabut sesi yang sedang berjalan)
+		um.mu.Lock()
+		if h, salt, algo, err := hashPassword(password); err == nil {
+			for _, u := range um.users {
+				if u.ID == user.ID {
+					u.PasswordHash, u.Salt, u.PasswordAlgo = h, salt, algo
+				}
+			}
+			_ = um.saveUnlocked()
 		}
+		um.mu.Unlock()
 	}
 
 	// 5. Success -> Clear failure counters & update LastLoginAt
@@ -283,9 +409,22 @@ func (um *UserManager) UpdatePassword(id, newPassword string) error {
 
 	for _, u := range um.users {
 		if u.ID == id {
-			salt := GenerateRandomSalt()
-			u.Salt = salt
-			u.PasswordHash = HashUserPassword(newPassword, salt)
+			if err := setPasswordLocked(u, newPassword); err != nil {
+				return err
+			}
+			return um.saveUnlocked()
+		}
+	}
+	return errors.New("user not found")
+}
+
+// InvalidateSessions mencabut seluruh sesi akun yang diterbitkan sebelum sekarang.
+func (um *UserManager) InvalidateSessions(id string) error {
+	um.mu.Lock()
+	defer um.mu.Unlock()
+	for _, u := range um.users {
+		if u.ID == id {
+			u.SessionsValidFrom = time.Now().UTC().Format(time.RFC3339)
 			return um.saveUnlocked()
 		}
 	}
@@ -327,11 +466,12 @@ func (um *UserManager) CreateUser(name, email, password, role, roleID, avatar, s
 		avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
 	}
 
-	salt := GenerateRandomSalt()
-	passHash := HashUserPassword(password, salt)
 	if password == "" {
-		// default fallback password if left empty on creation
-		passHash = HashUserPassword("tgo12345", salt)
+		return nil, errors.New("password is required")
+	}
+	passHash, salt, algo, err := hashPassword(password)
+	if err != nil {
+		return nil, err
 	}
 
 	newAcc := &UserAccount{
@@ -341,6 +481,7 @@ func (um *UserManager) CreateUser(name, email, password, role, roleID, avatar, s
 		Email:        emailClean,
 		PasswordHash: passHash,
 		Salt:         salt,
+		PasswordAlgo: algo,
 		RoleID:       roleID,
 		Role:         role,
 		Status:       status,
@@ -397,9 +538,9 @@ func (um *UserManager) UpdateUser(id, name, email, password, role, roleID, avata
 		target.Status = status
 	}
 	if strings.TrimSpace(password) != "" {
-		salt := GenerateRandomSalt()
-		target.Salt = salt
-		target.PasswordHash = HashUserPassword(password, salt)
+		if err := setPasswordLocked(target, password); err != nil {
+			return err
+		}
 	}
 
 	return um.saveUnlocked()
@@ -530,4 +671,47 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 
 func (udp *UserDataProvider) Delete(ctx *Context, id string) error {
 	return udp.manager.DeleteUser(id)
+}
+
+// SetTenants mengganti daftar tenant yang boleh diakses akun (dan tenant bawaan).
+func (um *UserManager) SetTenants(id string, tenants []string, defaultTenant string) error {
+	um.mu.Lock()
+	defer um.mu.Unlock()
+	for _, u := range um.users {
+		if u.ID == id {
+			u.Tenants = append([]string(nil), tenants...)
+			u.DefaultTenant = defaultTenant
+			return um.saveUnlocked()
+		}
+	}
+	return fmt.Errorf("user %s not found", id)
+}
+
+// AddTenant menambahkan satu tenant ke akses akun (idempoten) dan mengembalikan akun terbarui.
+func (um *UserManager) AddTenant(id, slug string) (*UserAccount, error) {
+	um.mu.Lock()
+	defer um.mu.Unlock()
+	for _, u := range um.users {
+		if u.ID != id {
+			continue
+		}
+		has := false
+		for _, t := range u.Tenants {
+			if strings.EqualFold(t, slug) {
+				has = true
+			}
+		}
+		if !has {
+			u.Tenants = append(u.Tenants, slug)
+		}
+		if u.DefaultTenant == "" {
+			u.DefaultTenant = slug
+		}
+		if err := um.saveUnlocked(); err != nil {
+			return nil, err
+		}
+		cp := *u
+		return &cp, nil
+	}
+	return nil, fmt.Errorf("user %s not found", id)
 }

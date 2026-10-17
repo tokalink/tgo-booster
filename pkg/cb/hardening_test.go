@@ -31,8 +31,8 @@ func TestUserManager_AuthenticationAndHashing(t *testing.T) {
 	if admin == nil {
 		t.Fatalf("expected admin@tgo.io to be seeded by default")
 	}
-	if admin.PasswordHash == "" || admin.Salt == "" {
-		t.Fatalf("expected admin to have non-empty salt and password hash")
+	if admin.PasswordHash == "" || admin.PasswordAlgo != "bcrypt" {
+		t.Fatalf("expected admin to have a bcrypt password hash")
 	}
 
 	// 2. Authenticate with correct credentials

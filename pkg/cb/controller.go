@@ -53,7 +53,42 @@ type Controller struct {
 	GetDetail     func(w http.ResponseWriter, r *http.Request, id string) bool
 	GetAdd        func(w http.ResponseWriter, r *http.Request) bool
 	GetEdit       func(w http.ResponseWriter, r *http.Request, id string) bool
+	// HideFromMenu: controller tidak otomatis ditambahkan ke sidebar (mis. endpoint pencarian internal).
+	HideFromMenu bool
 	CustomActions map[string]func(w http.ResponseWriter, r *http.Request, subPath string)
+
+	// SaaS Multi-Tenancy Scoping
+	TenantScoped         bool
+	TenantScopedExplicit bool
+}
+
+// SetTenantScoped explicitly configures tenant data isolation for this controller
+func (c *Controller) SetTenantScoped(scoped bool) *Controller {
+	c.TenantScoped = scoped
+	c.TenantScopedExplicit = true
+	if sqlStore, ok := c.DataProvider.(*SQLStore); ok && sqlStore != nil {
+		sqlStore.SetTenantScoped(scoped)
+	}
+	if memStore, ok := c.DataProvider.(*MemoryStore); ok && memStore != nil {
+		memStore.SetTenantScoped(scoped)
+	}
+	return c
+}
+
+// IsTenantScoped resolves whether this controller is scoped to the active tenant
+func (c *Controller) IsTenantScoped() bool {
+	if c.TenantScopedExplicit {
+		return c.TenantScoped
+	}
+	if c.Engine != nil && c.Engine.MultiTenancyEnabled {
+		switch c.Table {
+		case "users", "roles", "privileges", "menus", "settings", "tenants", "api_tokens", "pages", "logs", "email_templates":
+			return false
+		default:
+			return true
+		}
+	}
+	return c.TenantScoped
 }
 
 // SetDataProvider assigns the Model DataProvider for MVC architecture
@@ -283,6 +318,14 @@ func (c *Controller) initDefaults() {
 	if c.Icon == "" {
 		c.Icon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`
 	}
+	if c.IsTenantScoped() {
+		if sqlStore, ok := c.DataProvider.(*SQLStore); ok && sqlStore != nil {
+			sqlStore.SetTenantScoped(true)
+		}
+		if memStore, ok := c.DataProvider.(*MemoryStore); ok && memStore != nil {
+			memStore.SetTenantScoped(true)
+		}
+	}
 }
 
 // ServeHTTP handles all CRUD routing (Index, Data JSON, Add, Edit, Delete)
@@ -309,6 +352,12 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		action = "update"
 	case strings.HasPrefix(path, "delete/") || path == "bulk-action":
 		action = "delete"
+		case path == "save" || strings.HasPrefix(path, "save/"):
+		action = "create"
+	}
+	// Aksi kustom bermetode tulis (void, reverse, lock, close-year, dst.) tidak boleh lolos sebagai "read".
+	if action == "read" && r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodOptions {
+		action = "update"
 	}
 
 	if c.Engine != nil && !c.Engine.CheckPermission(r, c.Table, action) {
@@ -534,11 +583,17 @@ func (c *Controller) makeContext(r *http.Request) *Context {
 	if c.Engine != nil && c.Engine.Auth != nil {
 		user = c.Engine.Auth.GetSessionUser(r)
 	}
+	tenantSlug := ""
+	if c.Engine != nil {
+		tenantSlug = c.Engine.ResolveTenant(r, user)
+	} else {
+		tenantSlug = middleware.GetTenant(r.Context())
+	}
 	return &Context{
 		Ctx:        r.Context(),
 		Request:    r,
 		User:       user,
-		TenantSlug: middleware.GetTenant(r.Context()),
+		TenantSlug: tenantSlug,
 	}
 }
 
@@ -657,14 +712,18 @@ func (c *Controller) handleCreateSubmit(w http.ResponseWriter, r *http.Request) 
 	ctx := c.makeContext(r)
 	if c.HookBeforeAdd != nil {
 		if err := c.HookBeforeAdd(ctx, data); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			c.writeFormError(w, r, http.StatusBadRequest, "Isian belum valid", err.Error())
 			return
 		}
 	}
 
 	if c.DataProvider != nil {
 		if err := c.DataProvider.Create(ctx, data); err != nil {
-			http.Error(w, "Failed to create record: "+err.Error(), http.StatusInternalServerError)
+			if m := FriendlyDBError(err); m != "" {
+				c.writeFormError(w, r, http.StatusUnprocessableEntity, "Data tidak dapat disimpan", m)
+			} else {
+				c.writeFormError(w, r, http.StatusInternalServerError, "Data tidak dapat disimpan", "Failed to create record: "+err.Error())
+			}
 			return
 		}
 	}
@@ -696,14 +755,18 @@ func (c *Controller) handleEditSubmit(w http.ResponseWriter, r *http.Request, id
 	ctx := c.makeContext(r)
 	if c.HookBeforeEdit != nil {
 		if err := c.HookBeforeEdit(ctx, data); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			c.writeFormError(w, r, http.StatusBadRequest, "Isian belum valid", err.Error())
 			return
 		}
 	}
 
 	if c.DataProvider != nil {
 		if err := c.DataProvider.Update(ctx, id, data); err != nil {
-			http.Error(w, "Failed to update record: "+err.Error(), http.StatusInternalServerError)
+			if m := FriendlyDBError(err); m != "" {
+				c.writeFormError(w, r, http.StatusUnprocessableEntity, "Data tidak dapat disimpan", m)
+			} else {
+				c.writeFormError(w, r, http.StatusInternalServerError, "Data tidak dapat disimpan", "Failed to update record: "+err.Error())
+			}
 			return
 		}
 	}
@@ -730,7 +793,11 @@ func (c *Controller) handleDelete(w http.ResponseWriter, r *http.Request, id str
 
 	if c.DataProvider != nil {
 		if err := c.DataProvider.Delete(ctx, id); err != nil {
-			http.Error(w, "Failed to delete record: "+err.Error(), http.StatusInternalServerError)
+			if m := FriendlyDBError(err); m != "" {
+				http.Error(w, m, http.StatusConflict)
+			} else {
+				http.Error(w, "Failed to delete record: "+err.Error(), http.StatusInternalServerError)
+			}
 			return
 		}
 	}
@@ -968,6 +1035,9 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 // AutoMigrate automatically creates the SQL table for the controller if backed by SQLStore.
 func (c *Controller) AutoMigrate() error {
 	if sqlStore, ok := c.DataProvider.(*SQLStore); ok && sqlStore != nil {
+		if c.IsTenantScoped() {
+			sqlStore.SetTenantScoped(true)
+		}
 		return sqlStore.AutoMigrate(c.Forms...)
 	}
 	return nil

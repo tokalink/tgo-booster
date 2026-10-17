@@ -12,3 +12,8 @@ tmp/
 .env.local
 .idea/
 .vscode/
+
+# keadaan runtime tenant (dibuat saat multi-tenant aktif)
+data/tenants.json
+pkg/cb/data/tenants.json
+starter/data/tenants.json

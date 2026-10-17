@@ -18,6 +18,8 @@ Dokumen ini melacak eksekusi bertahap perbaikan bug, penguatan keamanan, persist
 | **Fase 8** | Bespoke Responsive Landing & Public Pages Layout | `landing.html`, Bento Grid, Interactive Showcase, Multi-Template | ✅ Selesai (100%) |
 | **Fase 9** | AI & LLM Service Studio (OpenAI Compatible) & AI Page Generator | `pkg/cb/ai.go`, Hybrid Settings Fallback, AI Page Generator Modal | ✅ Selesai (100%) |
 | **Fase 10** | Optimasi Base Framework & Dokumentasi Proyek Baru | `SQLStore.AutoMigrate`, `tgo-cms` Build, `getting-started-new-project.md` | ✅ Selesai (100%) |
+| **Fase 11** | Arsitektur SaaS Multi-Tenancy (Single & Custom Domain) | `TenantManager`, Row-Level Isolation, Topbar Switcher, `erp.kriva.id` | ✅ Selesai (100%) |
+| **Fase 12** | Layout Overrides & Template Publisher (`vendor:publish`) | CLI `booster vendor:publish`, Dynamic Template Cache, Hot-Reload | ✅ Selesai (100%) |
 
 ---
 
@@ -220,6 +222,59 @@ Dokumen ini melacak eksekusi bertahap perbaikan bug, penguatan keamanan, persist
 - [x] **10.3 Dokumentasi Komprehensif Panduan Proyek Baru (`docs/getting-started-new-project.md`)**
   - Membuat tutorial terperinci 9 langkah: Inisialisasi modul, struktur MVC standar, koneksi database agnostik, auto-migrate, declarative CRUD controller & relations, custom pages & hot-reload HTML view, RBAC security, AI page generator, dan deployment single binary.
   - Menghubungkan panduan baru di bagian teratas `README.md`.
+
+---
+
+### Fase 11: Penguatan Arsitektur SaaS Multi-Tenancy (Single Domain & Custom Domain)
+- [x] **11.1 Native Multi-Tenancy Engine & Tenant Manager (`pkg/cb/tenant.go`)**
+  - Implementasi struct `Tenant` (ID, Name, Slug, Domain, Subdomain, Plan, Status, OwnerEmail, MaxUsers, MaxStorageMB, Timestamps).
+  - Implementasi `TenantManager` thread-safe dengan persistensi `data/tenants.json`.
+  - Auto-seeding default tenant (`default` - Enterprise dan `demo-enterprise` - Pro) sehingga instalasi eksisting langsung bekerja tanpa konfigurasi manual.
+  - Implementasi `TenantDataProvider` dan `tm.NewController()` untuk konsol manajemen organisasi di `/admin/tenants`.
+- [x] **11.2 Multi-Resolution Strategy (Single Domain & Custom Domain Ready)**
+  - Implementasi `e.ResolveTenant(r, user)` dengan hierarki:
+    1. Query param `?tenant=slug` / `?tenant_id=id` (untuk switch/preview cepat).
+    2. Custom Domain (matching `Host` terhadap registered tenant `domain`, e.g. `erp.client.com`).
+    3. Subdomain (matching prefix host e.g. `client1.kriva.id`).
+    4. HTTP Headers `X-Tenant-Slug` & `X-Tenant-ID` (untuk REST/RPC API).
+    5. Session Cookie `cb_active_tenant` (untuk navigasi single-domain).
+    6. User account default workspace.
+    7. Fallback ke default tenant (`default`).
+- [x] **11.3 Row-Level Multi-Tenancy pada `SQLStore` & `MemoryStore`**
+  - `SQLStore.SetTenantScoped(true)` & `MemoryStore.SetTenantScoped(true)`.
+  - `AutoMigrate` otomatis menambahkan kolom `tenant_id VARCHAR(64) NOT NULL DEFAULT 'default'` beserta indeks `idx_{table}_tenant_id`.
+  - Filter otomatis `WHERE tenant_id = ?` pada `FindAll`, `FindByID`, `Update`, dan `Delete`.
+  - Injeksi otomatis `tenant_id` pada `Create`.
+  - Dukungan bypass superadmin (`ctx.TenantSlug == "*"`).
+- [x] **11.4 Topbar Tenant / Workspace Switcher Dropdown**
+  - Dropdown interaktif di navbar header menampilkan nama organisasi aktif dan badge plan (`Enterprise`, `Pro`, `Starter`, `Free`).
+  - Menampilkan daftar seluruh workspace yang dapat diakses oleh user dengan indikator aktif checkmark.
+  - Endpoint switch `/admin/tenants/switch/:slug` yang menyetel cookie `cb_active_tenant` dan mengalihkan user secara instan.
+- [x] **11.5 Penerapan Nyata pada `erp.kriva.id`**
+  - Mengaktifkan `admin.EnableMultiTenancy(true)` pada `erp.kriva.id/main.go`.
+  - Mengaktifkan tenant-scoping pada controller `items`.
+  - Verifikasi auto-migrate SQLite: kolom `tenant_id` dan indeks `idx_items_tenant_id` berhasil dibuat otomatis.
+  - Pengujian unit test suite: Seluruh 23/23 unit tests di `tgo-booster` PASS 100%.
+
+---
+
+### Fase 12: Layout Overrides & Template Publisher (`vendor:publish`)
+- [x] **12.1 Engine Template Publisher (`pkg/cb/publish.go`)**
+  - Fungsi `cb.PublishTemplates(targetDir, tag, force)` untuk mengekstrak template dari embedded `boosterFS`.
+  - Mendukung seleksi tag: `layouts` (layouts & components), `pages` (CRUD grid, form, studios), `css` (`static/css`), dan `all` (full bundle).
+  - Mekanisme proteksi idempotensi: file yang sudah dimodifikasi tidak akan ditimpa kecuali menggunakan flag `--force`.
+- [x] **12.2 Dynamic Template Resolver & Hot-Reload (`pkg/cb/ui.go`)**
+  - Resolusi cerdas bertingkat: memeriksa file override lokal di direktori `./templates/` terlebih dahulu sebelum fallback ke embedded `boosterFS`.
+  - Thread-safe caching (`sync.RWMutex`) dengan pemantauan `ModTime` berkas lokal: perubahan pada file HTML/CSS lokal langsung aktif secara instan pada request berikutnya tanpa perlu kompilasi ulang ataupun me-restart binary Go.
+  - Zero-overhead: Jika proyek tidak mengekspor template lokal, engine langsung memakai template embedded yang sudah di-precompile saat boot.
+- [x] **12.3 CLI Command `booster vendor:publish` (`cmd/booster/main.go`)**
+  - Perintah CLI `booster vendor:publish` (alias `booster publish`) dengan opsi `--tag`, `--dir`, dan `--force`.
+  - Banner panduan dan contoh penggunaan yang jelas.
+  - Kompilasi binary CLI global di `d:\Projects\tgo\booster.exe`.
+- [x] **12.4 Verifikasi Nyata & Unit Testing**
+  - Pengujian di `erp.kriva.id`: berhasil mempublikasikan template layouts ke `./templates/` dan diverifikasi hot-reload live di browser/HTTP client.
+  - Unit tests di `pkg/cb/publish_test.go` (`TestPublishTemplates`, `TestDynamicTemplateOverride`) lulus 100%.
+
 
 
 
