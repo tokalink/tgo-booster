@@ -3,6 +3,7 @@ package cb
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -23,6 +24,18 @@ type AuditLogEntry struct {
 	CreatedAt   string `json:"created_at"`
 }
 
+// AuditSink adalah penyimpanan jejak audit alternatif (mis. tabel PostgreSQL) sebagai pengganti logs.json.
+type AuditSink interface {
+	// Append menambah satu entri (ID diisi oleh sink bila kosong).
+	Append(e AuditLogEntry) error
+	// Recent mengembalikan entri terbaru lebih dulu, paling banyak limit.
+	Recent(limit int) ([]AuditLogEntry, error)
+	// Find mengambil satu entri; (nil, nil) bila tidak ada.
+	Find(id string) (*AuditLogEntry, error)
+	// Count: jumlah entri tersimpan (untuk menentukan impor awal dari berkas).
+	Count() (int, error)
+}
+
 // AuditLogger manages the persistent security audit trail
 type AuditLogger struct {
 	engine   *Engine
@@ -30,6 +43,32 @@ type AuditLogger struct {
 	filePath string
 	logs     []AuditLogEntry
 	maxLogs  int
+	sink     AuditSink
+}
+
+// SetAuditSink memindahkan penyimpanan jejak audit ke sink. Bila sink masih kosong, isi logs.json (bila ada)
+// diimpor sekali; sesudahnya berkas tidak dipakai lagi.
+func (e *Engine) SetAuditSink(s AuditSink) error {
+	if s == nil || e.AuditLogger == nil {
+		return nil
+	}
+	al := e.AuditLogger
+	al.mu.Lock()
+	defer al.mu.Unlock()
+	if n, err := s.Count(); err != nil {
+		return err
+	} else if n == 0 {
+		for i := len(al.logs) - 1; i >= 0; i-- { // logs terbaru-dulu; impor dari yang tertua
+			l := al.logs[i]
+			l.ID = ""
+			if err := s.Append(l); err != nil {
+				return err
+			}
+		}
+	}
+	al.sink = s
+	al.logs = nil
+	return nil
 }
 
 // NewAuditLogger initializes the persistent audit logger
@@ -88,6 +127,9 @@ func (al *AuditLogger) loadLogs() {
 }
 
 func (al *AuditLogger) saveUnlocked() error {
+	if al.sink != nil {
+		return nil
+	}
 	bytes, err := json.MarshalIndent(al.logs, "", "  ")
 	if err != nil {
 		return err
@@ -128,6 +170,14 @@ func (al *AuditLogger) Log(r *http.Request, action, module, description string) 
 	al.mu.Lock()
 	defer al.mu.Unlock()
 
+	if al.sink != nil {
+		if err := al.sink.Append(AuditLogEntry{IP: clientIP, User: userName, Action: strings.ToUpper(strings.TrimSpace(action)),
+			Module: module, Description: description, CreatedAt: time.Now().Format("2006-01-02 15:04:05")}); err != nil {
+			log.Printf("audit sink: %v", err)
+		}
+		return
+	}
+
 	nextID := 1
 	if len(al.logs) > 0 {
 		if lastID, err := strconv.Atoi(al.logs[0].ID); err == nil {
@@ -160,6 +210,14 @@ func (al *AuditLogger) Log(r *http.Request, action, module, description string) 
 func (al *AuditLogger) GetAllLogs() []AuditLogEntry {
 	al.mu.RLock()
 	defer al.mu.RUnlock()
+
+	if al.sink != nil {
+		list, err := al.sink.Recent(al.maxLogs)
+		if err != nil {
+			log.Printf("audit sink: %v", err)
+		}
+		return list
+	}
 
 	out := make([]AuditLogEntry, len(al.logs))
 	copy(out, al.logs)
@@ -198,6 +256,18 @@ func (adp *AuditLogDataProvider) FindAll(ctx *Context) ([]map[string]interface{}
 func (adp *AuditLogDataProvider) FindByID(ctx *Context, id string) (map[string]interface{}, error) {
 	adp.logger.mu.RLock()
 	defer adp.logger.mu.RUnlock()
+
+	if adp.logger.sink != nil {
+		l, err := adp.logger.sink.Find(id)
+		if err != nil {
+			return nil, err
+		}
+		if l == nil {
+			return nil, fmt.Errorf("audit log #%s not found", id)
+		}
+		return map[string]interface{}{"id": l.ID, "ip": l.IP, "user": l.User, "action": l.Action,
+			"module": l.Module, "description": l.Description, "created_at": l.CreatedAt}, nil
+	}
 
 	for _, l := range adp.logger.logs {
 		if l.ID == id {
