@@ -6,8 +6,6 @@ import (
 	"html"
 	"html/template"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -77,28 +75,12 @@ func normalizeRoute(path string) string {
 	return path
 }
 
-func (e *Engine) getPagesPersistencePath() string {
-	candidates := []string{
-		"data/pages.json",
-		"starter/data/pages.json",
-		"../starter/data/pages.json",
-	}
-	for _, c := range candidates {
-		dir := filepath.Dir(c)
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			return c
-		}
-	}
-	return "data/pages.json"
-}
-
 // LoadDynamicPages restores custom pages from pages.json or seeds defaults
 func (e *Engine) LoadDynamicPages() {
 	pagesPersistenceMu.Lock()
 	defer pagesPersistenceMu.Unlock()
 
-	p := e.getPagesPersistencePath()
-	data, err := os.ReadFile(p)
+	data, err := e.docLoad(DocPages)
 	if err == nil && len(data) > 0 {
 		var items []*Page
 		if err := json.Unmarshal(data, &items); err == nil && len(items) > 0 {
@@ -122,13 +104,11 @@ func (e *Engine) SavePages() error {
 }
 
 func (e *Engine) savePagesUnsafe() error {
-	p := e.getPagesPersistencePath()
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
 	data, err := json.MarshalIndent(e.pages, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, data, 0644)
+	return e.docSave(DocPages, data)
 }
 
 // initDefaultPages generates seed pages with complete SEO, pixels, and routes

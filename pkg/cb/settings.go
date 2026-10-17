@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -153,28 +152,12 @@ func DefaultSettings(appName string) *AppSettings {
 	}
 }
 
-func (e *Engine) getSettingsPersistencePath() string {
-	candidates := []string{
-		"data/settings.json",
-		"starter/data/settings.json",
-		"../starter/data/settings.json",
-	}
-	for _, c := range candidates {
-		dir := filepath.Dir(c)
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			return c
-		}
-	}
-	return "data/settings.json"
-}
-
 // LoadDynamicSettings loads configuration from data/settings.json or initializes defaults
 func (e *Engine) LoadDynamicSettings() {
 	settingsPersistenceMu.Lock()
 	defer settingsPersistenceMu.Unlock()
 
-	p := e.getSettingsPersistencePath()
-	data, err := os.ReadFile(p)
+	data, err := e.docLoad(DocSettings)
 	if err == nil && len(data) > 0 {
 		var s AppSettings
 		if jsonErr := json.Unmarshal(data, &s); jsonErr == nil {
@@ -208,7 +191,7 @@ func (e *Engine) LoadDynamicSettings() {
 	// Initialize defaults and persist
 	e.settings = DefaultSettings(e.AppName)
 	if raw, jsonErr := json.MarshalIndent(e.settings, "", "  "); jsonErr == nil {
-		_ = os.WriteFile(p, raw, 0644)
+		_ = e.docSave(DocSettings, raw)
 	}
 }
 
@@ -233,12 +216,11 @@ func (e *Engine) SaveSettings(s *AppSettings) error {
 		e.AppName = s.AppName
 	}
 
-	p := e.getSettingsPersistencePath()
 	raw, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, raw, 0644)
+	return e.docSave(DocSettings, raw)
 }
 
 // SystemDiagnostics represents live server metrics

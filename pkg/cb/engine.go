@@ -39,6 +39,7 @@ type Engine struct {
 	server              connect.Server
 	MultiTenancyEnabled bool
 	TenantManager       *TenantManager
+	docs                DocStore // penyimpanan konfigurasi (bawaan: berkas JSON); lihat SetDocStore
 }
 
 // NewEngine creates a new Booster Engine
@@ -577,26 +578,10 @@ func (e *Engine) Unregister(table string) bool {
 	return removed
 }
 
-func (e *Engine) getPersistencePath() string {
-	candidates := []string{
-		"data/modules.json",
-		"starter/data/modules.json",
-		"../starter/data/modules.json",
-	}
-	for _, c := range candidates {
-		dir := filepath.Dir(c)
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			return c
-		}
-	}
-	return "data/modules.json"
-}
-
 // LoadDynamicModules restores any previously generated CRUD modules from modules.json
 func (e *Engine) LoadDynamicModules() {
-	p := e.getPersistencePath()
-	data, err := os.ReadFile(p)
-	if err != nil {
+	data, err := e.docLoad(DocModules)
+	if err != nil || len(data) == 0 {
 		return
 	}
 	var defs []ModuleDefinition
@@ -630,11 +615,8 @@ func (e *Engine) LoadDynamicModules() {
 
 // SaveModuleDefinition persists a module definition to disk
 func (e *Engine) SaveModuleDefinition(def ModuleDefinition) error {
-	p := e.getPersistencePath()
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
-
 	var defs []ModuleDefinition
-	if data, err := os.ReadFile(p); err == nil {
+	if data, err := e.docLoad(DocModules); err == nil && len(data) > 0 {
 		_ = json.Unmarshal(data, &defs)
 	}
 
@@ -654,7 +636,7 @@ func (e *Engine) SaveModuleDefinition(def ModuleDefinition) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, data, 0644)
+	return e.docSave(DocModules, data)
 }
 
 // AutoMigrateAll executes AutoMigrate on all registered controllers backed by SQLStore.
@@ -669,9 +651,8 @@ func (e *Engine) AutoMigrateAll() error {
 
 // DeleteModuleDefinition removes a module definition from persistent disk storage
 func (e *Engine) DeleteModuleDefinition(table string) error {
-	p := e.getPersistencePath()
-	data, err := os.ReadFile(p)
-	if err != nil {
+	data, err := e.docLoad(DocModules)
+	if err != nil || len(data) == 0 {
 		return nil
 	}
 	var defs []ModuleDefinition
@@ -690,7 +671,7 @@ func (e *Engine) DeleteModuleDefinition(table string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, out, 0644)
+	return e.docSave(DocModules, out)
 }
 
 // LogAudit records an operational or security event into the persistent audit trail
@@ -1277,25 +1258,9 @@ func generateSampleRows(def ModuleDefinition) []map[string]interface{} {
 	return rows
 }
 
-func (e *Engine) getPrivilegesPersistencePath() string {
-	candidates := []string{
-		"data/privileges.json",
-		"starter/data/privileges.json",
-		"../starter/data/privileges.json",
-	}
-	for _, c := range candidates {
-		dir := filepath.Dir(c)
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			return c
-		}
-	}
-	return "data/privileges.json"
-}
-
 // LoadDynamicRoles restores role definitions and permissions matrix from privileges.json
 func (e *Engine) LoadDynamicRoles() {
-	p := e.getPrivilegesPersistencePath()
-	data, err := os.ReadFile(p)
+	data, err := e.docLoad(DocPrivileges)
 	if err == nil && len(data) > 0 {
 		var roles []*Role
 		if err := json.Unmarshal(data, &roles); err == nil && len(roles) > 0 {
@@ -1373,13 +1338,11 @@ func (e *Engine) initDefaultRoles() {
 
 // SaveRoles persists all configured roles and their RBAC matrix to disk
 func (e *Engine) SaveRoles() error {
-	p := e.getPrivilegesPersistencePath()
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
 	data, err := json.MarshalIndent(e.roles, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, data, 0644)
+	return e.docSave(DocPrivileges, data)
 }
 
 // FindRole retrieves a role by ID, Slug, or Name
@@ -1742,36 +1705,18 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 // MENU MANAGEMENT STUDIO & HIERARCHICAL NAVIGATION ENGINE
 // ============================================================================
 
-func (e *Engine) getMenusPersistencePath() string {
-	candidates := []string{
-		"data/menus.json",
-		"starter/data/menus.json",
-		"../starter/data/menus.json",
-	}
-	for _, c := range candidates {
-		dir := filepath.Dir(c)
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			return c
-		}
-	}
-	return "data/menus.json"
-}
-
 // SaveMenus persists the active hierarchical menus tree to disk
 func (e *Engine) SaveMenus() error {
-	p := e.getMenusPersistencePath()
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
 	data, err := json.MarshalIndent(e.menus, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, data, 0644)
+	return e.docSave(DocMenus, data)
 }
 
 // LoadDynamicMenus restores the navigation hierarchy from menus.json
 func (e *Engine) LoadDynamicMenus() {
-	p := e.getMenusPersistencePath()
-	data, err := os.ReadFile(p)
+	data, err := e.docLoad(DocMenus)
 	if err == nil && len(data) > 0 {
 		var items []*MenuItem
 		if err := json.Unmarshal(data, &items); err == nil && len(items) > 0 {

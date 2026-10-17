@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -51,13 +50,8 @@ func (tm *TenantManager) load() {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
 
-	if _, err := os.Stat(tm.filePath); os.IsNotExist(err) {
-		tm.seedDefaults()
-		return
-	}
-
-	data, err := os.ReadFile(tm.filePath)
-	if err != nil {
+	data, err := tm.engine.docLoad(DocTenants)
+	if err != nil || len(data) == 0 {
 		tm.seedDefaults()
 		return
 	}
@@ -112,12 +106,11 @@ func (tm *TenantManager) seedDefaults() {
 }
 
 func (tm *TenantManager) saveLocked() error {
-	_ = os.MkdirAll(filepath.Dir(tm.filePath), 0755)
 	data, err := json.MarshalIndent(tm.tenants, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(tm.filePath, data, 0644)
+	return tm.engine.docSave(DocTenants, data)
 }
 
 // GetAll returns a copy of all registered tenants

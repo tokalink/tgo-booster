@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -74,32 +72,13 @@ func MaskAPIToken(token string) string {
 	return prefix + "••••••••••••••••" + suffix
 }
 
-// getAPITokensPersistencePath returns the location of api_tokens.json
-func (e *Engine) getAPITokensPersistencePath() string {
-	candidates := []string{
-		"data/api_tokens.json",
-		"starter/data/api_tokens.json",
-		"../data/api_tokens.json",
-	}
-	for _, p := range candidates {
-		if _, err := os.Stat(p); err == nil {
-			return p
-		}
-	}
-	if err := os.MkdirAll("data", 0755); err == nil {
-		return "data/api_tokens.json"
-	}
-	return "api_tokens.json"
-}
-
 // LoadDynamicTokens loads tokens from disk into memory
 func (e *Engine) LoadDynamicTokens() []*APIToken {
 	tokenPersistenceMu.Lock()
 	defer tokenPersistenceMu.Unlock()
 
-	p := e.getAPITokensPersistencePath()
-	raw, err := os.ReadFile(p)
-	if err != nil {
+	raw, err := e.docLoad(DocAPITokens)
+	if err != nil || len(raw) == 0 {
 		e.apiTokens = make([]*APIToken, 0)
 		return e.apiTokens
 	}
@@ -183,16 +162,11 @@ func (e *Engine) DeleteAPIToken(id string) error {
 }
 
 func (e *Engine) persistAPITokensLocked() error {
-	p := e.getAPITokensPersistencePath()
-	dir := filepath.Dir(p)
-	if dir != "" && dir != "." {
-		_ = os.MkdirAll(dir, 0755)
-	}
 	raw, err := json.MarshalIndent(e.apiTokens, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, raw, 0644)
+	return e.docSave(DocAPITokens, raw)
 }
 
 // ValidateAPIToken checks Bearer/X-API-Key credentials and scope authorization

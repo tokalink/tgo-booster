@@ -157,7 +157,7 @@ func (um *UserManager) loadUsers() {
 	um.mu.Lock()
 	defer um.mu.Unlock()
 
-	data, err := os.ReadFile(um.filePath)
+	data, err := um.engine.docLoad(DocUsers)
 	if err == nil && len(data) > 0 {
 		var list []*UserAccount
 		if err := json.Unmarshal(data, &list); err == nil && len(list) > 0 {
@@ -203,7 +203,7 @@ func (um *UserManager) saveUnlocked() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(um.filePath, bytes, 0644)
+	return um.engine.docSave(DocUsers, bytes)
 }
 
 // GetAllUsers returns a cloned slice of user accounts

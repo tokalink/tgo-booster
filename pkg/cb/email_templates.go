@@ -49,7 +49,7 @@ func (em *EmailTemplateManager) loadTemplates() {
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
-	data, err := os.ReadFile(em.filePath)
+	data, err := em.engine.docLoad(DocEmailTemplates)
 	if err == nil && len(data) > 0 {
 		var list []*EmailTemplate
 		if err := json.Unmarshal(data, &list); err == nil && len(list) > 0 {
@@ -99,7 +99,7 @@ func (em *EmailTemplateManager) saveUnlocked() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(em.filePath, bytes, 0644)
+	return em.engine.docSave(DocEmailTemplates, bytes)
 }
 
 // GetAll returns cloned slice of email templates
