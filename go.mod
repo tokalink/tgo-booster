@@ -7,7 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	github.com/mattn/go-sqlite3 v1.14.52
-	github.com/tokalink/tgo v0.1.3
+	github.com/tokalink/tgo v0.1.4
 	golang.org/x/crypto v0.36.0
 )
 
@@ -18,5 +18,3 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/protobuf v1.36.0 // indirect
 )
-
-replace github.com/tokalink/tgo => ../tgo-core
