@@ -67,3 +67,69 @@ func TestSetDocStoreImportsOnceAndRedirectsWrites(t *testing.T) {
 		t.Error("instance kedua tidak memuat pengguna dari DocStore")
 	}
 }
+
+type verDocStore struct {
+	memDocStore
+	ver map[string]int64
+}
+
+func (v *verDocStore) Save(n string, d []byte) error {
+	if err := v.memDocStore.Save(n, d); err != nil {
+		return err
+	}
+	v.mu.Lock()
+	if v.ver == nil {
+		v.ver = map[string]int64{}
+	}
+	v.ver[n]++
+	v.mu.Unlock()
+	return nil
+}
+func (v *verDocStore) Versions() (map[string]int64, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	out := map[string]int64{}
+	for k, x := range v.ver {
+		out[k] = x
+	}
+	return out, nil
+}
+
+// Dua instance berbagi satu penyimpanan: perubahan di A terlihat di B setelah SyncDocsOnce, dan tulisan B sendiri
+// tidak memicu muat ulang di B.
+func TestSyncDocsOnceReloadsChangesFromOtherInstance(t *testing.T) {
+	store := &verDocStore{}
+	t.Chdir(t.TempDir())
+	a := NewEngine("A")
+	if err := a.SetDocStore(store); err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(t.TempDir())
+	b := NewEngine("B")
+	if err := b.SetDocStore(store); err != nil {
+		t.Fatal(err)
+	}
+	if ch, _ := b.SyncDocsOnce(); len(ch) != 0 {
+		t.Fatalf("tanpa perubahan tidak boleh memuat ulang: %v", ch)
+	}
+	if _, err := a.UserManager.CreateUser("Dari A", "dari-a@uji.id", "Sandi#12345", "Superadmin", "1", "", "Active"); err != nil {
+		t.Fatal(err)
+	}
+	if b.UserManager.FindByEmail("dari-a@uji.id") != nil {
+		t.Fatal("B belum boleh tahu sebelum sinkron")
+	}
+	ch, err := b.SyncDocsOnce()
+	if err != nil || len(ch) != 1 || ch[0] != DocUsers {
+		t.Fatalf("sinkron: %v %v", ch, err)
+	}
+	if b.UserManager.FindByEmail("dari-a@uji.id") == nil {
+		t.Error("B tidak memuat pengguna baru dari A")
+	}
+	// tulisan B sendiri tidak memicu muat ulang
+	if _, err := b.UserManager.CreateUser("Dari B", "dari-b@uji.id", "Sandi#12345", "Superadmin", "1", "", "Active"); err != nil {
+		t.Fatal(err)
+	}
+	if ch, _ := b.SyncDocsOnce(); len(ch) != 0 {
+		t.Errorf("tulisan sendiri memicu muat ulang: %v", ch)
+	}
+}

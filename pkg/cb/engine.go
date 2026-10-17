@@ -40,6 +40,7 @@ type Engine struct {
 	MultiTenancyEnabled bool
 	TenantManager       *TenantManager
 	docs                DocStore // penyimpanan konfigurasi (bawaan: berkas JSON); lihat SetDocStore
+	docSync             docSyncState
 }
 
 // NewEngine creates a new Booster Engine
