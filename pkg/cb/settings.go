@@ -23,6 +23,9 @@ var (
 
 // AppSettings represents the full platform configuration and enterprise preferences
 type AppSettings struct {
+	// DisablePublicPages: matikan landing/halaman publik CMS (nol = hidup, kompatibel dengan data lama).
+	DisablePublicPages bool `json:"disable_public_pages,omitempty"`
+
 	// 1. General & Branding
 	AppName         string `json:"app_name"`
 	AppTagline      string `json:"app_tagline"`

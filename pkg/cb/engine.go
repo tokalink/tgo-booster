@@ -19,6 +19,10 @@ import (
 
 // Engine is the central Booster management system
 type Engine struct {
+	// DisablePublicPages mematikan semua halaman publik (landing/CMS di "/", /p/…, /page/…). Bawaan false (hidup).
+	// Bila true, ServePublicPage tidak melayani apa pun sehingga aplikasi bisa langsung mengarahkan ke halaman login.
+	// Dapat juga dimatikan lewat pengaturan (AppSettings.DisablePublicPages) tanpa menyentuh kode.
+	DisablePublicPages  bool
 	AppName             string
 	AdminPath           string
 	Auth                *AuthManager

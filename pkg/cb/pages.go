@@ -471,6 +471,9 @@ func (e *Engine) registerSinglePageRoute(server connect.Server, p *Page) {
 
 // ServePublicPage allows standalone or middleware-based public page dispatching
 func (e *Engine) ServePublicPage(w http.ResponseWriter, r *http.Request) bool {
+	if e.PublicPagesDisabled() {
+		return false
+	}
 	path := r.URL.Path
 	if strings.HasPrefix(path, e.AdminPath) {
 		return false
@@ -530,6 +533,11 @@ func (e *Engine) handlePublicPagePrefix(w http.ResponseWriter, r *http.Request) 
 // ============================================================================
 // PUBLIC HTML RENDERER WITH FULL SEO, OPENGRAPH, PIXELS & TEMPLATES
 // ============================================================================
+
+// PublicPagesDisabled: true bila halaman publik dimatikan lewat opsi kode atau pengaturan.
+func (e *Engine) PublicPagesDisabled() bool {
+	return e.DisablePublicPages || e.GetSettings().DisablePublicPages
+}
 
 // RenderPublicPageHTML builds an SEO-optimized HTML document with pixels & styles via landingTemplate
 func (e *Engine) RenderPublicPageHTML(p *Page, isPreview bool, reqHost string) string {
