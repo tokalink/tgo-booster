@@ -616,6 +616,7 @@ func (udp *UserDataProvider) FindAll(ctx *Context) ([]map[string]interface{}, er
 			"role":       u.Role,
 			"role_id":    u.RoleID,
 			"status":     u.Status,
+			"tenants":    strings.Join(u.Tenants, ", "),
 			"created_at": u.CreatedAt,
 		}
 	}
@@ -635,6 +636,7 @@ func (udp *UserDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 		"role":       u.Role,
 		"role_id":    u.RoleID,
 		"status":     u.Status,
+		"tenants":    strings.Join(u.Tenants, ", "),
 		"created_at": u.CreatedAt,
 	}, nil
 }
@@ -655,8 +657,16 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 		}
 	}
 
-	_, err := udp.manager.CreateUser(name, email, password, role, roleID, avatar, status)
-	return err
+	acc, err := udp.manager.CreateUser(name, email, password, role, roleID, avatar, status)
+	if err != nil {
+		return err
+	}
+	if raw, ok := data["tenants"]; ok {
+		if list := parseTenantList(raw); len(list) > 0 {
+			return udp.manager.SetTenants(acc.ID, list, list[0])
+		}
+	}
+	return nil
 }
 
 func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]interface{}) error {
@@ -675,7 +685,44 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 		}
 	}
 
-	return udp.manager.UpdateUser(id, name, email, password, role, roleID, avatar, status)
+	if err := udp.manager.UpdateUser(id, name, email, password, role, roleID, avatar, status); err != nil {
+		return err
+	}
+	if raw, ok := data["tenants"]; ok {
+		list := parseTenantList(raw)
+		def := ""
+		if len(list) > 0 {
+			def = list[0]
+		}
+		return udp.manager.SetTenants(id, list, def)
+	}
+	return nil
+}
+
+// parseTenantList: "toko-a, toko-b" atau []string → daftar slug huruf kecil unik.
+func parseTenantList(v interface{}) []string {
+	var parts []string
+	switch x := v.(type) {
+	case string:
+		parts = strings.Split(x, ",")
+	case []string:
+		parts = x
+	case []interface{}:
+		for _, p := range x {
+			parts = append(parts, fmt.Sprint(p))
+		}
+	}
+	seen := map[string]bool{}
+	var out []string
+	for _, p := range parts {
+		p = strings.ToLower(strings.TrimSpace(p))
+		if p == "" || seen[p] {
+			continue
+		}
+		seen[p] = true
+		out = append(out, p)
+	}
+	return out
 }
 
 func (udp *UserDataProvider) Delete(ctx *Context, id string) error {

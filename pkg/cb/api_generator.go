@@ -38,6 +38,8 @@ type APIToken struct {
 	Status      string   `json:"status"`      // "active", "revoked"
 	CreatedAt   string   `json:"created_at"`
 	LastUsedAt  string   `json:"last_used_at"`
+	// Tenant (opsional): workspace pemilik token dari validator eksternal; dipakai sebagai TenantSlug konteks REST.
+	Tenant string `json:"tenant,omitempty"`
 }
 
 // APIEndpointInfo describes a live API endpoint in the system
@@ -185,6 +187,13 @@ func (e *Engine) ValidateAPIToken(rawToken, requiredScope string) (*APIToken, bo
 	rawToken = strings.TrimSpace(rawToken)
 	if rawToken == "" {
 		return nil, false, "Missing Authorization Bearer or X-API-Key token"
+	}
+
+	// Kunci dari sistem kunci aplikasi (mis. axk_ Axera) divalidasi oleh aplikasi bila validatornya dipasang.
+	if e.ExternalTokenValidator != nil {
+		if tok, ok, msg, handled := e.ExternalTokenValidator(rawToken, requiredScope); handled {
+			return tok, ok, msg
+		}
 	}
 
 	tokenPersistenceMu.RLock()
@@ -535,6 +544,9 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 				Ctx:     r.Context(),
 				Request: r,
 				User:    &User{Name: clientName, RoleName: "API Client"},
+			}
+			if tok != nil && tok.Tenant != "" {
+				reqCtx.TenantSlug = tok.Tenant
 			}
 
 			// Extract sub-path (for ID)

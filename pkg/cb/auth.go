@@ -298,6 +298,11 @@ func (a *AuthManager) GetSessionUser(r *http.Request) *User {
 				return nil
 			}
 		}
+		// Daftar tenant selalu dari akun terbaru, bukan salinan di cookie: mencabut workspace berlaku
+		// seketika tanpa menunggu sesi kedaluwarsa.
+		if acc != nil {
+			user.Tenants = append([]string(nil), acc.Tenants...)
+		}
 	}
 	return &user
 }

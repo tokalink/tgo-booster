@@ -23,6 +23,15 @@ type Engine struct {
 	// Bila true, ServePublicPage tidak melayani apa pun sehingga aplikasi bisa langsung mengarahkan ke halaman login.
 	// Dapat juga dimatikan lewat pengaturan (AppSettings.DisablePublicPages) tanpa menyentuh kode.
 	DisablePublicPages  bool
+	// StrictTenancy: isolasi tenant ketat untuk SaaS. Pengguna non-superadmin hanya boleh tenant yang tercantum
+	// eksplisit di akunnya ("*" diabaikan), tidak ada jatuh-balik ke tenant "default", dan bila tenant tidak dapat
+	// ditentukan ResolveTenant mengembalikan "" (layanan menolak) alih-alih tenant bawaan.
+	StrictTenancy bool
+
+	// ExternalTokenValidator (opsional) memvalidasi token REST /api/v1 dari sistem kunci aplikasi. handled=false
+	// berarti token bukan milik validator ini dan diperiksa dengan token Booster biasa.
+	ExternalTokenValidator func(rawToken, requiredScope string) (tok *APIToken, ok bool, msg string, handled bool)
+
 	AppName             string
 	AdminPath           string
 	Auth                *AuthManager
@@ -164,7 +173,12 @@ func (e *Engine) registerCustomAdminPage(server connect.Server, page *CustomAdmi
 			}
 		}
 
-		contentHTML := page.Handler(w, r)
+		// Handler yang sudah menulis respons sendiri (redirect, JSON, unduhan) tidak dibungkus layout.
+		tw := &writeTracker{ResponseWriter: w}
+		contentHTML := page.Handler(tw, r)
+		if tw.wrote {
+			return
+		}
 		e.RenderLayout(w, r, page.Title, contentHTML)
 	})
 
@@ -210,15 +224,29 @@ func (e *Engine) FindDB() *sql.DB {
 // lovIdentRe: pola identifier yang diizinkan untuk parameter table/key/label LOV.
 var lovIdentRe = regexp.MustCompile(`^[a-z_][a-z0-9_]{0,62}$`)
 
+// lovTableRe: nama tabel boleh berskema (schema.tabel) agar tabel sembarang dijawab 404, bukan lolos ke SQL.
+var lovTableRe = regexp.MustCompile(`^[a-z_][a-z0-9_]{0,62}(\.[a-z_][a-z0-9_]{0,62})?$`)
+
 func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
-	// Wajib login: CheckPermission meloloskan permintaan tanpa sesi, jadi sesi diperiksa eksplisit di sini.
-	if e.Auth != nil && e.Auth.GetSessionUser(r) == nil {
-		http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
-		return
+	lovErr := func(code int, msg string) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(code)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": msg})
 	}
+	// Wajib sesi login: CheckPermission meloloskan permintaan tanpa sesi, jadi sesi diperiksa eksplisit di sini.
+	var user *User
+	if e.Auth != nil {
+		user = e.Auth.GetSessionUser(r)
+		if user == nil {
+			lovErr(http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+	}
+	super := user == nil || e.IsUserSuperadmin(user)
+
 	table := strings.TrimSpace(r.URL.Query().Get("table"))
 	if table == "" {
-		http.Error(w, `{"error":"Table parameter is required"}`, http.StatusBadRequest)
+		lovErr(http.StatusBadRequest, "Table parameter is required")
 		return
 	}
 	labelCol := strings.TrimSpace(r.URL.Query().Get("label"))
@@ -229,25 +257,25 @@ func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
 	if keyCol == "" {
 		keyCol = "id"
 	}
+	if !lovTableRe.MatchString(table) || !lovIdentRe.MatchString(labelCol) || !lovIdentRe.MatchString(keyCol) {
+		lovErr(http.StatusBadRequest, "Invalid table or column name")
+		return
+	}
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 
 	// Hanya tabel milik controller terdaftar yang boleh dibaca, lewat jalur controller itu sendiri (konteks tenant sama
 	// seperti halamannya) dan hanya bila peran pengguna punya izin baca. Tidak pernah menyusun SQL dari parameter.
-	if !lovIdentRe.MatchString(table) || !lovIdentRe.MatchString(keyCol) || !lovIdentRe.MatchString(labelCol) {
-		http.Error(w, `{"error":"Parameter tidak valid"}`, http.StatusBadRequest)
-		return
-	}
 	ctrl := e.FindController(table)
 	if ctrl == nil {
-		http.Error(w, `{"error":"Not found"}`, http.StatusNotFound)
+		lovErr(http.StatusNotFound, "Unknown lookup table")
 		return
 	}
-	if !e.CheckPermission(r, ctrl.Table, "read") {
-		http.Error(w, `{"error":"Access Denied (403)"}`, http.StatusForbidden)
+	if !super && (isSystemLOVTable(ctrl.Table) || !e.CheckPermission(r, ctrl.Table, "read")) {
+		lovErr(http.StatusForbidden, "Forbidden")
 		return
 	}
 
-	var results []map[string]interface{}
+	results := make([]map[string]interface{}, 0)
 	for _, row := range ctrl.fetchRows(r) {
 		if len(results) >= 100 {
 			break
@@ -265,10 +293,6 @@ func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
 				"name":   labelVal,
 			})
 		}
-	}
-
-	if results == nil {
-		results = make([]map[string]interface{}, 0)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -357,6 +381,7 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 			AddCol("User Name", "name", ColText, true, true).
 			AddCol("Email Address", "email", ColEmail, true, true).
 			AddCol("Privilege Role", "role", ColBadge, false, true).
+			AddCol("Workspaces", "tenants", ColText, false, false).
 			AddCol("Status", "status", ColBadge, false, false).
 			AddCol("Registered At", "created_at", ColText, false, true)
 
@@ -378,6 +403,7 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 			AddForm("Profile Photo", "avatar", InputUpload, false, "").
 			AddForm("Password", "password", InputPassword, false, "Leave blank to keep current password").
 			AddSelect("Privilege Role", "role", true, "Select role...", roleOpts...).
+			AddForm("Workspaces", "tenants", InputText, false, "slug workspace, pisahkan koma (mis. toko-a, toko-b)").
 			AddSelect("Account Status", "status", true, "Select status...",
 				Option{Label: "Active", Value: "Active"},
 				Option{Label: "Suspended", Value: "Suspended"},
@@ -2227,6 +2253,9 @@ func (e *Engine) buildActiveMenus(r *http.Request, currentPath string, user *Use
 				}
 			}
 			clone.Children = filteredChildren
+			if len(filteredChildren) == 0 {
+				continue // judul grup tanpa item yang boleh dilihat tidak ditampilkan
+			}
 		} else {
 			if m.Path != "" && (currentPath == m.Path || (m.Path != e.AdminPath && strings.HasPrefix(currentPath, m.Path+"/"))) {
 				clone.IsActive = true
@@ -2236,7 +2265,48 @@ func (e *Engine) buildActiveMenus(r *http.Request, currentPath string, user *Use
 		result = append(result, &clone)
 	}
 
+	keepMostSpecificActive(result)
 	return result
+}
+
+// keepMostSpecificActive: pencocokan awalan bisa menandai beberapa item aktif sekaligus (mis. /admin/wa dan
+// /admin/wa/keys saat membuka /admin/wa/keys). Hanya item dengan path terpanjang yang dibiarkan aktif; dropdown
+// tetap aktif/terbuka hanya bila memuat item pemenang.
+func keepMostSpecificActive(items []*MenuItem) {
+	best := 0
+	var scan func(list []*MenuItem)
+	scan = func(list []*MenuItem) {
+		for _, m := range list {
+			if m.IsActive && m.Type != "dropdown" && m.Type != "header" && len(m.Path) > best {
+				best = len(m.Path)
+			}
+			scan(m.Children)
+		}
+	}
+	scan(items)
+	if best == 0 {
+		return
+	}
+	var prune func(list []*MenuItem) bool
+	prune = func(list []*MenuItem) bool {
+		any := false
+		for _, m := range list {
+			if m.Type == "dropdown" || m.Type == "header" {
+				child := prune(m.Children)
+				if m.Type == "dropdown" {
+					m.IsActive, m.IsOpen = child, child
+				}
+				any = any || child
+				continue
+			}
+			if m.IsActive && len(m.Path) < best {
+				m.IsActive = false
+			}
+			any = any || m.IsActive
+		}
+		return any
+	}
+	prune(items)
 }
 
 func (e *Engine) handleMenus(w http.ResponseWriter, r *http.Request) {
@@ -2673,6 +2743,18 @@ func (e *Engine) ResolveTenant(r *http.Request, user *User) string {
 
 	// 5. User Account default/active tenant
 	if user != nil {
+		if e.StrictTenancy && !e.IsUserSuperadmin(user) {
+			// Tenant aktif tersimpan diverifikasi ulang; selain itu tenant eksplisit pertama yang masih berhak.
+			if user.ActiveTenant != "" && e.userHasTenant(user, user.ActiveTenant) {
+				return strings.ToLower(user.ActiveTenant)
+			}
+			for _, t := range user.Tenants {
+				if t != "*" && e.userHasTenant(user, t) {
+					return strings.ToLower(t)
+				}
+			}
+			return "" // tidak berhak atas tenant mana pun: jangan pernah jatuh ke tenant bawaan
+		}
 		if user.ActiveTenant != "" {
 			return user.ActiveTenant
 		}
@@ -2775,10 +2857,57 @@ func (e *Engine) userMayUseTenantHeader(user *User, slug string) bool {
 	if user == nil || e.IsUserSuperadmin(user) {
 		return true
 	}
+	if e.StrictTenancy {
+		return e.userHasTenant(user, slug)
+	}
 	for _, t := range user.Tenants {
 		if t == "*" || strings.EqualFold(t, slug) {
 			return true
 		}
 	}
 	return len(user.Tenants) == 0 && strings.EqualFold(slug, "default")
+}
+
+// writeTracker mencatat apakah handler halaman kustom sudah menulis status atau isi respons.
+type writeTracker struct {
+	http.ResponseWriter
+	wrote bool
+}
+
+func (t *writeTracker) WriteHeader(code int) {
+	t.wrote = true
+	t.ResponseWriter.WriteHeader(code)
+}
+
+func (t *writeTracker) Write(b []byte) (int, error) {
+	t.wrote = true
+	return t.ResponseWriter.Write(b)
+}
+
+// Unwrap memberi akses ke ResponseWriter asli (http.ResponseController, Flush).
+func (t *writeTracker) Unwrap() http.ResponseWriter { return t.ResponseWriter }
+
+// isSystemLOVTable: modul sistem global (lintas tenant) yang hanya boleh dibaca superadmin.
+func isSystemLOVTable(t string) bool {
+	switch t {
+	case "users", "roles", "privileges", "menus", "settings", "tenants", "api_tokens", "pages", "logs", "email_templates":
+		return true
+	}
+	return false
+}
+
+// userHasTenant (mode ketat): tenant tercantum eksplisit di akun non-superadmin dan tenant itu ada.
+func (e *Engine) userHasTenant(user *User, slug string) bool {
+	if user == nil || slug == "" {
+		return false
+	}
+	for _, t := range user.Tenants {
+		if t != "*" && strings.EqualFold(t, slug) {
+			if e.TenantManager == nil {
+				return true
+			}
+			return e.TenantManager.GetBySlug(slug) != nil
+		}
+	}
+	return false
 }

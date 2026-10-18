@@ -230,6 +230,15 @@ func (tm *TenantManager) UserCanAccess(user *User, t *Tenant) bool {
 	if tm.engine != nil && tm.engine.IsUserSuperadmin(user) {
 		return true
 	}
+	if tm.engine != nil && tm.engine.StrictTenancy {
+		// Mode ketat: hanya tenant eksplisit ("*" dan jatuh-balik "default" tidak berlaku untuk non-superadmin).
+		for _, accessible := range user.Tenants {
+			if accessible != "*" && (strings.EqualFold(accessible, t.Slug) || accessible == t.ID) {
+				return true
+			}
+		}
+		return false
+	}
 
 	for _, accessible := range user.Tenants {
 		if accessible == "*" || strings.EqualFold(accessible, t.Slug) || accessible == t.ID {
@@ -253,7 +262,7 @@ func (tm *TenantManager) GetAvailableTenantsForUser(user *User) []*Tenant {
 	}
 
 	for _, accessible := range user.Tenants {
-		if accessible == "*" {
+		if accessible == "*" && (tm.engine == nil || !tm.engine.StrictTenancy) {
 			return all
 		}
 	}

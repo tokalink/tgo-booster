@@ -13,6 +13,7 @@ type (
 	UserAccount      = cb.UserAccount
 	UserManager      = cb.UserManager
 	MenuItem         = cb.MenuItem
+	APIToken         = cb.APIToken
 	StatWidget       = cb.StatWidget
 	WidgetCard       = cb.WidgetCard
 	TopAction        = cb.TopAction
