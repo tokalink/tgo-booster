@@ -24,6 +24,10 @@ type Engine struct {
 	// Bila true, ServePublicPage tidak melayani apa pun sehingga aplikasi bisa langsung mengarahkan ke halaman login.
 	// Dapat juga dimatikan lewat pengaturan (AppSettings.DisablePublicPages) tanpa menyentuh kode.
 	DisablePublicPages  bool
+	// StrictRoleResolution: bila resolver peran terpasang (SetRoleResolver) dan mengembalikan "" (bukan anggota
+	// tenant ini), pengguna NON-superadmin tidak mendapat peran global akunnya sebagai cadangan (akses ditolak).
+	// Bawaan false (perilaku lama).
+	StrictRoleResolution bool
 	// StrictTenancy: isolasi tenant ketat untuk SaaS. Pengguna non-superadmin hanya boleh tenant yang tercantum
 	// eksplisit di akunnya ("*" diabaikan), tidak ada jatuh-balik ke tenant "default", dan bila tenant tidak dapat
 	// ditentukan ResolveTenant mengembalikan "" (layanan menolak) alih-alih tenant bawaan.
@@ -1510,6 +1514,9 @@ func (e *Engine) EffectiveRole(r *http.Request, user *User) *Role {
 			return role
 		}
 		return nil // peran terdaftar tetapi tidak dikenal: tolak, jangan jatuh ke peran global
+	}
+	if e.StrictRoleResolution && e.roleResolver != nil && !e.IsUserSuperadmin(user) {
+		return nil // resolver terpasang tetapi pengguna bukan anggota tenant ini
 	}
 	role := e.FindRole(user.PrivilegeID)
 	if role == nil {

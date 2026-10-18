@@ -743,6 +743,41 @@ func (um *UserManager) SetTenants(id string, tenants []string, defaultTenant str
 	return fmt.Errorf("user %s not found", id)
 }
 
+// RemoveTenant mencabut satu tenant dari akses akun (idempoten). Bila tenant itu adalah DefaultTenant, kosongkan.
+// Sesi aktif akun dicabut (SessionsValidFrom) agar cookie lama tidak memuat slug yang sudah dicabut. Akun superadmin
+// ("*") tidak terpengaruh. Mengembalikan akun terbarui; slug yang tidak dimiliki tidak mengubah apa pun.
+func (um *UserManager) RemoveTenant(id, slug string) (*UserAccount, error) {
+	um.mu.Lock()
+	defer um.mu.Unlock()
+	for _, u := range um.users {
+		if u.ID != id {
+			continue
+		}
+		kept := make([]string, 0, len(u.Tenants))
+		removed := false
+		for _, t := range u.Tenants {
+			if t != "*" && strings.EqualFold(t, slug) {
+				removed = true
+				continue
+			}
+			kept = append(kept, t)
+		}
+		if removed {
+			u.Tenants = kept
+			if strings.EqualFold(u.DefaultTenant, slug) {
+				u.DefaultTenant = ""
+			}
+			u.SessionsValidFrom = time.Now().UTC().Format(time.RFC3339)
+			if err := um.saveUnlocked(); err != nil {
+				return nil, err
+			}
+		}
+		cp := *u
+		return &cp, nil
+	}
+	return nil, fmt.Errorf("user %s not found", id)
+}
+
 // AddTenant menambahkan satu tenant ke akses akun (idempoten) dan mengembalikan akun terbarui.
 func (um *UserManager) AddTenant(id, slug string) (*UserAccount, error) {
 	um.mu.Lock()
