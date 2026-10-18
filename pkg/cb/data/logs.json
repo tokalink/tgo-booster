@@ -1,5 +1,23 @@
 [
   {
+    "id": "19",
+    "ip": "192.0.2.1",
+    "user": "Admin User",
+    "action": "TENANT_SWITCH",
+    "module": "Tenants",
+    "description": "User 'Admin User' switched active workspace to 'Demo Enterprise' (demo-enterprise)",
+    "created_at": "2026-10-19 05:10:50"
+  },
+  {
+    "id": "18",
+    "ip": "192.0.2.1",
+    "user": "Super Admin",
+    "action": "IMPORT_CSV",
+    "module": "Employees",
+    "description": "Imported 3 records into Employees",
+    "created_at": "2026-10-19 05:10:47"
+  },
+  {
     "id": "17",
     "ip": "192.0.2.1:1234",
     "user": "Super Admin",

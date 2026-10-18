@@ -59,6 +59,9 @@ type AuthManager struct {
 	StrictSessions bool
 	// TrustProxy: percayai X-Forwarded-For/X-Real-IP untuk alamat klien (hanya di belakang proxy tepercaya).
 	TrustProxy bool
+	// TrustedProxyHops: jumlah proxy tepercaya di depan aplikasi (bawaan 1). Alamat klien = entri X-Forwarded-For ke-N
+	// dari KANAN; entri di kirinya dapat dipalsukan klien dan diabaikan.
+	TrustedProxyHops int
 	// PostLoginRedirect: tujuan setelah login berhasil (mis. pemilih tenant). Kosong = beranda admin.
 	PostLoginRedirect func(r *http.Request, u *User) string
 	// SecondFactor: bila diisi, akun yang memerlukannya harus lolos verifikasi langkah kedua sebelum sesi dibuat.
@@ -307,12 +310,27 @@ func (a *AuthManager) maxAge() time.Duration {
 }
 
 func (a *AuthManager) clientIP(r *http.Request) string {
-	if a.TrustProxy {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			return strings.TrimSpace(strings.Split(xff, ",")[0])
+	return ClientIP(r, a.TrustProxy, a.TrustedProxyHops)
+}
+
+// ClientIP menentukan alamat klien. Tanpa trust: host dari RemoteAddr (header diabaikan). Dengan trust: entri
+// X-Forwarded-For ke-`hops` dari kanan (bawaan 1), harus IP valid; bila tidak ada/tidak valid, X-Real-IP yang valid,
+// lalu RemoteAddr. Entri kiri XFF tidak pernah dipercaya karena bisa disuntik klien.
+func ClientIP(r *http.Request, trust bool, hops int) string {
+	if trust {
+		if hops < 1 {
+			hops = 1
 		}
-		if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
-			return strings.TrimSpace(xrip)
+		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			parts := strings.Split(xff, ",")
+			if idx := len(parts) - hops; idx >= 0 {
+				if ip := net.ParseIP(strings.TrimSpace(parts[idx])); ip != nil {
+					return ip.String()
+				}
+			}
+		}
+		if ip := net.ParseIP(strings.TrimSpace(r.Header.Get("X-Real-IP"))); ip != nil {
+			return ip.String()
 		}
 	}
 	if h, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {

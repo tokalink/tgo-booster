@@ -150,11 +150,10 @@ func (al *AuditLogger) Log(r *http.Request, action, module, description string) 
 	userName := "System"
 
 	if r != nil {
-		clientIP = r.RemoteAddr
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			clientIP = strings.Split(xff, ",")[0]
-		} else if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
-			clientIP = xrip
+		if al.engine != nil && al.engine.Auth != nil {
+			clientIP = al.engine.Auth.clientIP(r)
+		} else {
+			clientIP = ClientIP(r, false, 0)
 		}
 
 		if al.engine != nil && al.engine.Auth != nil {
