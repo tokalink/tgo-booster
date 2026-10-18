@@ -1,6 +1,10 @@
 package booster
 
-import "github.com/tokalink/tgo-booster/pkg/cb"
+import (
+	"net/http"
+
+	"github.com/tokalink/tgo-booster/pkg/cb"
+)
 
 // Type aliases for seamless root package import
 type (
@@ -95,3 +99,7 @@ func ValidateUsername(u string) (string, error) { return cb.ValidateUsername(u) 
 
 // SecondFactorProvider: penyedia langkah kedua login (TOTP dsb.).
 type SecondFactorProvider = cb.SecondFactorProvider
+
+// ClientIP menentukan alamat klien (lihat cb.ClientIP): tanpa trust → RemoteAddr; dengan trust → entri
+// X-Forwarded-For ke-hops dari kanan yang valid.
+func ClientIP(r *http.Request, trustProxy bool, hops int) string { return cb.ClientIP(r, trustProxy, hops) }
