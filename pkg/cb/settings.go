@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -43,13 +44,13 @@ type AppSettings struct {
 
 	// 3. Security & Authentication
 	SessionTimeoutMinutes  int  `json:"session_timeout_minutes"`
-	MaxLoginAttempts      int  `json:"max_login_attempts"`
-	LockoutDurationMin    int  `json:"lockout_duration_min"`
-	PasswordMinLength     int  `json:"password_min_length"`
+	MaxLoginAttempts       int  `json:"max_login_attempts"`
+	LockoutDurationMin     int  `json:"lockout_duration_min"`
+	PasswordMinLength      int  `json:"password_min_length"`
 	RequirePasswordSpecial bool `json:"require_password_special"`
-	EnableRegistration    bool `json:"enable_registration"`
-	EnableRememberMe      bool `json:"enable_remember_me"`
-	Force2FA              bool `json:"force_2fa"`
+	EnableRegistration     bool `json:"enable_registration"`
+	EnableRememberMe       bool `json:"enable_remember_me"`
+	Force2FA               bool `json:"force_2fa"`
 
 	// 4. Data Grid & CRUD Defaults
 	DefaultPageSize       int    `json:"default_page_size"`
@@ -104,51 +105,51 @@ func DefaultSettings(appName string) *AppSettings {
 	}
 
 	return &AppSettings{
-		AppName:               name,
-		AppTagline:            "High-Performance Go Administrative Platform",
-		CompanyName:           "TGo Technology Labs",
-		AppLogoURL:            "",
-		AppLogoDarkURL:        "",
-		AppFaviconURL:         "",
-		CopyrightText:         fmt.Sprintf("© %d %s. All rights reserved.", time.Now().Year(), name),
-		DefaultLanguage:       "id",
-		Timezone:              "Asia/Jakarta",
-		DateFormat:            "YYYY-MM-DD",
-		TimeFormat:            "24h",
-		ThemeMode:             "dark",
-		ThemeSkin:             "obsidian",
-		AccentColor:           "#0284c7",
-		SidebarStyle:          "expanded",
-		SessionTimeoutMinutes: 120,
-		MaxLoginAttempts:      5,
-		LockoutDurationMin:    15,
-		PasswordMinLength:     8,
+		AppName:                name,
+		AppTagline:             "High-Performance Go Administrative Platform",
+		CompanyName:            "TGo Technology Labs",
+		AppLogoURL:             "",
+		AppLogoDarkURL:         "",
+		AppFaviconURL:          "",
+		CopyrightText:          fmt.Sprintf("© %d %s. All rights reserved.", time.Now().Year(), name),
+		DefaultLanguage:        "id",
+		Timezone:               "Asia/Jakarta",
+		DateFormat:             "YYYY-MM-DD",
+		TimeFormat:             "24h",
+		ThemeMode:              "dark",
+		ThemeSkin:              "obsidian",
+		AccentColor:            "#0284c7",
+		SidebarStyle:           "expanded",
+		SessionTimeoutMinutes:  120,
+		MaxLoginAttempts:       5,
+		LockoutDurationMin:     15,
+		PasswordMinLength:      8,
 		RequirePasswordSpecial: true,
-		EnableRegistration:    false,
-		EnableRememberMe:      true,
-		Force2FA:              false,
-		DefaultPageSize:       25,
-		DefaultActionPosition: "right",
-		EnableExportCSV:       true,
-		EnableImportCSV:       true,
-		ConfirmDelete:         true,
-		EnableAuditLog:        true,
-		MailDriver:            "log",
-		SMTPHost:              "smtp.mailtrap.io",
-		SMTPPort:              2525,
-		SMTPUser:              "",
-		SMTPPassword:          "",
-		SMTPEncryption:        "tls",
-		MailSenderEmail:       "no-reply@tgo.internal",
-		MailSenderName:        name + " System",
-		WebhookURL:            "",
-		MaintenanceMode:       false,
-		MaintenanceMessage:    "We are currently performing scheduled maintenance. Please check back shortly.",
-		DebugMode:             false,
-		OpenAIHost:            aiHost,
-		OpenAIAPIKey:          aiKey,
-		OpenAIDefaultModel:    aiModel,
-		UpdatedAt:             time.Now().Format("2006-01-02 15:04:05"),
+		EnableRegistration:     false,
+		EnableRememberMe:       true,
+		Force2FA:               false,
+		DefaultPageSize:        25,
+		DefaultActionPosition:  "right",
+		EnableExportCSV:        true,
+		EnableImportCSV:        true,
+		ConfirmDelete:          true,
+		EnableAuditLog:         true,
+		MailDriver:             "log",
+		SMTPHost:               "smtp.mailtrap.io",
+		SMTPPort:               2525,
+		SMTPUser:               "",
+		SMTPPassword:           "",
+		SMTPEncryption:         "tls",
+		MailSenderEmail:        "no-reply@tgo.internal",
+		MailSenderName:         name + " System",
+		WebhookURL:             "",
+		MaintenanceMode:        false,
+		MaintenanceMessage:     "We are currently performing scheduled maintenance. Please check back shortly.",
+		DebugMode:              false,
+		OpenAIHost:             aiHost,
+		OpenAIAPIKey:           aiKey,
+		OpenAIDefaultModel:     aiModel,
+		UpdatedAt:              time.Now().Format("2006-01-02 15:04:05"),
 	}
 }
 
@@ -158,9 +159,24 @@ func (e *Engine) LoadDynamicSettings() {
 	defer settingsPersistenceMu.Unlock()
 
 	data, err := e.docLoad(DocSettings)
-	if err == nil && len(data) > 0 {
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan)", DocSettings, err)
+		if e.settings == nil {
+			e.settings = DefaultSettings(e.AppName) // hanya di memori; tidak disimpan
+		}
+		return
+	}
+	if len(data) > 0 {
 		var s AppSettings
-		if jsonErr := json.Unmarshal(data, &s); jsonErr == nil {
+		jsonErr := json.Unmarshal(data, &s)
+		if jsonErr != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocSettings, jsonErr)
+			if e.settings == nil {
+				e.settings = DefaultSettings(e.AppName)
+			}
+			return
+		}
+		{
 			// Populate AI fallback from .env if empty
 			_ = godotenv.Load(".env")
 			_ = godotenv.Load("../.env")
@@ -360,8 +376,8 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": true,
-			"message": "Platform settings updated and persisted successfully!",
+			"success":  true,
+			"message":  "Platform settings updated and persisted successfully!",
 			"app_name": payload.AppName,
 		})
 	}))

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -1262,9 +1263,13 @@ func generateSampleRows(def ModuleDefinition) []map[string]interface{} {
 // LoadDynamicRoles restores role definitions and permissions matrix from privileges.json
 func (e *Engine) LoadDynamicRoles() {
 	data, err := e.docLoad(DocPrivileges)
-	if err == nil && len(data) > 0 {
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan)", DocPrivileges, err)
+	} else if len(data) > 0 {
 		var roles []*Role
-		if err := json.Unmarshal(data, &roles); err == nil && len(roles) > 0 {
+		if err := json.Unmarshal(data, &roles); err != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocPrivileges, err)
+		} else if len(roles) > 0 {
 			e.roles = roles
 			return
 		}
@@ -1718,9 +1723,16 @@ func (e *Engine) SaveMenus() error {
 // LoadDynamicMenus restores the navigation hierarchy from menus.json
 func (e *Engine) LoadDynamicMenus() {
 	data, err := e.docLoad(DocMenus)
-	if err == nil && len(data) > 0 {
+	loadFailed := false
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan)", DocMenus, err)
+		loadFailed = true
+	} else if len(data) > 0 {
 		var items []*MenuItem
-		if err := json.Unmarshal(data, &items); err == nil && len(items) > 0 {
+		if err := json.Unmarshal(data, &items); err != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocMenus, err)
+			loadFailed = true
+		} else if len(items) > 0 {
 			e.menus = items
 			// Ensure any controller registered in code is present in menus
 			for _, c := range e.controllers {
@@ -1735,7 +1747,9 @@ func (e *Engine) LoadDynamicMenus() {
 	// Initialize default menu tree if missing or empty
 	if len(e.menus) == 0 {
 		e.initDefaultMenus()
-		_ = e.SaveMenus()
+		if !loadFailed { // hanya simpan seed bila dokumen benar-benar tidak ada
+			_ = e.SaveMenus()
+		}
 	}
 }
 

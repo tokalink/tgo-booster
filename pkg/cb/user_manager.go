@@ -158,9 +158,18 @@ func (um *UserManager) loadUsers() {
 	defer um.mu.Unlock()
 
 	data, err := um.engine.docLoad(DocUsers)
-	if err == nil && len(data) > 0 {
+	if err != nil {
+		// Galat baca (koneksi/timeout) BUKAN berarti dokumen tidak ada: jangan menyemai dan jangan menimpa.
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan, tidak ada seed)", DocUsers, err)
+		return
+	}
+	if len(data) > 0 {
 		var list []*UserAccount
-		if err := json.Unmarshal(data, &list); err == nil && len(list) > 0 {
+		if err := json.Unmarshal(data, &list); err != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan, dokumen tidak ditimpa)", DocUsers, err)
+			return
+		}
+		if len(list) > 0 {
 			um.users = list
 			return
 		}

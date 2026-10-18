@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,10 +17,10 @@ type Tenant struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	Slug         string `json:"slug"`
-	Domain       string `json:"domain,omitempty"`        // Custom Domain (e.g. "erp.client.com")
-	Subdomain    string `json:"subdomain,omitempty"`     // Subdomain slug (e.g. "client1")
-	Plan         string `json:"plan"`                    // "Free", "Starter", "Pro", "Enterprise"
-	Status       string `json:"status"`                  // "Active", "Suspended", "Trial"
+	Domain       string `json:"domain,omitempty"`    // Custom Domain (e.g. "erp.client.com")
+	Subdomain    string `json:"subdomain,omitempty"` // Subdomain slug (e.g. "client1")
+	Plan         string `json:"plan"`                // "Free", "Starter", "Pro", "Enterprise"
+	Status       string `json:"status"`              // "Active", "Suspended", "Trial"
 	OwnerEmail   string `json:"owner_email"`
 	MaxUsers     int    `json:"max_users"`
 	MaxStorageMB int    `json:"max_storage_mb"`
@@ -51,14 +52,18 @@ func (tm *TenantManager) load() {
 	defer tm.mu.Unlock()
 
 	data, err := tm.engine.docLoad(DocTenants)
-	if err != nil || len(data) == 0 {
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan, tidak ada seed)", DocTenants, err)
+		return
+	}
+	if len(data) == 0 {
 		tm.seedDefaults()
 		return
 	}
 
 	var list []*Tenant
 	if err := json.Unmarshal(data, &list); err != nil {
-		tm.seedDefaults()
+		log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan, dokumen tidak ditimpa)", DocTenants, err)
 		return
 	}
 

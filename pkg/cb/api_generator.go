@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -78,14 +79,24 @@ func (e *Engine) LoadDynamicTokens() []*APIToken {
 	defer tokenPersistenceMu.Unlock()
 
 	raw, err := e.docLoad(DocAPITokens)
-	if err != nil || len(raw) == 0 {
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan)", DocAPITokens, err)
+		if e.apiTokens == nil {
+			e.apiTokens = make([]*APIToken, 0)
+		}
+		return e.apiTokens
+	}
+	if len(raw) == 0 {
 		e.apiTokens = make([]*APIToken, 0)
 		return e.apiTokens
 	}
 
 	var list []*APIToken
 	if err := json.Unmarshal(raw, &list); err != nil {
-		e.apiTokens = make([]*APIToken, 0)
+		log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocAPITokens, err)
+		if e.apiTokens == nil {
+			e.apiTokens = make([]*APIToken, 0)
+		}
 		return e.apiTokens
 	}
 

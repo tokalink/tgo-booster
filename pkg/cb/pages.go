@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -15,39 +16,39 @@ import (
 
 // Page represents a customizable public or CMS page with SEO, marketing pixels, and custom routing
 type Page struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Slug      string `json:"slug"`
-	RouteURL  string `json:"route_url"`
-	Content   string `json:"content"`
-	Excerpt   string `json:"excerpt,omitempty"`
-	Template  string `json:"template"` // "default", "landing", "article", "blank"
-	Status    string `json:"status"`   // "published", "draft", "archived"
-	Author    string `json:"author,omitempty"`
-	Views     int64  `json:"views"`
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Slug     string `json:"slug"`
+	RouteURL string `json:"route_url"`
+	Content  string `json:"content"`
+	Excerpt  string `json:"excerpt,omitempty"`
+	Template string `json:"template"` // "default", "landing", "article", "blank"
+	Status   string `json:"status"`   // "published", "draft", "archived"
+	Author   string `json:"author,omitempty"`
+	Views    int64  `json:"views"`
 
 	// SEO Suite
 	MetaTitle       string `json:"meta_title,omitempty"`
 	MetaDescription string `json:"meta_description,omitempty"`
 	MetaKeywords    string `json:"meta_keywords,omitempty"`
 	CanonicalURL    string `json:"canonical_url,omitempty"`
-	Robots          string `json:"robots,omitempty"`     // "index, follow", "noindex, follow", etc.
+	Robots          string `json:"robots,omitempty"`      // "index, follow", "noindex, follow", etc.
 	SchemaJSON      string `json:"schema_json,omitempty"` // JSON-LD structured data
 
 	// Social Sharing & OpenGraph
-	OGTitle     string `json:"og_title,omitempty"`
+	OGTitle       string `json:"og_title,omitempty"`
 	OGDescription string `json:"og_description,omitempty"`
-	OGImage     string `json:"og_image,omitempty"`
-	OGType      string `json:"og_type,omitempty"`       // "website", "article", "product"
-	TwitterCard string `json:"twitter_card,omitempty"`  // "summary_large_image", "summary"
+	OGImage       string `json:"og_image,omitempty"`
+	OGType        string `json:"og_type,omitempty"`      // "website", "article", "product"
+	TwitterCard   string `json:"twitter_card,omitempty"` // "summary_large_image", "summary"
 
 	// Marketing Pixels & Script Injection
 	PixelMetaID   string `json:"pixel_meta_id,omitempty"`   // Meta/Facebook Pixel ID (e.g. 1234567890)
 	PixelGTMID    string `json:"pixel_gtm_id,omitempty"`    // GTM (GTM-XXXX) or GA4 (G-XXXX)
 	PixelTikTokID string `json:"pixel_tiktok_id,omitempty"` // TikTok Pixel ID (e.g. C12345678)
-	HeaderScripts string `json:"header_scripts,omitempty"` // Raw <head> scripts (Hotjar, clarity, etc.)
-	FooterScripts string `json:"footer_scripts,omitempty"` // Raw before </body> scripts
-	CustomCSS     string `json:"custom_css,omitempty"`     // Custom page CSS rules
+	HeaderScripts string `json:"header_scripts,omitempty"`  // Raw <head> scripts (Hotjar, clarity, etc.)
+	FooterScripts string `json:"footer_scripts,omitempty"`  // Raw before </body> scripts
+	CustomCSS     string `json:"custom_css,omitempty"`      // Custom page CSS rules
 
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
@@ -81,9 +82,16 @@ func (e *Engine) LoadDynamicPages() {
 	defer pagesPersistenceMu.Unlock()
 
 	data, err := e.docLoad(DocPages)
-	if err == nil && len(data) > 0 {
+	loadFailed := false
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan)", DocPages, err)
+		loadFailed = true
+	} else if len(data) > 0 {
 		var items []*Page
-		if err := json.Unmarshal(data, &items); err == nil && len(items) > 0 {
+		if err := json.Unmarshal(data, &items); err != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocPages, err)
+			loadFailed = true
+		} else if len(items) > 0 {
 			e.pages = items
 			return
 		}
@@ -92,7 +100,9 @@ func (e *Engine) LoadDynamicPages() {
 	// Initialize default pages if missing or empty
 	if len(e.pages) == 0 {
 		e.initDefaultPages()
-		_ = e.savePagesUnsafe()
+		if !loadFailed {
+			_ = e.savePagesUnsafe()
+		}
 	}
 }
 
@@ -117,27 +127,27 @@ func (e *Engine) initDefaultPages() {
 
 	e.pages = []*Page{
 		{
-			ID:          "1",
-			Title:       "About Our Company",
-			Slug:        "about-us",
-			RouteURL:    "/about-us",
-			Template:    "default",
-			Status:      "published",
-			Author:      "Editorial Team",
-			Views:       1240,
-			CreatedAt:   now,
-			UpdatedAt:   now,
-			Excerpt:     "Discover our company journey, leadership team, and mission to deliver enterprise software with extreme developer productivity.",
-			MetaTitle:   "About Us | Enterprise Next-Gen Cloud Platform",
+			ID:              "1",
+			Title:           "About Our Company",
+			Slug:            "about-us",
+			RouteURL:        "/about-us",
+			Template:        "default",
+			Status:          "published",
+			Author:          "Editorial Team",
+			Views:           1240,
+			CreatedAt:       now,
+			UpdatedAt:       now,
+			Excerpt:         "Discover our company journey, leadership team, and mission to deliver enterprise software with extreme developer productivity.",
+			MetaTitle:       "About Us | Enterprise Next-Gen Cloud Platform",
 			MetaDescription: "Learn about our company history, mission, leadership, and high-performance cloud architecture built for scale.",
-			MetaKeywords: "enterprise platform, golang, cloud native, company vision, about us",
-			CanonicalURL: "https://yourdomain.com/about-us",
-			Robots:      "index, follow",
-			OGTitle:     "About Our Company - Building the Future of Enterprise Software",
-			OGDescription: "Learn how our engineering team delivers mission-critical platforms with unparalleled speed and reliability.",
-			OGImage:     "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80",
-			OGType:      "website",
-			TwitterCard: "summary_large_image",
+			MetaKeywords:    "enterprise platform, golang, cloud native, company vision, about us",
+			CanonicalURL:    "https://yourdomain.com/about-us",
+			Robots:          "index, follow",
+			OGTitle:         "About Our Company - Building the Future of Enterprise Software",
+			OGDescription:   "Learn how our engineering team delivers mission-critical platforms with unparalleled speed and reliability.",
+			OGImage:         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80",
+			OGType:          "website",
+			TwitterCard:     "summary_large_image",
 			SchemaJSON: `{
   "@context": "https://schema.org",
   "@type": "AboutPage",
@@ -179,30 +189,30 @@ func (e *Engine) initDefaultPages() {
 </div>`,
 		},
 		{
-			ID:          "2",
-			Title:       "Special Promo Campaign 2026",
-			Slug:        "promo-special",
-			RouteURL:    "/promo-special",
-			Template:    "landing",
-			Status:      "published",
-			Author:      "Growth Marketing",
-			Views:       3890,
-			CreatedAt:   now,
-			UpdatedAt:   now,
-			Excerpt:     "Exclusive 50% discount on TGo Booster Enterprise licenses. Complete with custom landing pages, pixel conversion tracking, and multi-cloud sync.",
-			MetaTitle:   "Special Promo 2026: Save 50% on Enterprise Booster Platform",
+			ID:              "2",
+			Title:           "Special Promo Campaign 2026",
+			Slug:            "promo-special",
+			RouteURL:        "/promo-special",
+			Template:        "landing",
+			Status:          "published",
+			Author:          "Growth Marketing",
+			Views:           3890,
+			CreatedAt:       now,
+			UpdatedAt:       now,
+			Excerpt:         "Exclusive 50% discount on TGo Booster Enterprise licenses. Complete with custom landing pages, pixel conversion tracking, and multi-cloud sync.",
+			MetaTitle:       "Special Promo 2026: Save 50% on Enterprise Booster Platform",
 			MetaDescription: "Limited time promotional offer. Unlock unlimited CRUD modules, custom landing pages, TikTok/Meta/Google conversion pixels, and 24/7 dedicated SLA.",
-			MetaKeywords: "special promo, enterprise discount, flash sale, tgo booster, web framework",
-			CanonicalURL: "https://yourdomain.com/promo-special",
-			Robots:      "index, follow",
-			OGTitle:     "🔥 Exclusive 50% Off: Enterprise Booster Studio Platform",
-			OGDescription: "Unlock full-suite enterprise code generation, custom routes, and marketing pixel tracking.",
-			OGImage:     "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&auto=format&fit=crop&q=80",
-			OGType:      "product",
-			TwitterCard: "summary_large_image",
-			PixelMetaID: "987654321012345",
-			PixelGTMID:  "GTM-PROMO26",
-			PixelTikTokID: "CTIKTOK2026EXAMPLE",
+			MetaKeywords:    "special promo, enterprise discount, flash sale, tgo booster, web framework",
+			CanonicalURL:    "https://yourdomain.com/promo-special",
+			Robots:          "index, follow",
+			OGTitle:         "🔥 Exclusive 50% Off: Enterprise Booster Studio Platform",
+			OGDescription:   "Unlock full-suite enterprise code generation, custom routes, and marketing pixel tracking.",
+			OGImage:         "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&auto=format&fit=crop&q=80",
+			OGType:          "product",
+			TwitterCard:     "summary_large_image",
+			PixelMetaID:     "987654321012345",
+			PixelGTMID:      "GTM-PROMO26",
+			PixelTikTokID:   "CTIKTOK2026EXAMPLE",
 			HeaderScripts: `<!-- Custom Campaign Verification Script -->
 <script>console.log('[Promo Campaign] 2026 Flash Sale Activated');</script>`,
 			SchemaJSON: `{
@@ -270,27 +280,27 @@ func (e *Engine) initDefaultPages() {
 </div>`,
 		},
 		{
-			ID:          "3",
-			Title:       "Privacy Policy & Compliance",
-			Slug:        "privacy",
-			RouteURL:    "/privacy",
-			Template:    "article",
-			Status:      "published",
-			Author:      "Legal & Compliance",
-			Views:       450,
-			CreatedAt:   now,
-			UpdatedAt:   now,
-			Excerpt:     "Our commitment to privacy, GDPR compliance, transparent data processing, and user data rights.",
-			MetaTitle:   "Privacy Policy & GDPR Compliance Guidelines",
+			ID:              "3",
+			Title:           "Privacy Policy & Compliance",
+			Slug:            "privacy",
+			RouteURL:        "/privacy",
+			Template:        "article",
+			Status:          "published",
+			Author:          "Legal & Compliance",
+			Views:           450,
+			CreatedAt:       now,
+			UpdatedAt:       now,
+			Excerpt:         "Our commitment to privacy, GDPR compliance, transparent data processing, and user data rights.",
+			MetaTitle:       "Privacy Policy & GDPR Compliance Guidelines",
 			MetaDescription: "Read our comprehensive privacy policy regarding data collection, encryption, cookies, and international data protection standards.",
-			MetaKeywords: "privacy policy, gdpr, data compliance, terms, security",
-			CanonicalURL: "https://yourdomain.com/privacy",
-			Robots:      "index, follow",
-			OGTitle:     "Privacy Policy & User Data Rights",
-			OGDescription: "Transparent guidelines on how user data is securely processed, encrypted, and respected.",
-			OGImage:     "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80",
-			OGType:      "article",
-			TwitterCard: "summary",
+			MetaKeywords:    "privacy policy, gdpr, data compliance, terms, security",
+			CanonicalURL:    "https://yourdomain.com/privacy",
+			Robots:          "index, follow",
+			OGTitle:         "Privacy Policy & User Data Rights",
+			OGDescription:   "Transparent guidelines on how user data is securely processed, encrypted, and respected.",
+			OGImage:         "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1200&auto=format&fit=crop&q=80",
+			OGType:          "article",
+			TwitterCard:     "summary",
 			Content: `<p style="font-size: 1.1rem; line-height: 1.8; color: #334155; margin-bottom: 1.5rem;">
   Welcome to our Privacy Policy. Your privacy and the confidentiality of your data are fundamental to how we engineer and operate our software. This document explains what information is collected, how it is safeguarded, and how you can exercise your statutory rights under GDPR, CCPA, and global privacy standards.
 </p>
@@ -861,4 +871,3 @@ func (e *Engine) handlePageGenerateAI(w http.ResponseWriter, r *http.Request) {
 		"page":    result,
 	})
 }
-

@@ -3,6 +3,7 @@ package cb
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,9 +51,17 @@ func (em *EmailTemplateManager) loadTemplates() {
 	defer em.mu.Unlock()
 
 	data, err := em.engine.docLoad(DocEmailTemplates)
-	if err == nil && len(data) > 0 {
+	if err != nil {
+		log.Printf("[docstore] gagal memuat %s: %v (data di memori dipertahankan, tidak ada seed)", DocEmailTemplates, err)
+		return
+	}
+	if len(data) > 0 {
 		var list []*EmailTemplate
-		if err := json.Unmarshal(data, &list); err == nil && len(list) > 0 {
+		if err := json.Unmarshal(data, &list); err != nil {
+			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan, dokumen tidak ditimpa)", DocEmailTemplates, err)
+			return
+		}
+		if len(list) > 0 {
 			em.templates = list
 			return
 		}
