@@ -134,6 +134,7 @@ type UserManager struct {
 	trackerMu      sync.Mutex
 	failedAttempts map[string]int
 	lockedUntil    map[string]time.Time
+	lastFail       map[string]time.Time // kegagalan terakhir per kunci; dipakai pembersihan
 }
 
 // NewUserManager creates and loads the user accounts manager
@@ -148,6 +149,7 @@ func NewUserManager(engine *Engine) *UserManager {
 		users:          make([]*UserAccount, 0),
 		failedAttempts: make(map[string]int),
 		lockedUntil:    make(map[string]time.Time),
+		lastFail:       make(map[string]time.Time),
 	}
 	um.loadUsers()
 	return um
@@ -319,41 +321,53 @@ func (um *UserManager) SetUsername(id, username string) (string, error) {
 // Authenticate verifies email or username and password against stored hash with rate limit checking
 func (um *UserManager) Authenticate(email, password, clientIP string, maxAttempts, lockoutMin int) (*UserAccount, error) {
 	emailClean := strings.ToLower(strings.TrimSpace(email))
-	lockKey := emailClean + "@" + clientIP
+	ipKey := emailClean + "@" + clientIP
 
-	// 1. Check Lockout Status
+	// 1. Lookup User lebih dulu agar kunci per-akun memakai identitas ternormalisasi (email dan username akun yang
+	// sama berbagi satu jatah; variasi IP tidak menggandakannya).
+	user := um.FindByLogin(emailClean)
+	acctKey := "login:" + emailClean
+	if user != nil {
+		acctKey = "acct:" + user.ID
+	}
+	acctMax := maxAttempts * 4 // lebih longgar dari per-IP: cegah brute force terdistribusi tanpa mudah mengunci pemilik akun
+
+	// 2. Check Lockout Status (per email@ip dan per akun)
 	um.trackerMu.Lock()
-	if until, locked := um.lockedUntil[lockKey]; locked {
-		if time.Now().Before(until) {
-			remain := time.Until(until).Round(time.Second)
-			um.trackerMu.Unlock()
-			return nil, fmt.Errorf("Account locked due to too many failed attempts. Try again in %v", remain)
+	for _, k := range []string{ipKey, acctKey} {
+		if until, locked := um.lockedUntil[k]; locked {
+			if time.Now().Before(until) {
+				remain := time.Until(until).Round(time.Second)
+				um.trackerMu.Unlock()
+				return nil, fmt.Errorf("Account locked due to too many failed attempts. Try again in %v", remain)
+			}
+			// Lock expired
+			delete(um.lockedUntil, k)
+			delete(um.failedAttempts, k)
+			delete(um.lastFail, k)
 		}
-		// Lock expired
-		delete(um.lockedUntil, lockKey)
-		delete(um.failedAttempts, lockKey)
 	}
 	um.trackerMu.Unlock()
 
-	// 2. Lookup User
-	user := um.FindByLogin(emailClean)
 	if user == nil {
 		// Samakan waktu respons dan pesan dengan kata sandi salah (tidak membocorkan keberadaan akun)
 		burnPasswordCheck(password)
-		um.recordFailure(lockKey, maxAttempts, lockoutMin)
+		um.recordFailure(ipKey, maxAttempts, lockoutMin)
+		um.recordFailure(acctKey, acctMax, lockoutMin)
 		return nil, errors.New("Invalid username/email or password")
 	}
 
-	// 3. Check Account Status
-	if strings.EqualFold(user.Status, "Suspended") {
-		return nil, errors.New("This administrator account has been suspended. Please contact Super Administrator")
-	}
-
-	// 4. Verify Password (bcrypt atau SHA-256 lama; tanpa kata sandi bawaan/pintu belakang)
+	// 3. Verify Password (bcrypt atau SHA-256 lama; tanpa kata sandi bawaan/pintu belakang)
 	ok, legacy := checkPassword(user, password)
 	if !ok {
-		um.recordFailure(lockKey, maxAttempts, lockoutMin)
+		um.recordFailure(ipKey, maxAttempts, lockoutMin)
+		um.recordFailure(acctKey, acctMax, lockoutMin)
 		return nil, errors.New("Invalid username/email or password")
+	}
+
+	// 4. Status akun diperiksa SETELAH kata sandi benar, agar status tidak bisa ditebak tanpa kredensial.
+	if strings.EqualFold(user.Status, "Suspended") {
+		return nil, errors.New("This administrator account has been suspended. Please contact Super Administrator")
 	}
 	if legacy {
 		// Tingkatkan hash lama ke bcrypt secara transparan (tanpa mencabut sesi yang sedang berjalan)
@@ -371,8 +385,11 @@ func (um *UserManager) Authenticate(email, password, clientIP string, maxAttempt
 
 	// 5. Success -> Clear failure counters & update LastLoginAt
 	um.trackerMu.Lock()
-	delete(um.failedAttempts, lockKey)
-	delete(um.lockedUntil, lockKey)
+	for _, k := range []string{ipKey, acctKey} {
+		delete(um.failedAttempts, k)
+		delete(um.lockedUntil, k)
+		delete(um.lastFail, k)
+	}
 	um.trackerMu.Unlock()
 
 	um.RecordLogin(user.ID)
@@ -390,9 +407,37 @@ func (um *UserManager) recordFailure(key string, maxAttempts, lockoutMin int) {
 	um.trackerMu.Lock()
 	defer um.trackerMu.Unlock()
 
+	um.pruneTrackersLocked()
 	um.failedAttempts[key]++
+	um.lastFail[key] = time.Now()
 	if um.failedAttempts[key] >= maxAttempts {
 		um.lockedUntil[key] = time.Now().Add(time.Duration(lockoutMin) * time.Minute)
+	}
+}
+
+// pruneTrackersLocked membuang entri lockout/kegagalan yang sudah kedaluwarsa bila peta membesar, dengan batas keras
+// agar tidak tumbuh tanpa batas (mis. serangan dengan banyak email/IP acak). trackerMu harus dipegang.
+func (um *UserManager) pruneTrackersLocked() {
+	if len(um.failedAttempts)+len(um.lockedUntil) < 2000 {
+		return
+	}
+	now := time.Now()
+	for k, until := range um.lockedUntil {
+		if now.After(until) {
+			delete(um.lockedUntil, k)
+			delete(um.failedAttempts, k)
+			delete(um.lastFail, k)
+		}
+	}
+	for k, t := range um.lastFail {
+		if _, locked := um.lockedUntil[k]; !locked && now.Sub(t) > time.Hour {
+			delete(um.failedAttempts, k)
+			delete(um.lastFail, k)
+		}
+	}
+	if len(um.failedAttempts) > 50000 { // batas keras
+		um.failedAttempts = make(map[string]int)
+		um.lastFail = make(map[string]time.Time)
 	}
 }
 

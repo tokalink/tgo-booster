@@ -94,3 +94,47 @@ func TestAbsentDocumentIsSeededOnce(t *testing.T) {
 		t.Fatal("tenants harus disemai bila dokumen belum ada")
 	}
 }
+
+// saveVerStore menaikkan versi dokumen oleh "instance lain" tepat setelah Save sendiri; SaveVersioned mengembalikan
+// versi tulisan sendiri sehingga tulisan instance lain tetap terdeteksi saat SyncDocsOnce.
+type saveVerStore struct {
+	verDocStore
+	other int
+}
+
+func (s *saveVerStore) SaveVersioned(n string, d []byte) (int64, error) {
+	if err := s.verDocStore.Save(n, d); err != nil {
+		return 0, err
+	}
+	s.mu.Lock()
+	own := s.ver[n]
+	s.ver[n]++ // tulisan instance lain menyelip sebelum Versions() dipanggil
+	s.other++
+	s.mu.Unlock()
+	return own, nil
+}
+
+func TestSaveVersionedDoesNotSwallowOtherInstanceWrite(t *testing.T) {
+	t.Chdir(t.TempDir())
+	e := NewEngine("Uji")
+	st := &saveVerStore{}
+	if err := e.SetDocStore(st); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := e.UserManager.CreateUser("A", "a@uji.id", "Sandi#12345", "Superadmin", "1", "", "Active"); err != nil {
+		t.Fatal(err)
+	}
+	changed, err := e.SyncDocsOnce()
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, n := range changed {
+		if n == DocUsers {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("tulisan instance lain pada users harus terdeteksi; changed=%v", changed)
+	}
+}

@@ -1,6 +1,7 @@
 package cb
 
 import (
+	"log"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -34,11 +35,34 @@ func (a *AuthManager) setPending2FA(w http.ResponseWriter, user *User) {
 		MaxAge: int(pending2FATTL.Seconds()), HttpOnly: true, Secure: a.SecureCookies, SameSite: http.SameSiteLaxMode})
 }
 
+// SecondFactorRequirer (opsional) melaporkan galat saat menentukan kewajiban langkah kedua. Bila provider
+// mengimplementasikannya, galat membuat login ditolak (gagal-tertutup) alih-alih dianggap "tidak wajib".
+type SecondFactorRequirer interface {
+	RequiredErr(email string) (bool, error)
+}
+
+// secondFactorRequired: (wajib, galat). Tanpa SecondFactor -> (false, nil).
+func (a *AuthManager) secondFactorRequired(email string) (bool, error) {
+	if a.SecondFactor == nil {
+		return false, nil
+	}
+	if re, ok := a.SecondFactor.(SecondFactorRequirer); ok {
+		return re.RequiredErr(email)
+	}
+	return a.SecondFactor.Required(email), nil
+}
+
 // BeginLogin menyelesaikan login bagi pengguna yang kata sandinya SUDAH diverifikasi pemanggil (mis. penerimaan undangan).
 // Bila akun mewajibkan langkah kedua, sesi TIDAK dibuat: cookie pending diterbitkan dan pemanggil harus mengalihkan ke
 // AdminPath+"/login/2fa" (needs2FA=true). Selain itu sesi dibuat langsung. Semua jalur masuk berkata sandi wajib lewat sini.
 func (a *AuthManager) BeginLogin(w http.ResponseWriter, user *User) (needs2FA bool) {
-	if a.SecondFactor != nil && a.SecondFactor.Required(user.Email) {
+	req, err := a.secondFactorRequired(user.Email)
+	if err != nil {
+		// Gagal-tertutup: tanpa sesi dan tanpa pending; pengguna diarahkan ke /login/2fa yang akan menolak.
+		log.Printf("[auth] gagal menentukan 2FA untuk %s: %v (login ditolak)", user.Email, err)
+		return true
+	}
+	if req {
 		a.setPending2FA(w, user)
 		return true
 	}
@@ -89,6 +113,14 @@ func (a *AuthManager) tfLocked(key string) bool {
 
 func (a *AuthManager) tfFail(key string) {
 	a.tfMu.Lock()
+	if len(a.tfFails) > 5000 { // buang kunci yang semua catatannya sudah kedaluwarsa
+		cut := time.Now().Add(-15 * time.Minute)
+		for k, ts := range a.tfFails {
+			if len(ts) == 0 || ts[len(ts)-1].Before(cut) {
+				delete(a.tfFails, k)
+			}
+		}
+	}
 	if a.tfFails == nil {
 		a.tfFails = map[string][]time.Time{}
 	}

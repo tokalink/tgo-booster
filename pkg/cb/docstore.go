@@ -73,6 +73,23 @@ func (e *Engine) docSave(name string, data []byte) error {
 	if e == nil || e.docs == nil {
 		return FileDocStore{}.Save(name, data)
 	}
+	// Penyimpanan yang dapat mengembalikan versi hasil tulisan sendiri (SaveVersioned) dipakai agar versi tulisan
+	// instance lain yang masuk di antara Save dan Versions tidak ikut tercatat "sudah dilihat".
+	if sv, ok := e.docs.(interface {
+		SaveVersioned(name string, data []byte) (int64, error)
+	}); ok {
+		v, err := sv.SaveVersioned(name, data)
+		if err != nil {
+			return err
+		}
+		e.docSync.mu.Lock()
+		if e.docSync.seen == nil {
+			e.docSync.seen = map[string]int64{}
+		}
+		e.docSync.seen[name] = v
+		e.docSync.mu.Unlock()
+		return nil
+	}
 	if err := e.docs.Save(name, data); err != nil {
 		return err
 	}

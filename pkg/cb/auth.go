@@ -1,6 +1,7 @@
 package cb
 
 import (
+	"log"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -139,6 +140,12 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 	if a.Engine != nil && a.Engine.UserManager != nil {
 		acc, err := a.Engine.UserManager.Authenticate(email, password, clientIP, maxAttempts, lockoutMin)
 		if err != nil {
+			// Catat login gagal/lockout (tanpa kata sandi) agar upaya brute force terlihat di audit.
+			action := "LOGIN_FAILED"
+			if strings.HasPrefix(err.Error(), "Account locked") {
+				action = "LOGIN_LOCKED"
+			}
+			a.Engine.LogAudit(r, action, "Auth", fmt.Sprintf("Login gagal untuk '%s' dari %s", strings.TrimSpace(email), clientIP))
 			a.renderLogin(w, err.Error(), email)
 			return
 		}
@@ -171,7 +178,13 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 		if user.ActiveTenant == "" && len(user.Tenants) > 0 && user.Tenants[0] != "*" {
 			user.ActiveTenant = user.Tenants[0]
 		}
-		if a.SecondFactor != nil && a.SecondFactor.Required(user.Email) {
+		req2fa, tfErr := a.secondFactorRequired(user.Email)
+		if tfErr != nil {
+			log.Printf("[auth] gagal menentukan 2FA untuk %s: %v (login ditolak)", user.Email, tfErr)
+			a.renderLogin(w, "Tidak dapat memverifikasi pengaturan keamanan akun. Coba lagi sebentar lagi.", email)
+			return
+		}
+		if req2fa {
 			a.setPending2FA(w, user)
 			http.Redirect(w, r, a.AdminPath+"/login/2fa", http.StatusSeeOther)
 			return
