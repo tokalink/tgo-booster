@@ -1,6 +1,7 @@
 package cb
 
 import (
+	"sync"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -114,9 +115,9 @@ func (e *Engine) AddMenu(title, icon, path string, badge ...string) *Engine {
 		Path:       path,
 		Badge:      b,
 		BadgeColor: "primary",
-		Order:      len(e.menus) + 1,
+		Order:      len(e.menusSnap()) + 1,
 	}
-	e.menus = append(e.menus, item)
+	e.appendMenu(item)
 	return e
 }
 
@@ -299,6 +300,48 @@ func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(results)
 }
 
+// cfgMu melindungi header slice roles/menus terhadap muat-ulang (StartDocSync/reloadDoc) dan handler studio yang
+// menggantinya saat request membaca. Pembaca memakai snapshot (rolesSnap/menusSnap); penulis mengganti slice utuh
+// (copy-on-write) lewat setRoles/setMenus/appendRole/appendMenu. Isi tiap Role/MenuItem tetap dimutasi di tempat oleh
+// handler studio (jarang, hanya admin).
+var cfgMu sync.RWMutex
+
+func (e *Engine) rolesSnap() []*Role {
+	cfgMu.RLock()
+	defer cfgMu.RUnlock()
+	return e.roles
+}
+
+func (e *Engine) menusSnap() []*MenuItem {
+	cfgMu.RLock()
+	defer cfgMu.RUnlock()
+	return e.menus
+}
+
+func (e *Engine) setRoles(r []*Role) {
+	cfgMu.Lock()
+	e.roles = r
+	cfgMu.Unlock()
+}
+
+func (e *Engine) setMenus(m []*MenuItem) {
+	cfgMu.Lock()
+	e.menus = m
+	cfgMu.Unlock()
+}
+
+func (e *Engine) appendRole(r *Role) {
+	cfgMu.Lock()
+	e.roles = append(append([]*Role{}, e.roles...), r)
+	cfgMu.Unlock()
+}
+
+func (e *Engine) appendMenu(m *MenuItem) {
+	cfgMu.Lock()
+	e.menus = append(append([]*MenuItem{}, e.menus...), m)
+	cfgMu.Unlock()
+}
+
 // Mount registers all booster routes (Auth, Dashboard, CRUD modules) to the TGo server
 func (e *Engine) Mount(server connect.Server, prefix ...string) {
 	e.server = server
@@ -385,8 +428,8 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 			AddCol("Status", "status", ColBadge, false, false).
 			AddCol("Registered At", "created_at", ColText, false, true)
 
-		roleOpts := make([]Option, 0, len(e.roles))
-		for _, r := range e.roles {
+		roleOpts := make([]Option, 0, len(e.rolesSnap()))
+		for _, r := range e.rolesSnap() {
 			roleOpts = append(roleOpts, Option{Label: r.Name, Value: r.Name})
 		}
 		if len(roleOpts) == 0 {
@@ -1296,11 +1339,11 @@ func (e *Engine) LoadDynamicRoles() {
 		if err := json.Unmarshal(data, &roles); err != nil {
 			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocPrivileges, err)
 		} else if len(roles) > 0 {
-			e.roles = roles
+			e.setRoles(roles)
 			return
 		}
 	}
-	if len(e.roles) == 0 {
+	if len(e.rolesSnap()) == 0 {
 		e.initDefaultRoles()
 	}
 }
@@ -1364,13 +1407,13 @@ func (e *Engine) initDefaultRoles() {
 		CreatedAt:    time.Now(),
 	}
 
-	e.roles = []*Role{super, ops, auditor}
+	e.setRoles([]*Role{super, ops, auditor})
 	_ = e.SaveRoles()
 }
 
 // SaveRoles persists all configured roles and their RBAC matrix to disk
 func (e *Engine) SaveRoles() error {
-	data, err := json.MarshalIndent(e.roles, "", "  ")
+	data, err := json.MarshalIndent(e.rolesSnap(), "", "  ")
 	if err != nil {
 		return err
 	}
@@ -1382,7 +1425,7 @@ func (e *Engine) FindRole(key string) *Role {
 	if key == "" {
 		return nil
 	}
-	for _, r := range e.roles {
+	for _, r := range e.rolesSnap() {
 		if r.ID == key || strings.EqualFold(r.Slug, key) || strings.EqualFold(r.Name, key) {
 			return r
 		}
@@ -1602,10 +1645,10 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 		}
 		if target == nil {
 			target = &Role{
-				ID:        fmt.Sprintf("%d", len(e.roles)+1),
+				ID:        fmt.Sprintf("%d", len(e.rolesSnap())+1),
 				CreatedAt: time.Now(),
 			}
-			e.roles = append(e.roles, target)
+			e.appendRole(target)
 		}
 
 		target.Name = req.Name
@@ -1644,9 +1687,10 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		for i, r := range e.roles {
+		for i, r := range e.rolesSnap() {
 			if r.ID == target.ID {
-				e.roles = append(e.roles[:i], e.roles[i+1:]...)
+				cur := e.rolesSnap()
+				e.setRoles(append(append([]*Role{}, cur[:i]...), cur[i+1:]...))
 				break
 			}
 		}
@@ -1714,7 +1758,7 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 
 		data := map[string]interface{}{
 			"AdminPath":   e.AdminPath,
-			"Roles":       e.roles,
+			"Roles":       e.rolesSnap(),
 			"Modules":     modules,
 			"CurrentRole": currentRole,
 		}
@@ -1739,7 +1783,7 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 
 // SaveMenus persists the active hierarchical menus tree to disk
 func (e *Engine) SaveMenus() error {
-	data, err := json.MarshalIndent(e.menus, "", "  ")
+	data, err := json.MarshalIndent(e.menusSnap(), "", "  ")
 	if err != nil {
 		return err
 	}
@@ -1759,7 +1803,7 @@ func (e *Engine) LoadDynamicMenus() {
 			log.Printf("[docstore] %s tidak valid: %v (data di memori dipertahankan)", DocMenus, err)
 			loadFailed = true
 		} else if len(items) > 0 {
-			e.menus = items
+			e.setMenus(items)
 			// Ensure any controller registered in code is present in menus
 			for _, c := range e.controllers {
 				if item, _ := e.findMenuItem(c.Table); item == nil {
@@ -1771,7 +1815,7 @@ func (e *Engine) LoadDynamicMenus() {
 	}
 
 	// Initialize default menu tree if missing or empty
-	if len(e.menus) == 0 {
+	if len(e.menusSnap()) == 0 {
 		e.initDefaultMenus()
 		if !loadFailed { // hanya simpan seed bila dokumen benar-benar tidak ada
 			_ = e.SaveMenus()
@@ -1944,14 +1988,14 @@ func (e *Engine) initDefaultMenus() {
 	}
 	menus = append(menus, systemDropdown)
 
-	e.menus = menus
+	e.setMenus(menus)
 }
 
 func (e *Engine) syncControllerMenu(c *Controller) {
 	if c.HideFromMenu {
 		return
 	}
-	if len(e.menus) == 0 {
+	if len(e.menusSnap()) == 0 {
 		e.LoadDynamicMenus()
 	}
 	// If already in menus, update metadata
@@ -1973,7 +2017,7 @@ func (e *Engine) syncControllerMenu(c *Controller) {
 	}
 
 	// Try to place under the "group_business" section header if present
-	for _, m := range e.menus {
+	for _, m := range e.menusSnap() {
 		if m.ID == "group_business" && m.Type == "header" {
 			newItem.ParentID = "group_business"
 			newItem.Order = len(m.Children) + 1
@@ -1983,13 +2027,13 @@ func (e *Engine) syncControllerMenu(c *Controller) {
 		}
 	}
 
-	newItem.Order = len(e.menus) + 1
-	e.menus = append(e.menus, newItem)
+	newItem.Order = len(e.menusSnap()) + 1
+	e.appendMenu(newItem)
 	_ = e.SaveMenus()
 }
 
 func (e *Engine) findMenuItem(id string) (*MenuItem, *MenuItem) {
-	for _, m := range e.menus {
+	for _, m := range e.menusSnap() {
 		if m.ID == id {
 			return m, nil
 		}
@@ -2008,9 +2052,10 @@ func (e *Engine) findMenuItem(id string) (*MenuItem, *MenuItem) {
 }
 
 func (e *Engine) deleteMenuItem(id string) bool {
-	for i, m := range e.menus {
+	for i, m := range e.menusSnap() {
 		if m.ID == id {
-			e.menus = append(e.menus[:i], e.menus[i+1:]...)
+			cur := e.menusSnap()
+			e.setMenus(append(append([]*MenuItem{}, cur[:i]...), cur[i+1:]...))
 			_ = e.SaveMenus()
 			return true
 		}
@@ -2088,21 +2133,25 @@ func (e *Engine) upsertMenuItem(item *MenuItem) error {
 
 	// Otherwise, add to root
 	item.ParentID = ""
-	item.Order = len(e.menus) + 1
-	e.menus = append(e.menus, item)
+	item.Order = len(e.menusSnap()) + 1
+	e.appendMenu(item)
 	return e.SaveMenus()
 }
 
 func (e *Engine) reorderMenuItem(id string, direction string) error {
-	for i, m := range e.menus {
+	for i, m := range e.menusSnap() {
 		if m.ID == id {
 			if direction == "up" && i > 0 {
-				e.menus[i], e.menus[i-1] = e.menus[i-1], e.menus[i]
-				e.menus[i].Order, e.menus[i-1].Order = i+1, i
+				cp := append([]*MenuItem{}, e.menusSnap()...)
+				cp[i], cp[i-1] = cp[i-1], cp[i]
+				cp[i].Order, cp[i-1].Order = i+1, i
+				e.setMenus(cp)
 				return e.SaveMenus()
-			} else if direction == "down" && i < len(e.menus)-1 {
-				e.menus[i], e.menus[i+1] = e.menus[i+1], e.menus[i]
-				e.menus[i].Order, e.menus[i+1].Order = i+1, i+2
+			} else if direction == "down" && i < len(e.menusSnap())-1 {
+				cp := append([]*MenuItem{}, e.menusSnap()...)
+				cp[i], cp[i+1] = cp[i+1], cp[i]
+				cp[i].Order, cp[i+1].Order = i+1, i+2
+				e.setMenus(cp)
 				return e.SaveMenus()
 			}
 			return nil
@@ -2132,7 +2181,7 @@ func (e *Engine) getMenuStats() map[string]int {
 	submenus := 0
 	modules := 0
 
-	for _, m := range e.menus {
+	for _, m := range e.menusSnap() {
 		total++
 		switch m.Type {
 		case "header":
@@ -2192,9 +2241,9 @@ func (e *Engine) buildActiveMenus(r *http.Request, currentPath string, user *Use
 		return true
 	}
 
-	result := make([]*MenuItem, 0, len(e.menus))
+	result := make([]*MenuItem, 0, len(e.menusSnap()))
 
-	for _, m := range e.menus {
+	for _, m := range e.menusSnap() {
 		if !isItemPermitted(m) {
 			continue
 		}
@@ -2332,14 +2381,14 @@ func (e *Engine) handleMenus(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	collectContainers(e.menus, "")
+	collectContainers(e.menusSnap(), "")
 
 	data := map[string]interface{}{
 		"AdminPath":   e.AdminPath,
-		"Menus":       e.menus,
+		"Menus":       e.menusSnap(),
 		"Containers":  containers,
 		"Controllers": e.controllers,
-		"Roles":       e.roles,
+		"Roles":       e.rolesSnap(),
 		"Stats":       e.getMenuStats(),
 	}
 
@@ -2547,7 +2596,7 @@ func (e *Engine) handleMenuReorderTree(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	collectItems(e.menus)
+	collectItems(e.menusSnap())
 
 	// Rebuild tree from request
 	newMenus := make([]*MenuItem, 0, len(req.Tree))
@@ -2598,13 +2647,13 @@ func (e *Engine) handleMenuReorderTree(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Append any existing items that were not in the payload as a fallback
-	for _, m := range e.menus {
+	for _, m := range e.menusSnap() {
 		if !usedIDs[m.ID] {
 			newMenus = append(newMenus, m)
 		}
 	}
 
-	e.menus = newMenus
+	e.setMenus(newMenus)
 	if err := e.SaveMenus(); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
