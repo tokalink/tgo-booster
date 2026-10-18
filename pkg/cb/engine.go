@@ -207,7 +207,15 @@ func (e *Engine) FindDB() *sql.DB {
 }
 
 // handleLOVAPI provides JSON records for the LOV modal and dynamic relations
+// lovIdentRe: pola identifier yang diizinkan untuk parameter table/key/label LOV.
+var lovIdentRe = regexp.MustCompile(`^[a-z_][a-z0-9_]{0,62}$`)
+
 func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
+	// Wajib login: CheckPermission meloloskan permintaan tanpa sesi, jadi sesi diperiksa eksplisit di sini.
+	if e.Auth != nil && e.Auth.GetSessionUser(r) == nil {
+		http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
 	table := strings.TrimSpace(r.URL.Query().Get("table"))
 	if table == "" {
 		http.Error(w, `{"error":"Table parameter is required"}`, http.StatusBadRequest)
@@ -223,51 +231,39 @@ func (e *Engine) handleLOVAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	q := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
 
-	var results []map[string]interface{}
+	// Hanya tabel milik controller terdaftar yang boleh dibaca, lewat jalur controller itu sendiri (konteks tenant sama
+	// seperti halamannya) dan hanya bila peran pengguna punya izin baca. Tidak pernah menyusun SQL dari parameter.
+	if !lovIdentRe.MatchString(table) || !lovIdentRe.MatchString(keyCol) || !lovIdentRe.MatchString(labelCol) {
+		http.Error(w, `{"error":"Parameter tidak valid"}`, http.StatusBadRequest)
+		return
+	}
+	ctrl := e.FindController(table)
+	if ctrl == nil {
+		http.Error(w, `{"error":"Not found"}`, http.StatusNotFound)
+		return
+	}
+	if !e.CheckPermission(r, ctrl.Table, "read") {
+		http.Error(w, `{"error":"Access Denied (403)"}`, http.StatusForbidden)
+		return
+	}
 
-	// 1. Check registered controller first
-	if ctrl := e.FindController(table); ctrl != nil {
-		rows := ctrl.fetchRows(r)
-		for _, row := range rows {
-			keyVal := fmt.Sprint(row[keyCol])
-			labelVal := fmt.Sprint(row[labelCol])
-			if labelVal == "" || labelVal == "<nil>" {
-				labelVal = keyVal
-			}
-			if q == "" || strings.Contains(strings.ToLower(keyVal), q) || strings.Contains(strings.ToLower(labelVal), q) {
-				results = append(results, map[string]interface{}{
-					keyCol:   keyVal,
-					labelCol: labelVal,
-					"id":     keyVal,
-					"name":   labelVal,
-				})
-			}
+	var results []map[string]interface{}
+	for _, row := range ctrl.fetchRows(r) {
+		if len(results) >= 100 {
+			break
 		}
-	} else if db := e.FindDB(); db != nil {
-		// 2. Query target table directly from SQL database
-		query := fmt.Sprintf("SELECT %s, %s FROM %s", keyCol, labelCol, table)
-		var args []interface{}
-		if q != "" {
-			query += fmt.Sprintf(" WHERE LOWER(%s) LIKE ? OR LOWER(%s) LIKE ?", labelCol, keyCol)
-			args = append(args, "%"+q+"%", "%"+q+"%")
+		keyVal := fmt.Sprint(row[keyCol])
+		labelVal := fmt.Sprint(row[labelCol])
+		if labelVal == "" || labelVal == "<nil>" {
+			labelVal = keyVal
 		}
-		query += fmt.Sprintf(" ORDER BY %s ASC LIMIT 100", labelCol)
-		rows, err := db.Query(query, args...)
-		if err == nil {
-			defer rows.Close()
-			for rows.Next() {
-				var k, l interface{}
-				if err := rows.Scan(&k, &l); err == nil {
-					keyVal := fmt.Sprint(k)
-					labelVal := fmt.Sprint(l)
-					results = append(results, map[string]interface{}{
-						keyCol:   keyVal,
-						labelCol: labelVal,
-						"id":     keyVal,
-						"name":   labelVal,
-					})
-				}
-			}
+		if q == "" || strings.Contains(strings.ToLower(keyVal), q) || strings.Contains(strings.ToLower(labelVal), q) {
+			results = append(results, map[string]interface{}{
+				keyCol:   keyVal,
+				labelCol: labelVal,
+				"id":     keyVal,
+				"name":   labelVal,
+			})
 		}
 	}
 
