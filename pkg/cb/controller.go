@@ -783,6 +783,12 @@ func (c *Controller) handleEditSubmit(w http.ResponseWriter, r *http.Request, id
 }
 
 func (c *Controller) handleDelete(w http.ResponseWriter, r *http.Request, id string) {
+	// Aksi yang mengubah data hanya lewat POST/DELETE; GET/HEAD (mis. CSRF via navigasi atau <img>) ditolak.
+	if r.Method != http.MethodPost && r.Method != http.MethodDelete {
+		w.Header().Set("Allow", "POST, DELETE")
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	ctx := c.makeContext(r)
 	if c.HookBeforeDelete != nil {
 		if err := c.HookBeforeDelete(ctx, map[string]interface{}{c.PrimaryKey: id}); err != nil {

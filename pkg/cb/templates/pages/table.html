@@ -574,7 +574,12 @@
 
   function confirmDelete(id, basePath) {
     if (confirm('Are you sure you want to permanently delete record #' + id + '?')) {
-      window.location.href = basePath + '/delete/' + id;
+      // Hapus mengubah data: wajib POST (GET diabaikan server, 405) agar tidak bisa dipicu lewat tautan/navigasi.
+      const f = document.createElement('form');
+      f.method = 'POST';
+      f.action = basePath + '/delete/' + encodeURIComponent(id);
+      document.body.appendChild(f);
+      f.submit();
     }
   }
 
