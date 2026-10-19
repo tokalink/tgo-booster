@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -297,6 +298,20 @@ func (s *SQLStore) FindByID(ctx *Context, id string) (map[string]interface{}, er
 	return nil, fmt.Errorf("record with %s=%s not found in %s", s.idKey, id, s.tableName)
 }
 
+// columnNameRe: satu-satunya bentuk nama kolom yang boleh disambung ke SQL. Key data berasal dari input pengguna
+// (form/CSV/JSON); tanpa validasi ini key berbentuk ekspresi menjadi injeksi SQL lewat nama kolom.
+var columnNameRe = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]{0,62}$`)
+
+// validateColumns menolak key data yang bukan identifier SQL polos.
+func validateColumns(data map[string]interface{}) error {
+	for k := range data {
+		if !columnNameRe.MatchString(k) {
+			return fmt.Errorf("nama kolom tidak valid: %q", k)
+		}
+	}
+	return nil
+}
+
 // Create inserts a new row into the table, automatically injecting the tenant ID if scoped
 func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
 	tenantSlug := s.resolveTenant(ctx)
@@ -306,6 +321,10 @@ func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
 		if val, ok := data[col]; !ok || fmt.Sprint(val) == "" {
 			data[col] = tenantSlug
 		}
+	}
+
+	if err := validateColumns(data); err != nil {
+		return err
 	}
 
 	var cols []string
@@ -374,6 +393,10 @@ func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
 func (s *SQLStore) Update(ctx *Context, id string, data map[string]interface{}) error {
 	tenantSlug := s.resolveTenant(ctx)
 	col := s.TenantCol()
+
+	if err := validateColumns(data); err != nil {
+		return err
+	}
 
 	var setClauses []string
 	var values []interface{}
