@@ -599,7 +599,7 @@ func (e *Engine) RenderPublicPageHTML(p *Page, isPreview bool, reqHost string) s
 		"OGImage":         p.OGImage,
 		"OGType":          ogType,
 		"TwitterCard":     twitterCard,
-		"SchemaJSON":      p.SchemaJSON,
+		"SchemaJSON":      sanitizeSchemaJSON(p.SchemaJSON),
 		"PixelMetaID":     p.PixelMetaID,
 		"PixelGTMID":      p.PixelGTMID,
 		"PixelTikTokID":   p.PixelTikTokID,
@@ -622,23 +622,15 @@ func (e *Engine) RenderPublicPageHTML(p *Page, isPreview bool, reqHost string) s
 // ============================================================================
 
 func (e *Engine) handlePages(w http.ResponseWriter, r *http.Request) {
+	var currUser *User
 	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
+		currUser = e.Auth.GetSessionUser(r)
+		if currUser == nil {
 			http.Redirect(w, r, e.AdminPath+"/login", http.StatusSeeOther)
 			return
 		}
-	}
-
-	// Check permission
-	currUser := e.Auth.GetSessionUser(r)
-	if currUser != nil {
-		roleID := currUser.PrivilegeID
-		if roleID == "" {
-			roleID = currUser.RoleName
-		}
-		role := e.FindRole(roleID)
-		if role != nil && !role.CanAccess("pages", "read") {
-			http.Error(w, "Forbidden: insufficient privilege to access Pages module", http.StatusForbidden)
+		if !e.IsUserSuperadmin(currUser) {
+			e.RenderForbidden(w, r, "Custom Pages & SEO Studio", "Superadmin")
 			return
 		}
 	}
@@ -682,11 +674,8 @@ func (e *Engine) handlePages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *Engine) handlePageAPI(w http.ResponseWriter, r *http.Request) {
-	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
-			http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
-			return
-		}
+	if !e.requireSuperadminJSON(w, r) {
+		return
 	}
 
 	id := r.URL.Query().Get("id")
@@ -707,11 +696,8 @@ func (e *Engine) handlePageAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *Engine) handlePageSave(w http.ResponseWriter, r *http.Request) {
-	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
-			http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
-			return
-		}
+	if !e.requireSuperadminJSON(w, r) {
+		return
 	}
 
 	var req Page
@@ -772,11 +758,8 @@ func (e *Engine) handlePageSave(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *Engine) handlePageDelete(w http.ResponseWriter, r *http.Request) {
-	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
-			http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
-			return
-		}
+	if !e.requireSuperadminJSON(w, r) {
+		return
 	}
 
 	id := r.URL.Query().Get("id")
@@ -808,8 +791,13 @@ func (e *Engine) handlePageDelete(w http.ResponseWriter, r *http.Request) {
 
 func (e *Engine) handlePagePreview(w http.ResponseWriter, r *http.Request) {
 	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
+		user := e.Auth.GetSessionUser(r)
+		if user == nil {
 			http.Redirect(w, r, e.AdminPath+"/login", http.StatusSeeOther)
+			return
+		}
+		if !e.IsUserSuperadmin(user) {
+			e.RenderForbidden(w, r, "Custom Pages & SEO Studio", "Superadmin")
 			return
 		}
 	}
@@ -822,22 +810,19 @@ func (e *Engine) handlePagePreview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	htmlContent := e.RenderPublicPageHTML(page, true, r.Host)
+	w.Header().Set("Content-Security-Policy", "sandbox allow-scripts allow-forms allow-popups")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte(htmlContent))
 }
 
 func (e *Engine) handlePageGenerateAI(w http.ResponseWriter, r *http.Request) {
+	if !e.requireSuperadminJSON(w, r) {
+		return
+	}
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
-	}
-
-	if e.Auth != nil {
-		if user := e.Auth.GetSessionUser(r); user == nil {
-			http.Error(w, `{"error":"Unauthorized"}`, http.StatusUnauthorized)
-			return
-		}
 	}
 
 	var req AIPageGenerateRequest

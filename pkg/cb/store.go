@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 // MemoryStore is a thread-safe, in-memory implementation of DataProvider.
 // It serves as an out-of-the-box data store for prototyping, tests, and MVC models.
 // It also supports native SaaS row-level multi-tenancy.
 type MemoryStore struct {
-	mu           sync.RWMutex
-	rows         []map[string]interface{}
-	nextID       int
-	idKey        string
-	tenantScoped bool
-	tenantCol    string
+	mu            sync.RWMutex
+	rows          []map[string]interface{}
+	nextID        int
+	idKey         string
+	tenantScoped  atomic.Bool
+	strictTenancy atomic.Bool
+	tenantCol     string
 }
 
 // NewMemoryStore initializes a new in-memory store with optional initial rows.
@@ -57,22 +59,26 @@ func (s *MemoryStore) SetIDKey(key string) *MemoryStore {
 
 // SetTenantScoped configures whether this store isolates records by tenant ID (defaults to "tenant_id")
 func (s *MemoryStore) SetTenantScoped(scoped bool, col ...string) *MemoryStore {
+	s.tenantScoped.Store(scoped)
 	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.tenantScoped = scoped
 	if len(col) > 0 && col[0] != "" {
 		s.tenantCol = col[0]
 	} else if s.tenantCol == "" {
-		s.tenantCol = "tenant_id"
+		s.tenantCol = "tenant_id" // MemoryStore{} literal tanpa konstruktor
 	}
+	s.mu.Unlock()
+	return s
+}
+
+// SetStrictTenancy configures whether operations without an active tenant are rejected when tenant-scoped
+func (s *MemoryStore) SetStrictTenancy(strict bool) *MemoryStore {
+	s.strictTenancy.Store(strict)
 	return s
 }
 
 // IsTenantScoped returns true if tenant scoping is active
 func (s *MemoryStore) IsTenantScoped() bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.tenantScoped
+	return s.tenantScoped.Load()
 }
 
 // TenantCol returns the tenant column name
@@ -87,19 +93,25 @@ func (s *MemoryStore) TenantCol() string {
 
 // FindAll returns all records matching the query context.
 func (s *MemoryStore) FindAll(ctx *Context) ([]map[string]interface{}, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	scoped := s.tenantScoped.Load()
+	strict := s.strictTenancy.Load()
 
 	tenantSlug := ""
 	if ctx != nil {
 		tenantSlug = ctx.TenantSlug
 	}
+	if scoped && strict && tenantSlug == "" {
+		return nil, ErrTenantRequired
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	result := make([]map[string]interface{}, 0, len(s.rows))
 	for _, r := range s.rows {
-		if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+		if scoped && tenantSlug != "" && tenantSlug != "*" {
 			rTenant := fmt.Sprint(r[s.tenantCol])
-			if rTenant != "" && rTenant != tenantSlug {
+			if (strict || rTenant != "") && rTenant != tenantSlug {
 				continue
 			}
 		}
@@ -114,19 +126,25 @@ func (s *MemoryStore) FindAll(ctx *Context) ([]map[string]interface{}, error) {
 
 // FindByID returns a single record by its primary key identifier and tenant scope.
 func (s *MemoryStore) FindByID(ctx *Context, id string) (map[string]interface{}, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	scoped := s.tenantScoped.Load()
+	strict := s.strictTenancy.Load()
 
 	tenantSlug := ""
 	if ctx != nil {
 		tenantSlug = ctx.TenantSlug
 	}
+	if scoped && strict && tenantSlug == "" {
+		return nil, ErrTenantRequired
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	for _, r := range s.rows {
 		if fmt.Sprint(r[s.idKey]) == id {
-			if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+			if scoped && tenantSlug != "" && tenantSlug != "*" {
 				rTenant := fmt.Sprint(r[s.tenantCol])
-				if rTenant != "" && rTenant != tenantSlug {
+				if (strict || rTenant != "") && rTenant != tenantSlug {
 					continue
 				}
 			}
@@ -142,15 +160,21 @@ func (s *MemoryStore) FindByID(ctx *Context, id string) (map[string]interface{},
 
 // Create inserts a new record, automatically allocating an ID and tenant ID if none is supplied.
 func (s *MemoryStore) Create(ctx *Context, data map[string]interface{}) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	scoped := s.tenantScoped.Load()
+	strict := s.strictTenancy.Load()
 
 	tenantSlug := ""
 	if ctx != nil {
 		tenantSlug = ctx.TenantSlug
 	}
+	if scoped && strict && tenantSlug == "" {
+		return ErrTenantRequired
+	}
 
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		if _, ok := data[s.tenantCol]; !ok || fmt.Sprint(data[s.tenantCol]) == "" {
 			data[s.tenantCol] = tenantSlug
 		}
@@ -171,24 +195,30 @@ func (s *MemoryStore) Create(ctx *Context, data map[string]interface{}) error {
 
 // Update modifies an existing record identified by primary key ID and tenant scope.
 func (s *MemoryStore) Update(ctx *Context, id string, data map[string]interface{}) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	scoped := s.tenantScoped.Load()
+	strict := s.strictTenancy.Load()
 
 	tenantSlug := ""
 	if ctx != nil {
 		tenantSlug = ctx.TenantSlug
 	}
+	if scoped && strict && tenantSlug == "" {
+		return ErrTenantRequired
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	for i, r := range s.rows {
 		if fmt.Sprint(r[s.idKey]) == id {
-			if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+			if scoped && tenantSlug != "" && tenantSlug != "*" {
 				rTenant := fmt.Sprint(r[s.tenantCol])
-				if rTenant != "" && rTenant != tenantSlug {
+				if (strict || rTenant != "") && rTenant != tenantSlug {
 					return fmt.Errorf("record with %s=%s not found", s.idKey, id)
 				}
 			}
 			for k, v := range data {
-				if k != s.idKey && (!s.tenantScoped || k != s.tenantCol) { // preserve immutable PK & tenant
+				if k != s.idKey && (!scoped || k != s.tenantCol) { // preserve immutable PK & tenant
 					s.rows[i][k] = v
 				}
 			}
@@ -200,19 +230,25 @@ func (s *MemoryStore) Update(ctx *Context, id string, data map[string]interface{
 
 // Delete removes a record identified by primary key ID and tenant scope.
 func (s *MemoryStore) Delete(ctx *Context, id string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	scoped := s.tenantScoped.Load()
+	strict := s.strictTenancy.Load()
 
 	tenantSlug := ""
 	if ctx != nil {
 		tenantSlug = ctx.TenantSlug
 	}
+	if scoped && strict && tenantSlug == "" {
+		return ErrTenantRequired
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	for i, r := range s.rows {
 		if fmt.Sprint(r[s.idKey]) == id {
-			if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+			if scoped && tenantSlug != "" && tenantSlug != "*" {
 				rTenant := fmt.Sprint(r[s.tenantCol])
-				if rTenant != "" && rTenant != tenantSlug {
+				if (strict || rTenant != "") && rTenant != tenantSlug {
 					return fmt.Errorf("record with %s=%s not found", s.idKey, id)
 				}
 			}

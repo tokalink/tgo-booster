@@ -35,7 +35,7 @@
           {{if eq .Type "dropdown"}}
             <div class="cb-nav-dropdown {{if .IsOpen}}open{{end}}" data-menu-id="{{.ID}}">
               <button type="button" class="cb-nav-item cb-nav-dropdown-toggle {{if .IsActive}}active{{end}}" onclick="toggleNavDropdown(this)">
-                <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+                <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
                 <span class="cb-nav-text">{{.Title}}</span>
                 {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
                 <svg class="cb-nav-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -45,7 +45,7 @@
               <div class="cb-nav-submenu" {{if .IsOpen}}style="display: flex;"{{end}}>
                 {{range .Children}}
                   <a href="{{.Path}}" {{if eq .Target "_blank"}}target="_blank" rel="noopener noreferrer"{{end}} class="cb-nav-item cb-nav-subitem {{if .IsActive}}active{{end}}">
-                    <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+                    <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
                     <span class="cb-nav-text">{{.Title}}</span>
                     {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
                   </a>
@@ -54,7 +54,7 @@
             </div>
           {{else}}
             <a href="{{.Path}}" {{if eq .Target "_blank"}}target="_blank" rel="noopener noreferrer"{{end}} class="cb-nav-item {{if .IsActive}}active{{end}}">
-              <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+              <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
               <span class="cb-nav-text">{{.Title}}</span>
               {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
             </a>
@@ -63,7 +63,7 @@
       {{else if eq .Type "dropdown"}}
         <div class="cb-nav-dropdown {{if .IsOpen}}open{{end}}" data-menu-id="{{.ID}}">
           <button type="button" class="cb-nav-item cb-nav-dropdown-toggle {{if .IsActive}}active{{end}}" onclick="toggleNavDropdown(this)">
-            <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+            <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
             <span class="cb-nav-text">{{.Title}}</span>
             {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
             <svg class="cb-nav-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -73,7 +73,7 @@
           <div class="cb-nav-submenu" {{if .IsOpen}}style="display: flex;"{{end}}>
             {{range .Children}}
               <a href="{{.Path}}" {{if eq .Target "_blank"}}target="_blank" rel="noopener noreferrer"{{end}} class="cb-nav-item cb-nav-subitem {{if .IsActive}}active{{end}}">
-                <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+                <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
                 <span class="cb-nav-text">{{.Title}}</span>
                 {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
               </a>
@@ -82,7 +82,7 @@
         </div>
       {{else}}
         <a href="{{.Path}}" {{if eq .Target "_blank"}}target="_blank" rel="noopener noreferrer"{{end}} class="cb-nav-item {{if .IsActive}}active{{end}}">
-          <span class="cb-nav-icon">{{.Icon | safeHTML}}</span>
+          <span class="cb-nav-icon">{{.Icon | safeIcon}}</span>
           <span class="cb-nav-text">{{.Title}}</span>
           {{if .Badge}}<span class="cb-nav-badge {{.BadgeColorClass}}">{{.Badge}}</span>{{end}}
         </a>

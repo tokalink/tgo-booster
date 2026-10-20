@@ -100,7 +100,13 @@ func init() {
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
 		},
-		"hasPrefix": strings.HasPrefix,
+		"safeSchemaJSON": func(s string) template.JS {
+			return template.JS(sanitizeSchemaJSON(s))
+		},
+		"safeIcon":     SanitizeIcon,
+		"safeRichHTML": SanitizeRichHTML,
+		"isChecked":    isChecked,
+		"hasPrefix":    strings.HasPrefix,
 	}
 
 	// 1. Load CSS from static/css/admin.css

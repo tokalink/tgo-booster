@@ -1059,6 +1059,7 @@ func TestAPIGeneratorAndPublicRESTFlow(t *testing.T) {
 		Title:        "Products",
 		Table:        "products",
 		DataProvider: productStore,
+		PublicAPI:    true,
 	}
 	engine.Register(pCtrl)
 	engine.Mount(server)

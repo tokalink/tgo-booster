@@ -3,12 +3,16 @@ package cb
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/tokalink/tgo/pkg/transport/middleware"
 )
@@ -49,17 +53,85 @@ type Controller struct {
 	HookRowListing   func(row map[string]interface{}) map[string]interface{}
 
 	// Custom Page & Action Overrides (CRUDBooster getIndex & getDetail equivalents)
-	GetIndex      func(w http.ResponseWriter, r *http.Request) bool
-	GetDetail     func(w http.ResponseWriter, r *http.Request, id string) bool
-	GetAdd        func(w http.ResponseWriter, r *http.Request) bool
-	GetEdit       func(w http.ResponseWriter, r *http.Request, id string) bool
+	GetIndex  func(w http.ResponseWriter, r *http.Request) bool
+	GetDetail func(w http.ResponseWriter, r *http.Request, id string) bool
+	GetAdd    func(w http.ResponseWriter, r *http.Request) bool
+	GetEdit   func(w http.ResponseWriter, r *http.Request, id string) bool
 	// HideFromMenu: controller tidak otomatis ditambahkan ke sidebar (mis. endpoint pencarian internal).
-	HideFromMenu bool
+	HideFromMenu  bool
 	CustomActions map[string]func(w http.ResponseWriter, r *http.Request, subPath string)
 
 	// SaaS Multi-Tenancy Scoping
 	TenantScoped         bool
 	TenantScopedExplicit bool
+
+	// Mass-assignment & Public REST security controls
+	WritableFields []string
+	PublicAPI      bool
+}
+
+// warnedEmptyWritable mencatat controller yang sudah diperingatkan (di luar struct agar Controller tetap aman disalin).
+var warnedEmptyWritable sync.Map
+
+// AllowFields registers additional column names that are permitted in create/edit/import/REST payloads
+// even if they are not present as editable fields in c.Forms.
+func (c *Controller) AllowFields(names ...string) *Controller {
+	for _, name := range names {
+		trimmed := strings.TrimSpace(name)
+		if trimmed != "" {
+			c.WritableFields = append(c.WritableFields, trimmed)
+		}
+	}
+	return c
+}
+
+// EnablePublicAPI explicitly opts this controller into the public /api/v1/{table} REST endpoints and OpenAPI spec.
+func (c *Controller) EnablePublicAPI() *Controller {
+	c.PublicAPI = true
+	return c
+}
+
+func (c *Controller) allowedWritableSet() map[string]bool {
+	allowed := make(map[string]bool)
+	for _, f := range c.Forms {
+		if !f.ReadOnly && f.Name != "" {
+			allowed[f.Name] = true
+		}
+	}
+	for _, name := range c.WritableFields {
+		if name != "" {
+			allowed[name] = true
+		}
+	}
+	return allowed
+}
+
+func (c *Controller) filterWritable(data map[string]interface{}) map[string]interface{} {
+	allowed := c.allowedWritableSet()
+	if len(allowed) == 0 {
+		if _, warned := warnedEmptyWritable.LoadOrStore(c, true); !warned {
+			log.Printf("[security] controller %q (table=%q) has no writable form fields or WritableFields; all incoming fields were rejected", c.Title, c.Table)
+		}
+		return make(map[string]interface{})
+	}
+	filtered := make(map[string]interface{}, len(data))
+	for k, v := range data {
+		if allowed[k] {
+			filtered[k] = v
+		}
+	}
+	return filtered
+}
+
+func isMaxBytesError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var maxBytesErr *http.MaxBytesError
+	if errors.As(err, &maxBytesErr) {
+		return true
+	}
+	return strings.Contains(err.Error(), "http: request body too large")
 }
 
 // SetTenantScoped explicitly configures tenant data isolation for this controller
@@ -326,6 +398,14 @@ func (c *Controller) initDefaults() {
 			memStore.SetTenantScoped(true)
 		}
 	}
+	if c.Engine != nil && c.Engine.StrictTenancy {
+		if sqlStore, ok := c.DataProvider.(*SQLStore); ok && sqlStore != nil {
+			sqlStore.SetStrictTenancy(true)
+		}
+		if memStore, ok := c.DataProvider.(*MemoryStore); ok && memStore != nil {
+			memStore.SetStrictTenancy(true)
+		}
+	}
 }
 
 // ServeHTTP handles all CRUD routing (Index, Data JSON, Add, Edit, Delete)
@@ -346,13 +426,13 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// RBAC Permission Check ala CRUDBooster
 	action := "read"
 	switch {
-	case path == "add" || path == "create":
+	case path == "add" || path == "create" || path == "import-csv":
 		action = "create"
 	case strings.HasPrefix(path, "edit/"):
 		action = "update"
 	case strings.HasPrefix(path, "delete/") || path == "bulk-action":
 		action = "delete"
-		case path == "save" || strings.HasPrefix(path, "save/"):
+	case path == "save" || strings.HasPrefix(path, "save/"):
 		action = "create"
 	}
 	// Aksi kustom bermetode tulis (void, reverse, lock, close-year, dst.) tidak boleh lolos sebagai "read".
@@ -619,7 +699,7 @@ func (c *Controller) handleEditHTML(w http.ResponseWriter, r *http.Request, id s
 		editForms[i] = f
 		if record != nil {
 			if val, ok := record[f.Name]; ok && val != nil {
-				editForms[i].Value = fmt.Sprint(val)
+				editForms[i].Value = formatFieldValue(f, val)
 			}
 		}
 	}
@@ -700,6 +780,185 @@ func (c *Controller) handleDataJSON(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(rows)
 }
 
+func isISODatePrefix(s string) bool {
+	if len(s) < 10 {
+		return false
+	}
+	for _, idx := range []int{0, 1, 2, 3, 5, 6, 8, 9} {
+		if s[idx] < '0' || s[idx] > '9' {
+			return false
+		}
+	}
+	return s[4] == '-' && s[7] == '-'
+}
+
+func formatFieldValue(f Field, v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	if b, ok := v.([]byte); ok {
+		v = string(b)
+	}
+	switch f.Type {
+	case InputDate:
+		switch tv := v.(type) {
+		case time.Time:
+			if tv.IsZero() {
+				return ""
+			}
+			return tv.Format("2006-01-02")
+		case *time.Time:
+			if tv == nil || tv.IsZero() {
+				return ""
+			}
+			return tv.Format("2006-01-02")
+		case string:
+			s := strings.TrimSpace(tv)
+			if isISODatePrefix(s) {
+				return s[:10]
+			}
+			return s
+		}
+	case InputDateTime:
+		switch tv := v.(type) {
+		case time.Time:
+			if tv.IsZero() {
+				return ""
+			}
+			return tv.Format("2006-01-02T15:04")
+		case *time.Time:
+			if tv == nil || tv.IsZero() {
+				return ""
+			}
+			return tv.Format("2006-01-02T15:04")
+		case string:
+			s := strings.TrimSpace(tv)
+			if len(s) >= 16 && isISODatePrefix(s) && (s[10] == 'T' || s[10] == ' ') && s[13] == ':' {
+				return s[:10] + "T" + s[11:16]
+			}
+			if parsed, err := time.Parse(time.RFC3339, s); err == nil {
+				return parsed.Format("2006-01-02T15:04")
+			}
+			return s
+		}
+	}
+	return fmt.Sprint(v)
+}
+
+func resolveCheckboxSubmitValue(f Field, oldVal interface{}, hasOld bool, checked bool) interface{} {
+	if len(f.Options) >= 2 {
+		if checked {
+			return f.Options[0].Value
+		}
+		return f.Options[1].Value
+	}
+	if hasOld && oldVal != nil {
+		if rawBytes, ok := oldVal.([]byte); ok {
+			oldVal = string(rawBytes)
+		}
+		switch ov := oldVal.(type) {
+		case bool:
+			return checked
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			if checked {
+				return 1
+			}
+			return 0
+		case string:
+			switch strings.ToLower(strings.TrimSpace(ov)) {
+			case "active", "inactive":
+				if checked {
+					return "Active"
+				}
+				return "Inactive"
+			case "true", "false", "t", "f":
+				if checked {
+					return "true"
+				}
+				return "false"
+			case "yes", "no":
+				if checked {
+					return "yes"
+				}
+				return "no"
+			case "y", "n":
+				if checked {
+					return "Y"
+				}
+				return "N"
+			case "1", "0":
+				if checked {
+					return "1"
+				}
+				return "0"
+			}
+		}
+	}
+	if checked {
+		return "1"
+	}
+	return "0"
+}
+
+func (c *Controller) normalizeSubmittedFormData(r *http.Request, data map[string]interface{}, oldRecord map[string]interface{}, isEdit bool) {
+	for _, f := range c.Forms {
+		if f.ReadOnly || f.Name == "" {
+			continue
+		}
+		switch f.Type {
+		case InputCheckbox:
+			checked := false
+			if vals, exists := r.PostForm[f.Name]; exists && len(vals) > 0 {
+				v := vals[0]
+				if len(f.Options) >= 2 && v == f.Options[0].Value {
+					checked = true
+				} else {
+					checked = isChecked(v)
+				}
+			}
+			var oldVal interface{}
+			hasOld := false
+			if isEdit && oldRecord != nil {
+				oldVal, hasOld = oldRecord[f.Name]
+			}
+			data[f.Name] = resolveCheckboxSubmitValue(f, oldVal, hasOld, checked)
+
+		case InputPassword:
+			if isEdit {
+				if val, exists := data[f.Name]; !exists || fmt.Sprint(val) == "" {
+					delete(data, f.Name)
+				}
+			}
+
+		case InputDate:
+			if val, exists := data[f.Name]; exists {
+				if s, ok := val.(string); ok && strings.TrimSpace(s) == "" {
+					data[f.Name] = nil
+				}
+			}
+
+		case InputDateTime:
+			if val, exists := data[f.Name]; exists {
+				if s, ok := val.(string); ok {
+					trimmed := strings.TrimSpace(s)
+					if trimmed == "" {
+						data[f.Name] = nil
+					} else if len(trimmed) == 16 && isISODatePrefix(trimmed) && trimmed[10] == 'T' && trimmed[13] == ':' {
+						data[f.Name] = trimmed[:10] + " " + trimmed[11:16] + ":00"
+					}
+				}
+			}
+
+		case InputWYSIWYG:
+			if val, exists := data[f.Name]; exists {
+				if s, ok := val.(string); ok {
+					data[f.Name] = string(SanitizeRichHTML(s))
+				}
+			}
+		}
+	}
+}
+
 func (c *Controller) handleCreateSubmit(w http.ResponseWriter, r *http.Request) {
 	_ = r.ParseForm()
 	data := make(map[string]interface{})
@@ -708,6 +967,9 @@ func (c *Controller) handleCreateSubmit(w http.ResponseWriter, r *http.Request) 
 			data[k] = v[0]
 		}
 	}
+
+	c.normalizeSubmittedFormData(r, data, nil, false)
+	data = c.filterWritable(data)
 
 	ctx := c.makeContext(r)
 	if c.HookBeforeAdd != nil {
@@ -753,6 +1015,16 @@ func (c *Controller) handleEditSubmit(w http.ResponseWriter, r *http.Request, id
 	}
 
 	ctx := c.makeContext(r)
+	var oldRecord map[string]interface{}
+	if c.DataProvider != nil {
+		if rec, err := c.DataProvider.FindByID(ctx, id); err == nil {
+			oldRecord = rec
+		}
+	}
+
+	c.normalizeSubmittedFormData(r, data, oldRecord, true)
+	data = c.filterWritable(data)
+
 	if c.HookBeforeEdit != nil {
 		if err := c.HookBeforeEdit(ctx, data); err != nil {
 			c.writeFormError(w, r, http.StatusBadRequest, "Isian belum valid", err.Error())
@@ -820,44 +1092,143 @@ func (c *Controller) handleDelete(w http.ResponseWriter, r *http.Request, id str
 }
 
 func (c *Controller) handleBulkAction(w http.ResponseWriter, r *http.Request) {
-	_ = r.ParseForm()
-	action := r.FormValue("action")
-	idsStr := r.FormValue("ids")
-	if idsStr == "" {
-		idsStr = r.URL.Query().Get("ids")
-	}
-	ids := strings.Split(idsStr, ",")
-
-	ctx := c.makeContext(r)
-	count := 0
-	for _, id := range ids {
-		id = strings.TrimSpace(id)
-		if id == "" {
-			continue
-		}
-		if action == "delete" {
-			if c.DataProvider != nil {
-				_ = c.DataProvider.Delete(ctx, id)
-				count++
-			}
-		}
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, `{"error":"Method not allowed"}`, http.StatusMethodNotAllowed)
+		return
 	}
 
-	if c.Engine != nil {
-		c.Engine.LogAudit(r, "BULK_DELETE", c.Title, fmt.Sprintf("Bulk processed %d records in %s (%s)", count, c.Title, action))
-	}
-
-	if r.Header.Get("Accept") == "application/json" || r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+	if c.Engine != nil && !c.Engine.CheckPermission(r, c.Table, "delete") {
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": true,
-			"action":  action,
-			"count":   count,
+			"success": false,
+			"error":   "Forbidden: insufficient delete privileges",
 		})
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("%s?alert=%s&alert_type=success", c.BasePath, url.QueryEscape(fmt.Sprintf("%d records processed successfully", count))), http.StatusSeeOther)
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	if err := r.ParseForm(); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		if isMaxBytesError(err) {
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   "Request body too large",
+			})
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Invalid form payload",
+		})
+		return
+	}
+
+	action := r.FormValue("action")
+	if action != "delete" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Unsupported bulk action",
+		})
+		return
+	}
+
+	idsStr := r.FormValue("ids")
+	if idsStr == "" {
+		idsStr = r.URL.Query().Get("ids")
+	}
+	rawIDs := strings.Split(idsStr, ",")
+	ids := make([]string, 0, len(rawIDs))
+	for _, raw := range rawIDs {
+		id := strings.TrimSpace(raw)
+		if id != "" {
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "No IDs specified",
+		})
+		return
+	}
+	if len(ids) > 1000 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"error":   "Too many IDs (maximum 1000)",
+		})
+		return
+	}
+
+	pk := c.PrimaryKey
+	if pk == "" {
+		pk = "id"
+	}
+
+	ctx := c.makeContext(r)
+	count := 0
+	failed := 0
+	firstErr := ""
+
+	for _, id := range ids {
+		hookPayload := map[string]interface{}{pk: id, "id": id}
+		if c.HookBeforeDelete != nil {
+			if err := c.HookBeforeDelete(ctx, hookPayload); err != nil {
+				failed++
+				if firstErr == "" {
+					firstErr = err.Error()
+				}
+				continue
+			}
+		}
+		if c.DataProvider != nil {
+			if err := c.DataProvider.Delete(ctx, id); err != nil {
+				failed++
+				if firstErr == "" {
+					firstErr = err.Error()
+				}
+				continue
+			}
+		}
+		if c.HookAfterDelete != nil {
+			_ = c.HookAfterDelete(ctx, hookPayload)
+		}
+		count++
+	}
+
+	if c.Engine != nil && count > 0 {
+		c.Engine.LogAudit(r, "BULK_DELETE", c.Title, fmt.Sprintf("Bulk processed %d records in %s (%s)", count, c.Title, action))
+	}
+
+	if !strings.Contains(r.Header.Get("Accept"), "application/json") && r.Header.Get("X-Requested-With") != "XMLHttpRequest" {
+		alertType, msg := "success", fmt.Sprintf("%d records processed successfully", count)
+		if failed > 0 {
+			alertType, msg = "error", fmt.Sprintf("%d records processed, %d failed: %s", count, failed, firstErr)
+		}
+		http.Redirect(w, r, fmt.Sprintf("%s?alert=%s&alert_type=%s", c.BasePath, url.QueryEscape(msg), alertType), http.StatusSeeOther)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	resp := map[string]interface{}{
+		"success": failed == 0,
+		"action":  action,
+		"count":   count,
+		"failed":  failed,
+	}
+	if failed > 0 {
+		resp["error"] = firstErr
+	}
+	_ = json.NewEncoder(w).Encode(resp)
 }
 
 func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id string) {
@@ -881,6 +1252,22 @@ func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id
 		return
 	}
 
+	pk := c.PrimaryKey
+	if pk == "" {
+		pk = "id"
+	}
+	recID := id
+	if rawID, ok := record[pk]; ok && rawID != nil {
+		if s := fmt.Sprint(rawID); s != "" && s != "<nil>" {
+			recID = s
+		}
+	}
+
+	safeTitle := template.HTMLEscapeString(c.Title)
+	safeRecID := template.HTMLEscapeString(recID)
+	safeBasePath := template.HTMLEscapeString(c.BasePath)
+	safeEditHref := template.HTMLEscapeString(c.BasePath + "/edit/" + url.PathEscape(recID))
+
 	html := fmt.Sprintf(`
 		<div class="cb-card" style="max-width: 760px; margin: 0 auto;">
 			<div class="cb-card-header">
@@ -895,7 +1282,7 @@ func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
 						<span>Back</span>
 					</a>
-					<a href="%s/edit/%s" class="btn btn-primary btn-sm">
+					<a href="%s" class="btn btn-primary btn-sm">
 						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
 						<span>Edit Record</span>
 					</a>
@@ -903,7 +1290,7 @@ func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id
 			</div>
 			<table class="detail-table" style="width: 100%%;">
 				<tbody>
-	`, c.Title, id, c.BasePath, c.BasePath, id)
+	`, safeTitle, safeRecID, safeBasePath, safeEditHref)
 
 	for _, col := range c.Columns {
 		val := record[col.Name]
@@ -916,7 +1303,7 @@ func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id
 				<td class="dt-label">%s</td>
 				<td class="dt-val">%s</td>
 			</tr>
-		`, col.Label, template.HTMLEscapeString(valStr))
+		`, template.HTMLEscapeString(col.Label), template.HTMLEscapeString(valStr))
 	}
 
 	html += `
@@ -925,7 +1312,7 @@ func (c *Controller) handleDetailHTML(w http.ResponseWriter, r *http.Request, id
 		</div>
 	`
 
-	c.Engine.RenderLayout(w, r, c.Title+" #"+id, template.HTML(html))
+	c.Engine.RenderLayout(w, r, c.Title+" #"+recID, template.HTML(html))
 }
 
 func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
@@ -939,11 +1326,23 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const maxImportBytes = 10 << 20
+	const maxImportRows = 5000
+	r.Body = http.MaxBytesReader(w, r.Body, maxImportBytes)
+
 	var rows []map[string]interface{}
 
 	if strings.Contains(r.Header.Get("Content-Type"), "multipart/form-data") {
-		if err := r.ParseMultipartForm(32 << 20); err != nil {
+		if err := r.ParseMultipartForm(maxImportBytes); err != nil {
 			w.Header().Set("Content-Type", "application/json")
+			if isMaxBytesError(err) {
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV file exceeds 10 MiB limit",
+				})
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
@@ -967,6 +1366,14 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 		headers, err := reader.Read()
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
+			if isMaxBytesError(err) {
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV file exceeds 10 MiB limit",
+				})
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
@@ -980,6 +1387,15 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 			if err == io.EOF {
 				break
 			}
+			if isMaxBytesError(err) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV file exceeds 10 MiB limit",
+				})
+				return
+			}
 			if err != nil {
 				continue
 			}
@@ -987,10 +1403,21 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 			for i, h := range headers {
 				if i < len(record) {
 					key := strings.TrimSpace(h)
-					row[key] = record[i]
+					if key != "" {
+						row[key] = record[i]
+					}
 				}
 			}
 			rows = append(rows, row)
+			if len(rows) > maxImportRows {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV import exceeds maximum of 5000 rows",
+				})
+				return
+			}
 		}
 	} else {
 		var payload struct {
@@ -998,10 +1425,35 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			w.Header().Set("Content-Type", "application/json")
+			if isMaxBytesError(err) {
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV import payload exceeds 10 MiB limit",
+				})
+				return
+			}
+			if _, copyErr := io.Copy(io.Discard, r.Body); isMaxBytesError(copyErr) {
+				w.WriteHeader(http.StatusRequestEntityTooLarge)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "CSV import payload exceeds 10 MiB limit",
+				})
+				return
+			}
 			w.WriteHeader(http.StatusBadRequest)
 			_ = json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
 				"error":   "Invalid CSV import payload: " + err.Error(),
+			})
+			return
+		}
+		if len(payload.Rows) > maxImportRows {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   "CSV import exceeds maximum of 5000 rows",
 			})
 			return
 		}
@@ -1011,10 +1463,14 @@ func (c *Controller) handleImportCSV(w http.ResponseWriter, r *http.Request) {
 	ctx := c.makeContext(r)
 	successCount := 0
 	for _, row := range rows {
+		row = c.filterWritable(row)
 		if c.HookBeforeAdd != nil {
 			if err := c.HookBeforeAdd(ctx, row); err != nil {
 				continue
 			}
+		}
+		if len(row) == 0 {
+			continue
 		}
 		if c.DataProvider != nil {
 			if err := c.DataProvider.Create(ctx, row); err == nil {
@@ -1048,4 +1504,3 @@ func (c *Controller) AutoMigrate() error {
 	}
 	return nil
 }
-

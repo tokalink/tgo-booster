@@ -21,10 +21,10 @@
       {{range .MenuItems}}
         {{if eq .Type "dropdown"}}
           {{range .Children}}
-            <a href="{{.Path}}" class="cmd-item">{{.Icon | safeHTML}} {{.Title}}</a>
+            <a href="{{.Path}}" class="cmd-item">{{.Icon | safeIcon}} {{.Title}}</a>
           {{end}}
         {{else if ne .Type "header"}}
-          <a href="{{.Path}}" class="cmd-item">{{.Icon | safeHTML}} {{.Title}}</a>
+          <a href="{{.Path}}" class="cmd-item">{{.Icon | safeIcon}} {{.Title}}</a>
         {{end}}
       {{end}}
     </div>

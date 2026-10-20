@@ -41,7 +41,7 @@
   <!-- Structured Data JSON-LD -->
   {{if .SchemaJSON}}
   <script type="application/ld+json">
-{{.SchemaJSON | safeHTML}}
+{{.SchemaJSON | safeSchemaJSON}}
   </script>
   {{end}}
 

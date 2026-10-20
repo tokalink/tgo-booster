@@ -52,7 +52,7 @@
             <button type="button" class="btn-tb" onclick="execWYSIWYG('wysiwyg_editor_{{.Name}}', 'removeFormat')" title="Clear Formatting">🧹</button>
             <button type="button" class="btn-tb btn-tb-mode" onclick="toggleWYSIWYGSource('wysiwyg_box_{{.Name}}', 'wysiwyg_editor_{{.Name}}', 'wysiwyg_raw_{{.Name}}', 'wysiwyg_input_{{.Name}}')" title="Toggle HTML Code">‹/› Code</button>
           </div>
-          <div class="cb-wysiwyg-editor" id="wysiwyg_editor_{{.Name}}" contenteditable="true" oninput="syncWYSIWYG('wysiwyg_editor_{{.Name}}', 'wysiwyg_input_{{.Name}}')" placeholder="{{.Placeholder}}">{{if .Value}}{{.Value | safeHTML}}{{end}}</div>
+          <div class="cb-wysiwyg-editor" id="wysiwyg_editor_{{.Name}}" contenteditable="true" oninput="syncWYSIWYG('wysiwyg_editor_{{.Name}}', 'wysiwyg_input_{{.Name}}')" placeholder="{{.Placeholder}}">{{if .Value}}{{.Value | safeRichHTML}}{{end}}</div>
           <textarea class="cb-wysiwyg-raw" id="wysiwyg_raw_{{.Name}}" style="display: none;" oninput="syncWYSIWYGRaw('wysiwyg_raw_{{.Name}}', 'wysiwyg_editor_{{.Name}}', 'wysiwyg_input_{{.Name}}')">{{.Value}}</textarea>
         </div>
       {{else if eq .Type "select"}}
@@ -84,7 +84,7 @@
         </div>
       {{else if eq .Type "checkbox"}}
         <label class="cb-toggle-switch">
-          <input type="checkbox" name="{{.Name}}" value="Active" {{if or (eq .Value "Active") (eq .Value "1") (eq .Value "true")}}checked{{end}}>
+          <input type="checkbox" name="{{.Name}}" value="1" {{if isChecked .Value}}checked{{end}}>
           <span class="cb-toggle-slider"></span>
           <span class="cb-toggle-label">{{if .Placeholder}}{{.Placeholder}}{{else}}Enable {{.Label}}{{end}}</span>
         </label>
@@ -371,7 +371,14 @@
 
     const tbody = document.getElementById('lovTableBody');
     if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Memuat data...</td></tr>';
+      tbody.textContent = '';
+      const loadingTr = document.createElement('tr');
+      const loadingTd = document.createElement('td');
+      loadingTd.colSpan = 3;
+      loadingTd.style.cssText = 'text-align: center; padding: 2rem; color: var(--text-muted);';
+      loadingTd.textContent = 'Memuat data...';
+      loadingTr.appendChild(loadingTd);
+      tbody.appendChild(loadingTr);
     }
     const modal = document.getElementById('lovModal');
     if (modal) modal.style.display = 'flex';
@@ -390,7 +397,16 @@
           .then(r => r.json())
           .then(rows => renderLOVRows(rows, labelCol, keyCol))
           .catch(err => {
-            if (tbody) tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--danger);">Gagal memuat data: ' + err + '</td></tr>';
+            if (tbody) {
+              tbody.textContent = '';
+              const errTr = document.createElement('tr');
+              const errTd = document.createElement('td');
+              errTd.colSpan = 3;
+              errTd.style.cssText = 'text-align: center; color: var(--danger);';
+              errTd.textContent = 'Gagal memuat data: ' + (err && err.message ? err.message : String(err));
+              errTr.appendChild(errTd);
+              tbody.appendChild(errTr);
+            }
           });
       });
   }
@@ -398,48 +414,75 @@
   function renderLOVRows(rows, labelCol, keyCol) {
     const tbody = document.getElementById('lovTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '';
+    tbody.textContent = '';
     if (!rows || rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 1.5rem; color: var(--text-dim);">Tidak ada rekaman ditemukan</td></tr>';
+      const emptyTr = document.createElement('tr');
+      const emptyTd = document.createElement('td');
+      emptyTd.colSpan = 3;
+      emptyTd.style.cssText = 'text-align: center; padding: 1.5rem; color: var(--text-dim);';
+      emptyTd.textContent = 'Tidak ada rekaman ditemukan';
+      emptyTr.appendChild(emptyTd);
+      tbody.appendChild(emptyTr);
       return;
     }
     const isCode = keyCol.toLowerCase().includes('code') || keyCol.toLowerCase().includes('kode') || keyCol.toLowerCase().includes('acc');
     rows.forEach(row => {
       const tr = document.createElement('tr');
-      const keyVal = row[keyCol] || row['id'] || '';
-      const labelVal = row[labelCol] || row['name'] || row['title'] || keyVal;
-      
-      const badgeHtml = isCode 
-        ? '<span class="badge badge-primary font-mono" style="font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;">' + keyVal + '</span>'
-        : '<span class="cell-id">#' + keyVal + '</span>';
+      const keyVal = String(row[keyCol] ?? row['id'] ?? '');
+      const labelVal = String(row[labelCol] ?? row['name'] ?? row['title'] ?? keyVal);
 
-      const rowJson = encodeURIComponent(JSON.stringify(row));
-      
-      tr.innerHTML = '<td>' + badgeHtml + '</td>' +
-        '<td><strong>' + labelVal + '</strong></td>' +
-        '<td style="text-align: right;"><button type="button" class="btn btn-primary btn-sm" onclick="selectLOVItem(\'' + keyVal + '\', \'' + encodeURIComponent(labelVal) + '\', \'' + rowJson + '\')">Pilih</button></td>';
+      const tdKey = document.createElement('td');
+      const badgeSpan = document.createElement('span');
+      if (isCode) {
+        badgeSpan.className = 'badge badge-primary font-mono';
+        badgeSpan.style.cssText = 'font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;';
+        badgeSpan.textContent = keyVal;
+      } else {
+        badgeSpan.className = 'cell-id';
+        badgeSpan.textContent = '#' + keyVal;
+      }
+      tdKey.appendChild(badgeSpan);
+
+      const tdLabel = document.createElement('td');
+      const strongEl = document.createElement('strong');
+      strongEl.textContent = labelVal;
+      tdLabel.appendChild(strongEl);
+
+      const tdAction = document.createElement('td');
+      tdAction.style.textAlign = 'right';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-primary btn-sm';
+      btn.textContent = 'Pilih';
+      btn.addEventListener('click', () => selectLOVItem(keyVal, labelVal, row));
+      tdAction.appendChild(btn);
+
+      tr.appendChild(tdKey);
+      tr.appendChild(tdLabel);
+      tr.appendChild(tdAction);
       tbody.appendChild(tr);
     });
   }
 
-  function selectLOVItem(val, encodedLabel, rawRowJson) {
-    const label = decodeURIComponent(encodedLabel);
-    let row = {};
-    if (rawRowJson) {
-      try { row = JSON.parse(decodeURIComponent(rawRowJson)); } catch(e){}
+  function selectLOVItem(keyVal, labelVal, rowObj) {
+    const val = String(keyVal ?? '');
+    const label = String(labelVal ?? '');
+    let row = (rowObj && typeof rowObj === 'object') ? rowObj : {};
+    if (typeof rowObj === 'string' && rowObj) {
+      try { row = JSON.parse(decodeURIComponent(rowObj)); } catch(e){}
     }
     
     let displayText = label;
     if (currentLOVFormat) {
       displayText = currentLOVFormat
         .replace(/\{(\w+)\}/g, (match, k) => {
-          if (row[k] !== undefined) return row[k];
+          if (row[k] !== undefined && row[k] !== null) return String(row[k]);
           if (k === currentLOVKeyCol || k === 'key' || k === 'code' || k === 'id') return val;
           if (k === currentLOVLabelCol || k === 'name' || k === 'label') return label;
           return match;
         })
         .replace(/\[(\w+)\]/g, (match, k) => {
-          if (row[k] !== undefined) return row[k];
+          if (row[k] !== undefined && row[k] !== null) return String(row[k]);
           if (k === currentLOVKeyCol || k === 'key' || k === 'code' || k === 'id') return val;
           if (k === currentLOVLabelCol || k === 'name' || k === 'label') return label;
           return match;

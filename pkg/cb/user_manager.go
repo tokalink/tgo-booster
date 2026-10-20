@@ -650,11 +650,30 @@ func (um *UserManager) NewDataProvider() DataProvider {
 	return &UserDataProvider{manager: um}
 }
 
+func (udp *UserDataProvider) isActorSuperadmin(u *User) bool {
+	if u == nil {
+		return false
+	}
+	if udp.manager != nil && udp.manager.engine != nil {
+		return udp.manager.engine.IsUserSuperadmin(u)
+	}
+	return u.PrivilegeID == "1" ||
+		strings.EqualFold(u.RoleName, "Super Admin") ||
+		strings.EqualFold(u.RoleName, "Super Administrator") ||
+		strings.EqualFold(u.RoleName, "Superadmin") ||
+		strings.EqualFold(u.RoleName, "Admin") ||
+		strings.EqualFold(u.RoleName, "Administrator")
+}
+
 func (udp *UserDataProvider) FindAll(ctx *Context) ([]map[string]interface{}, error) {
 	users := udp.manager.GetAllUsers()
-	out := make([]map[string]interface{}, len(users))
-	for i, u := range users {
-		out[i] = map[string]interface{}{
+	filterForNonSuper := ctx != nil && ctx.User != nil && !udp.isActorSuperadmin(ctx.User)
+	out := make([]map[string]interface{}, 0, len(users))
+	for _, u := range users {
+		if filterForNonSuper && u.ID != ctx.User.ID && udp.checkTargetForNonSuper(ctx.User, u) != nil {
+			continue
+		}
+		out = append(out, map[string]interface{}{
 			"id":         u.ID,
 			"avatar":     u.Avatar,
 			"name":       u.Name,
@@ -664,7 +683,7 @@ func (udp *UserDataProvider) FindAll(ctx *Context) ([]map[string]interface{}, er
 			"status":     u.Status,
 			"tenants":    strings.Join(u.Tenants, ", "),
 			"created_at": u.CreatedAt,
-		}
+		})
 	}
 	return out, nil
 }
@@ -673,6 +692,11 @@ func (udp *UserDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 	u := udp.manager.FindByID(id)
 	if u == nil {
 		return nil, errors.New("user not found")
+	}
+	if ctx != nil && ctx.User != nil && !udp.isActorSuperadmin(ctx.User) {
+		if u.ID != ctx.User.ID && udp.checkTargetForNonSuper(ctx.User, u) != nil {
+			return nil, errors.New("user not found")
+		}
 	}
 	return map[string]interface{}{
 		"id":         u.ID,

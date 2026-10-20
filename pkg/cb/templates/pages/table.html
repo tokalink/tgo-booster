@@ -10,7 +10,7 @@
   <div class="cb-stat-card {{.GetSizeClass}}" style="grid-column: span {{.GetColSpan}}; {{if .Style}}{{.Style}}{{end}}">
     <div class="stat-card-header">
       <div class="cb-stat-icon stat-{{if .Color}}{{.Color}}{{else}}blue{{end}}">
-        {{if .Icon}}{{.Icon | safeHTML}}{{else}}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>{{end}}
+        {{if .Icon}}{{.Icon | safeIcon}}{{else}}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>{{end}}
       </div>
       {{if .Trend}}
       <span class="cb-trend-badge {{if .TrendType}}{{.TrendType}}{{else}}positive{{end}}">{{.Trend}}</span>
@@ -67,7 +67,7 @@
       <!-- Custom Top Actions (index_button) -->
       {{range .TopActions}}
       <a href="{{if .URL}}{{.URL}}{{else}}javascript:void(0){{end}}" {{if .OnClick}}onclick="{{.OnClick}}"{{end}} {{if .Target}}target="{{.Target}}"{{end}} class="btn {{if .Class}}{{.Class}}{{else}}btn-secondary{{end}} btn-sm">
-        {{if .Icon}}{{.Icon | safeHTML}}{{end}}
+        {{if .Icon}}{{.Icon | safeIcon}}{{end}}
         <span>{{.Label}}</span>
       </a>
       {{end}}
@@ -170,7 +170,7 @@
                 <!-- Custom Row Actions (addaction) -->
                 {{range $.RowActions}}
                   <a href="{{if .URL}}{{printf .URL $rowID}}{{else}}javascript:void(0){{end}}" {{if .OnClick}}onclick="{{printf .OnClick $rowID}}"{{end}} {{if .Target}}target="{{.Target}}"{{end}} class="btn-action {{if .Color}}btn-action-{{.Color}}{{end}}" title="{{.Label}}">
-                    {{if .Icon}}{{.Icon | safeHTML}}{{else}}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>{{end}}
+                    {{if .Icon}}{{.Icon | safeIcon}}{{else}}<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>{{end}}
                   </a>
                 {{end}}
               </div>
@@ -674,8 +674,28 @@
 
       const previewTable = document.getElementById('csvPreviewTable');
       if (previewTable) {
-        previewTable.innerHTML = '<thead><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead>' +
-          '<tbody>' + parsedImportRows.slice(0, 5).map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody>';
+        previewTable.textContent = '';
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        headers.forEach(h => {
+          const th = document.createElement('th');
+          th.textContent = h;
+          headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        previewTable.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        parsedImportRows.slice(0, 5).forEach(r => {
+          const tr = document.createElement('tr');
+          r.forEach(c => {
+            const td = document.createElement('td');
+            td.textContent = c;
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        previewTable.appendChild(tbody);
+
       }
 
       document.getElementById('csvPreviewArea').style.display = 'block';

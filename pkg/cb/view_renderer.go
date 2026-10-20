@@ -19,11 +19,17 @@ func DefaultFuncMap() template.FuncMap {
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
 		},
-		"hasPrefix": strings.HasPrefix,
-		"hasSuffix": strings.HasSuffix,
-		"contains":  strings.Contains,
-		"toUpper":   strings.ToUpper,
-		"toLower":   strings.ToLower,
+		"safeSchemaJSON": func(s string) template.JS {
+			return template.JS(sanitizeSchemaJSON(s))
+		},
+		"safeIcon":     SanitizeIcon,
+		"safeRichHTML": SanitizeRichHTML,
+		"isChecked":    isChecked,
+		"hasPrefix":    strings.HasPrefix,
+		"hasSuffix":    strings.HasSuffix,
+		"contains":     strings.Contains,
+		"toUpper":      strings.ToUpper,
+		"toLower":      strings.ToLower,
 	}
 }
 

@@ -8,8 +8,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
+
+// ErrTenantRequired dikembalikan bila operasi pada store ber-tenant dijalankan tanpa tenant saat StrictTenancy aktif.
+var ErrTenantRequired = errors.New("tenant tidak ditentukan")
 
 // SQLDB is a type alias for *sql.DB
 type SQLDB = sql.DB
@@ -17,12 +21,13 @@ type SQLDB = sql.DB
 // SQLStore is a multi-dialect SQL DataProvider supporting MySQL, SQLite, and PostgreSQL.
 // It supports native SaaS row-level multi-tenancy with automatic column injection and filtering.
 type SQLStore struct {
-	db           *sql.DB
-	tableName    string
-	idKey        string
-	driver       string
-	tenantScoped bool
-	tenantCol    string
+	db            *sql.DB
+	tableName     string
+	idKey         string
+	driver        string
+	tenantScoped  atomic.Bool
+	strictTenancy atomic.Bool
+	tenantCol     string
 }
 
 // NewSQLStore creates a new SQL DataProvider for the specified table and primary key.
@@ -57,18 +62,22 @@ func (s *SQLStore) SetDriver(driver string) *SQLStore {
 
 // SetTenantScoped configures whether this table isolates records by tenant ID (defaults to "tenant_id")
 func (s *SQLStore) SetTenantScoped(scoped bool, col ...string) *SQLStore {
-	s.tenantScoped = scoped
+	s.tenantScoped.Store(scoped)
 	if len(col) > 0 && col[0] != "" {
 		s.tenantCol = col[0]
-	} else if s.tenantCol == "" {
-		s.tenantCol = "tenant_id"
 	}
+	return s
+}
+
+// SetStrictTenancy configures whether operations without an active tenant are rejected when tenant-scoped
+func (s *SQLStore) SetStrictTenancy(strict bool) *SQLStore {
+	s.strictTenancy.Store(strict)
 	return s
 }
 
 // IsTenantScoped returns true if the store enforces tenant isolation
 func (s *SQLStore) IsTenantScoped() bool {
-	return s.tenantScoped
+	return s.tenantScoped.Load()
 }
 
 // TenantCol returns the column name used for tenant isolation (default: "tenant_id")
@@ -104,7 +113,10 @@ func (s *SQLStore) resolveTenant(ctx *Context) string {
 			return ctx.TenantSlug
 		}
 	}
-	if s.tenantScoped {
+	if s.tenantScoped.Load() {
+		if s.strictTenancy.Load() {
+			return ""
+		}
 		return "default"
 	}
 	return ""
@@ -127,7 +139,7 @@ func (s *SQLStore) withTx(ctx *Context, fn func(tx *sql.Tx) error) error {
 	defer tx.Rollback()
 
 	tenant := s.resolveTenant(ctx)
-	if s.isPostgres() && s.tenantScoped && tenant != "" && tenant != "*" {
+	if s.isPostgres() && s.tenantScoped.Load() && tenant != "" && tenant != "*" {
 		if _, err := tx.ExecContext(cCtx, "SELECT set_config('app.tenant_id', $1, true)", tenant); err != nil {
 			return err
 		}
@@ -142,12 +154,16 @@ func (s *SQLStore) withTx(ctx *Context, fn func(tx *sql.Tx) error) error {
 
 // FindAll returns all records ordered by primary key descending, scoped by tenant if enabled
 func (s *SQLStore) FindAll(ctx *Context) ([]map[string]interface{}, error) {
+	scoped := s.tenantScoped.Load()
 	tenantSlug := s.resolveTenant(ctx)
+	if scoped && tenantSlug == "" {
+		return nil, ErrTenantRequired
+	}
 
 	var query string
 	var args []interface{}
 
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		col := s.TenantCol()
 		if s.isPostgres() {
 			query = fmt.Sprintf("SELECT * FROM %s WHERE %s = $1 ORDER BY %s DESC", s.tableName, col, s.idKey)
@@ -223,12 +239,16 @@ func (s *SQLStore) FindAll(ctx *Context) ([]map[string]interface{}, error) {
 
 // FindByID retrieves a single row matching primary key ID and tenant scope
 func (s *SQLStore) FindByID(ctx *Context, id string) (map[string]interface{}, error) {
+	scoped := s.tenantScoped.Load()
 	tenantSlug := s.resolveTenant(ctx)
+	if scoped && tenantSlug == "" {
+		return nil, ErrTenantRequired
+	}
 
 	var query string
 	var args []interface{}
 
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		col := s.TenantCol()
 		if s.isPostgres() {
 			query = fmt.Sprintf("SELECT * FROM %s WHERE %s = $1 AND %s = $2 LIMIT 1", s.tableName, s.idKey, col)
@@ -314,9 +334,13 @@ func validateColumns(data map[string]interface{}) error {
 
 // Create inserts a new row into the table, automatically injecting the tenant ID if scoped
 func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
+	scoped := s.tenantScoped.Load()
 	tenantSlug := s.resolveTenant(ctx)
+	if scoped && tenantSlug == "" {
+		return ErrTenantRequired
+	}
 
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		col := s.TenantCol()
 		data[col] = tenantSlug
 	}
@@ -389,7 +413,11 @@ func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
 
 // Update modifies an existing row identified by primary key ID and tenant scope
 func (s *SQLStore) Update(ctx *Context, id string, data map[string]interface{}) error {
+	scoped := s.tenantScoped.Load()
 	tenantSlug := s.resolveTenant(ctx)
+	if scoped && tenantSlug == "" {
+		return ErrTenantRequired
+	}
 	col := s.TenantCol()
 
 	if err := validateColumns(data); err != nil {
@@ -401,7 +429,7 @@ func (s *SQLStore) Update(ctx *Context, id string, data map[string]interface{}) 
 
 	idx := 1
 	for k, v := range data {
-		if k == s.idKey || (s.tenantScoped && k == col) {
+		if k == s.idKey || (scoped && k == col) {
 			continue // Do not update primary key or tenant column
 		}
 		if s.isPostgres() {
@@ -419,7 +447,7 @@ func (s *SQLStore) Update(ctx *Context, id string, data map[string]interface{}) 
 
 	values = append(values, id)
 	var query string
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		values = append(values, tenantSlug)
 		if s.isPostgres() {
 			query = fmt.Sprintf("UPDATE %s SET %s WHERE %s = $%d AND %s = $%d",
@@ -472,13 +500,17 @@ func (s *SQLStore) Update(ctx *Context, id string, data map[string]interface{}) 
 
 // Delete removes a row identified by primary key ID and tenant scope
 func (s *SQLStore) Delete(ctx *Context, id string) error {
+	scoped := s.tenantScoped.Load()
 	tenantSlug := s.resolveTenant(ctx)
+	if scoped && tenantSlug == "" {
+		return ErrTenantRequired
+	}
 	col := s.TenantCol()
 
 	var query string
 	var args []interface{}
 
-	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
+	if scoped && tenantSlug != "" && tenantSlug != "*" {
 		if s.isPostgres() {
 			query = fmt.Sprintf("DELETE FROM %s WHERE %s = $1 AND %s = $2", s.tableName, s.idKey, col)
 		} else {
@@ -556,7 +588,7 @@ func (s *SQLStore) AutoMigrate(fields ...Field) error {
 	}
 
 	// Add tenant isolation column if tenant-scoped
-	if s.tenantScoped {
+	if s.tenantScoped.Load() {
 		col := s.TenantCol()
 		hasTenantCol := false
 		for _, f := range fields {
@@ -575,7 +607,7 @@ func (s *SQLStore) AutoMigrate(fields ...Field) error {
 	}
 
 	for _, f := range fields {
-		if f.Name == "" || f.Name == s.idKey || (s.tenantScoped && f.Name == s.TenantCol()) {
+		if f.Name == "" || f.Name == s.idKey || (s.tenantScoped.Load() && f.Name == s.TenantCol()) {
 			continue
 		}
 
@@ -634,7 +666,7 @@ func (s *SQLStore) AutoMigrate(fields ...Field) error {
 	}
 
 	// Ensure tenant column exists and is indexed if tenant-scoped
-	if s.tenantScoped {
+	if s.tenantScoped.Load() {
 		col := s.TenantCol()
 		var alterQuery string
 		if s.driver == "mysql" {

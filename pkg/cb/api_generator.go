@@ -289,6 +289,9 @@ func (e *Engine) DiscoverAPIEndpoints() []APIEndpointInfo {
 	}
 
 	for _, c := range e.controllers {
+		if !c.PublicAPI {
+			continue
+		}
 		mod := c.Table
 		title := c.Title
 		if title == "" {
@@ -494,6 +497,9 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 
 	// Dynamic handler for /api/v1/{module} and /api/v1/{module}/{id}
 	for _, c := range e.controllers {
+		if !c.PublicAPI {
+			continue
+		}
 		mod := c.Table
 		ctrl := c
 
@@ -501,6 +507,7 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 
 		// Handler for collection (/api/v1/products) and item (/api/v1/products/)
 		handler := withCORS(func(w http.ResponseWriter, r *http.Request) {
+			ctrl.initDefaults()
 			w.Header().Set("Content-Type", "application/json")
 
 			// Extract token from Authorization header or X-API-Key or query string
@@ -534,6 +541,15 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 				_ = json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": false,
 					"error":   errMsg,
+				})
+				return
+			}
+
+			if e.StrictTenancy && ctrl.IsTenantScoped() && (tok == nil || strings.TrimSpace(tok.Tenant) == "") {
+				w.WriteHeader(http.StatusForbidden)
+				_ = json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"error":   "token API tidak terikat tenant",
 				})
 				return
 			}
@@ -613,14 +629,34 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 				})
 
 			case http.MethodPost:
+				r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 				var payload map[string]interface{}
 				if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+					if isMaxBytesError(err) {
+						w.WriteHeader(http.StatusRequestEntityTooLarge)
+						_ = json.NewEncoder(w).Encode(map[string]interface{}{
+							"success": false,
+							"error":   "Request body exceeds 1 MiB limit",
+						})
+						return
+					}
 					w.WriteHeader(http.StatusBadRequest)
 					_ = json.NewEncoder(w).Encode(map[string]interface{}{
 						"success": false,
 						"error":   "Invalid JSON request body: " + err.Error(),
 					})
 					return
+				}
+				payload = ctrl.filterWritable(payload)
+				if ctrl.HookBeforeAdd != nil {
+					if err := ctrl.HookBeforeAdd(reqCtx, payload); err != nil {
+						w.WriteHeader(http.StatusBadRequest)
+						_ = json.NewEncoder(w).Encode(map[string]interface{}{
+							"success": false,
+							"error":   err.Error(),
+						})
+						return
+					}
 				}
 				if err := ctrl.DataProvider.Create(reqCtx, payload); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
@@ -629,6 +665,9 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 						"error":   "Failed to persist item: " + err.Error(),
 					})
 					return
+				}
+				if ctrl.HookAfterAdd != nil {
+					_ = ctrl.HookAfterAdd(reqCtx, payload)
 				}
 				w.WriteHeader(http.StatusCreated)
 				_ = json.NewEncoder(w).Encode(map[string]interface{}{
@@ -646,14 +685,34 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 					})
 					return
 				}
+				r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 				var payload map[string]interface{}
 				if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+					if isMaxBytesError(err) {
+						w.WriteHeader(http.StatusRequestEntityTooLarge)
+						_ = json.NewEncoder(w).Encode(map[string]interface{}{
+							"success": false,
+							"error":   "Request body exceeds 1 MiB limit",
+						})
+						return
+					}
 					w.WriteHeader(http.StatusBadRequest)
 					_ = json.NewEncoder(w).Encode(map[string]interface{}{
 						"success": false,
 						"error":   "Invalid JSON request body: " + err.Error(),
 					})
 					return
+				}
+				payload = ctrl.filterWritable(payload)
+				if ctrl.HookBeforeEdit != nil {
+					if err := ctrl.HookBeforeEdit(reqCtx, payload); err != nil {
+						w.WriteHeader(http.StatusBadRequest)
+						_ = json.NewEncoder(w).Encode(map[string]interface{}{
+							"success": false,
+							"error":   err.Error(),
+						})
+						return
+					}
 				}
 				if err := ctrl.DataProvider.Update(reqCtx, subPath, payload); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
@@ -662,6 +721,9 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 						"error":   "Failed to update item: " + err.Error(),
 					})
 					return
+				}
+				if ctrl.HookAfterEdit != nil {
+					_ = ctrl.HookAfterEdit(reqCtx, payload)
 				}
 				_ = json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": true,
@@ -678,6 +740,21 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 					})
 					return
 				}
+				pk := ctrl.PrimaryKey
+				if pk == "" {
+					pk = "id"
+				}
+				hookPayload := map[string]interface{}{pk: subPath, "id": subPath}
+				if ctrl.HookBeforeDelete != nil {
+					if err := ctrl.HookBeforeDelete(reqCtx, hookPayload); err != nil {
+						w.WriteHeader(http.StatusBadRequest)
+						_ = json.NewEncoder(w).Encode(map[string]interface{}{
+							"success": false,
+							"error":   err.Error(),
+						})
+						return
+					}
+				}
 				if err := ctrl.DataProvider.Delete(reqCtx, subPath); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					_ = json.NewEncoder(w).Encode(map[string]interface{}{
@@ -685,6 +762,9 @@ func (e *Engine) registerPublicAPIRoutes(server connect.Server) {
 						"error":   "Failed to delete item: " + err.Error(),
 					})
 					return
+				}
+				if ctrl.HookAfterDelete != nil {
+					_ = ctrl.HookAfterDelete(reqCtx, hookPayload)
 				}
 				_ = json.NewEncoder(w).Encode(map[string]interface{}{
 					"success": true,
