@@ -318,9 +318,7 @@ func (s *SQLStore) Create(ctx *Context, data map[string]interface{}) error {
 
 	if s.tenantScoped && tenantSlug != "" && tenantSlug != "*" {
 		col := s.TenantCol()
-		if val, ok := data[col]; !ok || fmt.Sprint(val) == "" {
-			data[col] = tenantSlug
-		}
+		data[col] = tenantSlug
 	}
 
 	if err := validateColumns(data); err != nil {

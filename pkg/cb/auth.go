@@ -1,7 +1,6 @@
 package cb
 
 import (
-	"log"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -9,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -22,9 +22,10 @@ const SessionCookieName = "cb_session_token"
 // hmacSessionSecret: rahasia penandatangan sesi. WAJIB diganti lewat SetSessionSecret di aplikasi nyata;
 // nilai bawaan hanya untuk pengujian/pengembangan lokal dan memicu peringatan di log.
 var (
-	hmacSessionSecret   = []byte("tgo-booster-dev-only-session-secret-change-me")
-	sessionSecretCustom bool
-	sessionSecretMu     sync.RWMutex
+	hmacSessionSecret     = []byte("tgo-booster-dev-only-session-secret-change-me")
+	sessionSecretCustom   bool
+	sessionSecretMu       sync.RWMutex
+	sessionSecretWarnOnce sync.Once
 )
 
 // SetSessionSecret mengganti rahasia penandatangan sesi (minimal 32 byte).
@@ -92,7 +93,17 @@ func verifySessionSignature(payload, signature string) bool {
 	return verifySessionSignatureRaw(payload, signature)
 }
 
+// insecureSessionSecret: true bila APP_ENV=production tetapi rahasia sesi masih bawaan. Dalam keadaan ini sesi tidak
+// dibuat maupun diterima (cookie bisa dipalsukan siapa pun yang tahu nilai bawaan). Aplikasi boleh memasang rahasia
+// sesudah Mount; pemeriksaan ini terjadi saat sesi dipakai.
+func insecureSessionSecret() bool {
+	return SessionSecretIsDefault() && strings.EqualFold(os.Getenv("APP_ENV"), "production")
+}
+
 func verifySessionSignatureRaw(payload, signature string) bool {
+	if insecureSessionSecret() {
+		return false
+	}
 	expectedSig := signSessionPayload(payload)
 	return hmac.Equal([]byte(expectedSig), []byte(signature))
 }
@@ -253,6 +264,10 @@ func (a *AuthManager) renderLogin(w http.ResponseWriter, errMsg, defaultEmail st
 
 // SetSessionUser issues an HMAC-SHA256 signed session cookie
 func (a *AuthManager) SetSessionUser(w http.ResponseWriter, user *User) {
+	if insecureSessionSecret() {
+		log.Printf("[SECURITY] sesi tidak dibuat: APP_ENV=production tetapi rahasia sesi masih bawaan (atur APP_SESSION_SECRET / SetSessionSecret)")
+		return
+	}
 	if user.CreatedAt.IsZero() {
 		user.CreatedAt = time.Now()
 	}
@@ -304,17 +319,32 @@ func (a *AuthManager) GetSessionUser(r *http.Request) *User {
 			if a.StrictSessions {
 				return nil
 			}
-		case strings.EqualFold(acc.Status, "Suspended") && a.StrictSessions:
+		case strings.EqualFold(acc.Status, "Suspended"):
 			return nil
 		case acc.SessionsValidFrom != "":
 			if from, err := time.Parse(time.RFC3339, acc.SessionsValidFrom); err == nil && user.CreatedAt.Before(from) {
 				return nil
 			}
 		}
-		// Daftar tenant selalu dari akun terbaru, bukan salinan di cookie: mencabut workspace berlaku
-		// seketika tanpa menunggu sesi kedaluwarsa.
+		// Identitas, peran, dan daftar tenant selalu diambil dari akun terbaru, bukan salinan di cookie:
+		// perubahan peran/pencabutan workspace berlaku seketika tanpa menunggu sesi kedaluwarsa.
 		if acc != nil {
+			user.PrivilegeID = acc.RoleID
+			user.RoleName = acc.Role
+			user.Name = acc.Name
+			user.Email = acc.Email
 			user.Tenants = append([]string(nil), acc.Tenants...)
+			// Pratinjau peran hanya untuk akun yang benar-benar superadmin.
+			if user.SwitchedRole != "" {
+				if a.Engine.IsUserSuperadmin(&user) {
+					if role := a.Engine.FindRole(user.SwitchedRole); role != nil {
+						user.PrivilegeID = role.ID
+						user.RoleName = role.Name
+					}
+				} else {
+					user.SwitchedRole = ""
+				}
+			}
 		}
 	}
 	return &user

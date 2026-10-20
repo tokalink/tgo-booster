@@ -1,7 +1,6 @@
 package cb
 
 import (
-	"sync"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -12,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/tokalink/tgo/pkg/transport/connect"
@@ -23,7 +23,7 @@ type Engine struct {
 	// DisablePublicPages mematikan semua halaman publik (landing/CMS di "/", /p/…, /page/…). Bawaan false (hidup).
 	// Bila true, ServePublicPage tidak melayani apa pun sehingga aplikasi bisa langsung mengarahkan ke halaman login.
 	// Dapat juga dimatikan lewat pengaturan (AppSettings.DisablePublicPages) tanpa menyentuh kode.
-	DisablePublicPages  bool
+	DisablePublicPages bool
 	// StrictRoleResolution: bila resolver peran terpasang (SetRoleResolver) dan mengembalikan "" (bukan anggota
 	// tenant ini), pengguna NON-superadmin tidak mendapat peran global akunnya sebagai cadangan (akses ditolak).
 	// Bawaan false (perilaku lama).
@@ -159,7 +159,7 @@ func (e *Engine) AddCustomPage(path, title, icon string, handler func(w http.Res
 
 	// Register on server if server is already running/mounted
 	if e.server != nil {
-		e.registerCustomAdminPage(e.server, page)
+		e.registerCustomAdminPage(&adminServerAdapter{Server: e.server, engine: e}, page)
 	}
 	return e
 }
@@ -354,6 +354,19 @@ func (e *Engine) Mount(server connect.Server, prefix ...string) {
 		e.Auth.AdminPath = e.AdminPath
 	}
 
+	if SessionSecretIsDefault() {
+		if sec := os.Getenv("APP_SESSION_SECRET"); len(sec) >= 32 {
+			_ = SetSessionSecret([]byte(sec))
+		}
+	}
+	if SessionSecretIsDefault() {
+		// Tidak panic: aplikasi boleh memasang rahasia sesudah Mount (SetSessionSecret). Selama masih bawaan di
+		// production, sesi ditolak (lihat insecureSessionSecret).
+		sessionSecretWarnOnce.Do(func() {
+			log.Printf("[SECURITY] rahasia sesi masih bawaan saat Mount; atur APP_SESSION_SECRET atau panggil SetSessionSecret (di production sesi ditolak sampai diatur)")
+		})
+	}
+
 	// Restore previously generated dynamic modules, roles, menus, and pages from persistent storage
 	e.LoadDynamicModules()
 	e.LoadDynamicRoles()
@@ -361,37 +374,39 @@ func (e *Engine) Mount(server connect.Server, prefix ...string) {
 	e.LoadDynamicPages()
 	e.LoadDynamicTokens()
 
+	adminSrv := &adminServerAdapter{Server: server, engine: e}
+
 	// 1. Auth routes
-	server.Register(e.AdminPath+"/login", http.HandlerFunc(e.Auth.ServeLogin))
-	server.Register(e.AdminPath+"/login/2fa", http.HandlerFunc(e.Auth.ServeLogin2FA))
-	server.Register(e.AdminPath+"/logout", http.HandlerFunc(e.Auth.ServeLogout))
+	adminSrv.Register(e.AdminPath+"/login", http.HandlerFunc(e.Auth.ServeLogin))
+	adminSrv.Register(e.AdminPath+"/login/2fa", http.HandlerFunc(e.Auth.ServeLogin2FA))
+	adminSrv.Register(e.AdminPath+"/logout", http.HandlerFunc(e.Auth.ServeLogout))
 
 	// 2. Dashboard route
-	server.Register(e.AdminPath, e.Dashboard)
-	server.Register(e.AdminPath+"/", e.Dashboard)
+	adminSrv.Register(e.AdminPath, e.Dashboard)
+	adminSrv.Register(e.AdminPath+"/", e.Dashboard)
 
 	// 3. Register all CRUD module controllers
 	for _, ctrl := range e.controllers {
 		ctrl.BasePath = fmt.Sprintf("%s/%s", e.AdminPath, ctrl.Table)
-		server.Register(ctrl.BasePath, ctrl)
-		server.Register(ctrl.BasePath+"/", ctrl)
+		adminSrv.Register(ctrl.BasePath, ctrl)
+		adminSrv.Register(ctrl.BasePath+"/", ctrl)
 	}
 
 	// 4. Built-in Booster Studio Tools
-	e.mountSystemTools(server)
+	e.mountSystemTools(adminSrv)
 
 	// 5. Public REST & ConnectRPC API Endpoints (/api/v1/...)
 	e.registerPublicAPIRoutes(server)
 
 	// 6. LOV Modal & Dynamic Relation API
-	server.Register(e.AdminPath+"/api/lov", http.HandlerFunc(e.handleLOVAPI))
+	adminSrv.Register(e.AdminPath+"/api/lov", http.HandlerFunc(e.handleLOVAPI))
 
 	// 7. Register Public Custom Page Routes
 	e.RegisterPageRoutes(server)
 
 	// 8. Register Standalone Custom Admin Pages
 	for _, cp := range e.customAdminPages {
-		e.registerCustomAdminPage(server, cp)
+		e.registerCustomAdminPage(adminSrv, cp)
 	}
 }
 
@@ -631,8 +646,8 @@ func (e *Engine) RegisterDynamic(c *Controller) *Engine {
 	}
 
 	if e.server != nil {
-		e.server.Register(c.BasePath, c)
-		e.server.Register(c.BasePath+"/", c)
+		e.server.Register(c.BasePath, e.requireSession(c))
+		e.server.Register(c.BasePath+"/", e.requireSession(c))
 	}
 	return e
 }
@@ -1440,7 +1455,7 @@ func (e *Engine) FindRole(key string) *Role {
 // IsUserSuperadmin checks if the current user possesses unrestricted administrator status
 func (e *Engine) IsUserSuperadmin(user *User) bool {
 	if user == nil {
-		return true
+		return false
 	}
 	if role := e.FindRole(user.PrivilegeID); role != nil {
 		return role.IsSuperadmin
@@ -1466,7 +1481,7 @@ func (e *Engine) CheckPermission(r *http.Request, moduleTable, action string) bo
 	}
 	user := e.Auth.GetSessionUser(r)
 	if user == nil {
-		return true
+		return false
 	}
 	if e.IsUserSuperadmin(user) {
 		return true
@@ -1719,9 +1734,14 @@ func (e *Engine) handlePrivileges(w http.ResponseWriter, r *http.Request) {
 		if user == nil {
 			user = &User{ID: "1", Name: "Admin User", Email: "admin@tgo.io"}
 		}
-		user.PrivilegeID = target.ID
-		user.RoleName = target.Name
-		e.Auth.SetSessionUser(w, user)
+		switched := *user
+		switched.SwitchedRole = target.ID
+		if target.IsSuperadmin {
+			switched.SwitchedRole = ""
+		}
+		switched.PrivilegeID = target.ID
+		switched.RoleName = target.Name
+		e.Auth.SetSessionUser(w, &switched)
 		e.LogAudit(r, "ROLE_SWITCH", "Privileges", fmt.Sprintf("User switched active session role to '%s'", target.Name))
 
 		w.Header().Set("Content-Type", "application/json")

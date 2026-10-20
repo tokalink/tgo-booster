@@ -387,6 +387,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// POST /admin/settings/test-mail -> Diagnostic email test
 	server.Register(settingsPath+"/test-mail", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -413,6 +416,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// POST /admin/settings/test-ai -> Test OpenAI/DeepSeek connection & latency
 	server.Register(settingsPath+"/test-ai", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -429,18 +435,16 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 		apiKey := strings.TrimSpace(req.APIKey)
 		model := strings.TrimSpace(req.Model)
 
-		// If payload didn't specify values, fallback to configured settings/env
-		if host == "" || apiKey == "" || model == "" {
-			cfgHost, cfgKey, cfgModel := e.GetAIConfig()
-			if host == "" {
-				host = cfgHost
-			}
-			if apiKey == "" {
-				apiKey = cfgKey
-			}
-			if model == "" {
-				model = cfgModel
-			}
+		// Kunci tersimpan hanya dipakai untuk host terkonfigurasi.
+		cfgHost, cfgKey, cfgModel := e.GetAIConfig()
+		if host == "" {
+			host = cfgHost
+		}
+		if apiKey == "" && host == cfgHost {
+			apiKey = cfgKey
+		}
+		if model == "" {
+			model = cfgModel
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -474,6 +478,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// POST /admin/settings/models -> Fetch live list of models from OpenAI-compatible endpoint
 	server.Register(settingsPath+"/models", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		var req struct {
 			Host   string `json:"host"`
 			APIKey string `json:"api_key"`
@@ -485,14 +492,13 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 		host := strings.TrimSpace(req.Host)
 		apiKey := strings.TrimSpace(req.APIKey)
 
-		if host == "" || apiKey == "" {
-			cfgHost, cfgKey, _ := e.GetAIConfig()
-			if host == "" {
-				host = cfgHost
-			}
-			if apiKey == "" {
-				apiKey = cfgKey
-			}
+		// Kunci tersimpan hanya dipakai untuk host terkonfigurasi.
+		cfgHost, cfgKey, _ := e.GetAIConfig()
+		if host == "" {
+			host = cfgHost
+		}
+		if apiKey == "" && host == cfgHost {
+			apiKey = cfgKey
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -527,6 +533,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// POST /admin/settings/clear-cache -> Flush caches & trigger GC
 	server.Register(settingsPath+"/clear-cache", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -543,6 +552,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// POST /admin/settings/reset -> Restore defaults
 	server.Register(settingsPath+"/reset", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -568,6 +580,9 @@ func (e *Engine) registerSettingsRoutes(server connect.Server) {
 
 	// GET /admin/settings/api/system-info -> Live telemetry
 	server.Register(settingsPath+"/api/system-info", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		diag := e.collectSystemDiagnostics()
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(diag)

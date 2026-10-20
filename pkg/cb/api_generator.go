@@ -88,7 +88,7 @@ func (e *Engine) LoadDynamicTokens() []*APIToken {
 		}
 		return e.apiTokens
 	}
-	if len(raw) == 0 {
+	if len(strings.TrimSpace(string(raw))) == 0 {
 		e.apiTokens = make([]*APIToken, 0)
 		return e.apiTokens
 	}
@@ -100,6 +100,9 @@ func (e *Engine) LoadDynamicTokens() []*APIToken {
 			e.apiTokens = make([]*APIToken, 0)
 		}
 		return e.apiTokens
+	}
+	if list == nil {
+		list = make([]*APIToken, 0)
 	}
 
 	for _, t := range list {
@@ -872,6 +875,9 @@ func (e *Engine) registerAPIGeneratorRoutes(server connect.Server) {
 
 	// GET /admin/api_generator/openapi.json -> Download OpenAPI spec
 	server.Register(studioPath+"/openapi.json", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		spec := e.GenerateOpenAPISpec()
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Content-Disposition", "attachment; filename=\"openapi.json\"")
@@ -880,6 +886,9 @@ func (e *Engine) registerAPIGeneratorRoutes(server connect.Server) {
 
 	// POST /admin/api_generator/test-request -> In-browser live endpoint tester
 	server.Register(studioPath+"/test-request", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !e.requireSuperadminJSON(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -901,30 +910,47 @@ func (e *Engine) registerAPIGeneratorRoutes(server connect.Server) {
 			return
 		}
 
+		req.Token = strings.TrimSpace(req.Token)
+		if req.Token == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   "API token is required",
+			})
+			return
+		}
+
+		targetURL := strings.TrimSpace(req.Path)
+		if !strings.HasPrefix(targetURL, "/api/") {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   "Path must start with /api/",
+			})
+			return
+		}
+
+		method := strings.ToUpper(strings.TrimSpace(req.Method))
+		switch method {
+		case http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete:
+		default:
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"error":   "Invalid HTTP method",
+			})
+			return
+		}
+
 		// Perform local in-process dispatch simulation
 		start := time.Now()
 
-		targetURL := req.Path
-		if !strings.HasPrefix(targetURL, "/") {
-			targetURL = "/" + targetURL
-		}
-
-		// If no token specified, use first active token
-		if req.Token == "" {
-			tokens := e.GetAPITokens()
-			for _, t := range tokens {
-				if t.Status == "active" {
-					req.Token = t.Token
-					break
-				}
-			}
-		}
-
 		var bodyReader = strings.NewReader(req.Payload)
-		httpReq, _ := http.NewRequest(req.Method, targetURL, bodyReader)
-		if req.Token != "" {
-			httpReq.Header.Set("Authorization", "Bearer "+req.Token)
-		}
+		httpReq, _ := http.NewRequest(method, targetURL, bodyReader)
+		httpReq.Header.Set("Authorization", "Bearer "+req.Token)
 		httpReq.Header.Set("Content-Type", "application/json")
 
 		// Create response recorder

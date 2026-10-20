@@ -513,8 +513,9 @@ func (um *UserManager) CreateUser(name, email, password, role, roleID, avatar, s
 	if status == "" {
 		status = "Active"
 	}
+	role = strings.TrimSpace(role)
 	if role == "" {
-		role = "Superadmin"
+		return nil, errors.New("role is required")
 	}
 	if avatar == "" {
 		avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
@@ -686,6 +687,48 @@ func (udp *UserDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 	}, nil
 }
 
+func (um *UserManager) isAccountSuperadmin(u *UserAccount) bool {
+	if u == nil {
+		return false
+	}
+	if u.RoleID == "1" ||
+		strings.EqualFold(u.Role, "Superadmin") ||
+		strings.EqualFold(u.Role, "Super Admin") ||
+		strings.EqualFold(u.Role, "Super Administrator") ||
+		strings.EqualFold(u.Role, "Admin") ||
+		strings.EqualFold(u.Role, "Administrator") {
+		return true
+	}
+	if um.engine != nil {
+		if r := um.engine.FindRole(u.RoleID); r != nil && r.IsSuperadmin {
+			return true
+		}
+		if r := um.engine.FindRole(u.Role); r != nil && r.IsSuperadmin {
+			return true
+		}
+	}
+	return false
+}
+
+func validateTenantsForNonSuper(actor *User, list []string) error {
+	for _, slug := range list {
+		if slug == "*" {
+			return errors.New("tidak boleh memberi akses semua tenant (*)")
+		}
+		allowed := false
+		for _, ut := range actor.Tenants {
+			if ut != "*" && strings.EqualFold(ut, slug) {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return fmt.Errorf("tidak berhak memberi akses tenant %s", slug)
+		}
+	}
+	return nil
+}
+
 func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) error {
 	name, _ := data["name"].(string)
 	email, _ := data["email"].(string)
@@ -693,6 +736,24 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 	role, _ := data["role"].(string)
 	avatar, _ := data["avatar"].(string)
 	status, _ := data["status"].(string)
+
+	var tenantList []string
+	if raw, ok := data["tenants"]; ok {
+		tenantList = parseTenantList(raw)
+	}
+
+	if ctx != nil && ctx.User != nil && (udp.manager.engine == nil || !udp.manager.engine.IsUserSuperadmin(ctx.User)) {
+		var r *Role
+		if udp.manager.engine != nil {
+			r = udp.manager.engine.FindRole(strings.TrimSpace(role))
+		}
+		if r == nil || r.IsSuperadmin {
+			return errors.New("tidak boleh memberi peran superadmin")
+		}
+		if err := validateTenantsForNonSuper(ctx.User, tenantList); err != nil {
+			return err
+		}
+	}
 
 	roleID := ""
 	if udp.manager.engine != nil {
@@ -706,10 +767,8 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 	if err != nil {
 		return err
 	}
-	if raw, ok := data["tenants"]; ok {
-		if list := parseTenantList(raw); len(list) > 0 {
-			return udp.manager.SetTenants(acc.ID, list, list[0])
-		}
+	if len(tenantList) > 0 {
+		return udp.manager.SetTenants(acc.ID, tenantList, tenantList[0])
 	}
 	return nil
 }
@@ -721,6 +780,35 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 	role, _ := data["role"].(string)
 	avatar, _ := data["avatar"].(string)
 	status, _ := data["status"].(string)
+
+	if ctx != nil && ctx.User != nil && (udp.manager.engine == nil || !udp.manager.engine.IsUserSuperadmin(ctx.User)) {
+		target := udp.manager.FindByID(id)
+		if target == nil {
+			return errors.New("user not found")
+		}
+		if err := udp.checkTargetForNonSuper(ctx.User, target); err != nil {
+			return err
+		}
+		roleKey := strings.TrimSpace(role)
+		if roleKey == "" { // UpdateUser mempertahankan peran lama bila role kosong
+			roleKey = target.Role
+			if roleKey == "" {
+				roleKey = target.RoleID
+			}
+		}
+		var r *Role
+		if udp.manager.engine != nil {
+			r = udp.manager.engine.FindRole(roleKey)
+		}
+		if r == nil || r.IsSuperadmin {
+			return errors.New("tidak boleh memberi peran superadmin")
+		}
+		if raw, ok := data["tenants"]; ok {
+			if err := validateTenantsForNonSuper(ctx.User, parseTenantList(raw)); err != nil {
+				return err
+			}
+		}
+	}
 
 	roleID := ""
 	if udp.manager.engine != nil {
@@ -771,7 +859,30 @@ func parseTenantList(v interface{}) []string {
 }
 
 func (udp *UserDataProvider) Delete(ctx *Context, id string) error {
+	if ctx != nil && ctx.User != nil && (udp.manager.engine == nil || !udp.manager.engine.IsUserSuperadmin(ctx.User)) {
+		if err := udp.checkTargetForNonSuper(ctx.User, udp.manager.FindByID(id)); err != nil {
+			return err
+		}
+	}
 	return udp.manager.DeleteUser(id)
+}
+
+// checkTargetForNonSuper: pengguna non-superadmin hanya boleh mengelola akun non-superadmin yang seluruh tenant-nya
+// juga miliknya (mencegah mengubah sandi/menghapus akun yang punya akses ke tenant lain).
+func (udp *UserDataProvider) checkTargetForNonSuper(actor *User, target *UserAccount) error {
+	if target == nil {
+		return errors.New("user not found")
+	}
+	if udp.manager.isAccountSuperadmin(target) {
+		return errors.New("tidak boleh mengubah akun superadmin")
+	}
+	if len(target.Tenants) == 0 {
+		return errors.New("tidak berhak mengelola akun ini")
+	}
+	if err := validateTenantsForNonSuper(actor, target.Tenants); err != nil {
+		return errors.New("tidak berhak mengelola akun di luar tenant Anda")
+	}
+	return nil
 }
 
 // SetTenants mengganti daftar tenant yang boleh diakses akun (dan tenant bawaan).

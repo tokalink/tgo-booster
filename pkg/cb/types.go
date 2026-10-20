@@ -130,6 +130,8 @@ type User struct {
 	RoleName     string    `json:"role_name"`
 	Tenants      []string  `json:"tenants,omitempty"`
 	ActiveTenant string    `json:"active_tenant,omitempty"`
+	// SwitchedRole: peran pratinjau pilihan superadmin (Privileges › switch). Hanya berlaku bila akun aslinya superadmin.
+	SwitchedRole string    `json:"switched_role,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
