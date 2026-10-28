@@ -2458,6 +2458,10 @@ func (e *Engine) buildActiveMenus(r *http.Request, currentPath string, user *Use
 	}
 
 	isItemPermitted := func(m *MenuItem) bool {
+		// Studio halaman tidak berguna saat halaman publik dimatikan: sembunyikan menunya.
+		if m.ID == "pages_studio" && e.PublicPagesDisabled() {
+			return false
+		}
 		if isSuper {
 			return true
 		}

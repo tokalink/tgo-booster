@@ -634,6 +634,10 @@ func (e *Engine) handlePages(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if e.PublicPagesDisabled() {
+		http.Redirect(w, r, e.AdminPath, http.StatusSeeOther)
+		return
+	}
 
 	// Compute statistics
 	totalCount := len(e.pages)

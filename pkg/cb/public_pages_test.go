@@ -31,3 +31,30 @@ func TestServePublicPageCanBeDisabled(t *testing.T) {
 		t.Fatal("pengaturan disable_public_pages: tidak boleh melayani halaman publik")
 	}
 }
+
+func TestPagesStudioMenuHiddenWhenPublicPagesDisabled(t *testing.T) {
+	t.Chdir(t.TempDir())
+	e := NewEngine("Uji")
+	e.initDefaultMenus()
+	has := func() bool {
+		req := httptest.NewRequest(http.MethodGet, "/admin", nil)
+		for _, m := range e.buildActiveMenus(req, "/admin", &User{RoleName: "superadmin"}) {
+			if m.ID == "pages_studio" {
+				return true
+			}
+			for _, c := range m.Children {
+				if c.ID == "pages_studio" {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	if !has() {
+		t.Skip("menu pages_studio tidak ada pada konfigurasi bawaan uji")
+	}
+	e.DisablePublicPages = true
+	if has() {
+		t.Fatal("menu Pages & SEO harus tersembunyi saat halaman publik dimatikan")
+	}
+}
