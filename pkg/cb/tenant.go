@@ -22,6 +22,7 @@ type Tenant struct {
 	Plan         string `json:"plan"`                // "Free", "Starter", "Pro", "Enterprise"
 	Status       string `json:"status"`              // "Active", "Suspended", "Trial"
 	OwnerEmail   string `json:"owner_email"`
+	Phone        string `json:"phone,omitempty"`
 	MaxUsers     int    `json:"max_users"`
 	MaxStorageMB int    `json:"max_storage_mb"`
 	CreatedAt    string `json:"created_at"`
@@ -284,6 +285,31 @@ func (tm *TenantManager) GetAvailableTenantsForUser(user *User) []*Tenant {
 	return filtered
 }
 
+// SetPhone mengatur nomor WhatsApp tenant berdasarkan slug (atau ID) dan menyimpannya ke docstore.
+func (tm *TenantManager) SetPhone(slug, phone string) error {
+	norm, err := NormalizePhone(phone)
+	if err != nil {
+		return err
+	}
+	tm.mu.Lock()
+	defer tm.mu.Unlock()
+
+	target := strings.ToLower(strings.TrimSpace(slug))
+	var found *Tenant
+	for _, t := range tm.tenants {
+		if strings.ToLower(strings.TrimSpace(t.Slug)) == target || t.ID == target {
+			found = t
+			break
+		}
+	}
+	if found == nil {
+		return errors.New("tenant not found")
+	}
+	found.Phone = norm
+	found.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	return tm.saveLocked()
+}
+
 // Save creates or updates a tenant
 func (tm *TenantManager) Save(t *Tenant) error {
 	tm.mu.Lock()
@@ -383,6 +409,7 @@ func (p *TenantDataProvider) FindAll(ctx *Context) ([]map[string]interface{}, er
 			"plan":           t.Plan,
 			"status":         t.Status,
 			"owner_email":    t.OwnerEmail,
+			"phone":          t.Phone,
 			"max_users":      t.MaxUsers,
 			"max_storage_mb": t.MaxStorageMB,
 			"created_at":     t.CreatedAt,
@@ -406,6 +433,7 @@ func (p *TenantDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 		"plan":           t.Plan,
 		"status":         t.Status,
 		"owner_email":    t.OwnerEmail,
+		"phone":          t.Phone,
 		"max_users":      t.MaxUsers,
 		"max_storage_mb": t.MaxStorageMB,
 		"created_at":     t.CreatedAt,
@@ -414,6 +442,15 @@ func (p *TenantDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 }
 
 func (p *TenantDataProvider) Create(ctx *Context, data map[string]interface{}) error {
+	phoneRaw := ""
+	if p, ok := data["phone"]; ok && p != nil {
+		phoneRaw = fmt.Sprint(p)
+	}
+	phone, err := NormalizePhone(phoneRaw)
+	if err != nil {
+		return err
+	}
+
 	t := &Tenant{
 		Name:         fmt.Sprint(data["name"]),
 		Slug:         fmt.Sprint(data["slug"]),
@@ -422,10 +459,11 @@ func (p *TenantDataProvider) Create(ctx *Context, data map[string]interface{}) e
 		Plan:         fmt.Sprint(data["plan"]),
 		Status:       fmt.Sprint(data["status"]),
 		OwnerEmail:   fmt.Sprint(data["owner_email"]),
+		Phone:        phone,
 		MaxUsers:     parseInt(data["max_users"], 10),
 		MaxStorageMB: parseInt(data["max_storage_mb"], 1024),
 	}
-	err := p.manager.Save(t)
+	err = p.manager.Save(t)
 	if err == nil {
 		data["id"] = t.ID
 	}
@@ -458,6 +496,13 @@ func (p *TenantDataProvider) Update(ctx *Context, id string, data map[string]int
 	}
 	if v, ok := data["owner_email"]; ok {
 		t.OwnerEmail = fmt.Sprint(v)
+	}
+	if v, ok := data["phone"]; ok {
+		phone, err := NormalizePhone(fmt.Sprint(v))
+		if err != nil {
+			return err
+		}
+		t.Phone = phone
 	}
 	if v, ok := data["max_users"]; ok {
 		t.MaxUsers = parseInt(v, t.MaxUsers)
@@ -499,6 +544,7 @@ func (tm *TenantManager) NewController() *Controller {
 		AddCol("ID", "id", ColText, false, true).
 		AddCol("Organization Name", "name", ColText, true, true).
 		AddCol("Workspace Slug", "slug", ColBadge, true, true).
+		AddCol("Nomor WhatsApp", "phone", ColText, true, true).
 		AddCol("Custom Domain", "domain", ColText, true, true).
 		AddCol("Subdomain", "subdomain", ColText, false, true).
 		AddCol("Plan Tier", "plan", ColBadge, false, true).
@@ -509,6 +555,7 @@ func (tm *TenantManager) NewController() *Controller {
 	ctrl.
 		AddForm("Organization Name", "name", InputText, true, "e.g. PT Kriva Solusi Digital").
 		AddForm("Workspace Slug", "slug", InputText, true, "e.g. kriva-solusi").
+		AddForm("Nomor WhatsApp", "phone", InputText, false, "e.g. +6281234567890 (opsional)").
 		AddForm("Custom Domain", "domain", InputText, false, "e.g. erp.client.com (Optional)").
 		AddForm("Subdomain Prefix", "subdomain", InputText, false, "e.g. client (Optional)").
 		AddSelect("Plan Tier", "plan", true, "Select plan...",

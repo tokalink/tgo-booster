@@ -214,6 +214,8 @@ func TestWave1_NilIsNotSuperadmin(t *testing.T) {
 func TestWave1_UsersModuleEscalationPrevention(t *testing.T) {
 	t.Chdir(t.TempDir())
 	e := NewEngine("Wave1 Users")
+	_ = e.TenantManager.Save(&Tenant{Name: "Toko A", Slug: "toko-a"})
+	_ = e.TenantManager.Save(&Tenant{Name: "Toko B", Slug: "toko-b"})
 	um := e.UserManager
 
 	// CreateUser dengan role kosong -> error

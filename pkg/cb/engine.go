@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -444,8 +445,9 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 			AddCol("Avatar", "avatar", ColImage, false, false).
 			AddCol("User Name", "name", ColText, true, true).
 			AddCol("Email Address", "email", ColEmail, true, true).
+			AddCol("Nomor WhatsApp", "phone", ColText, true, true).
 			AddCol("Privilege Role", "role", ColBadge, false, true).
-			AddCol("Workspaces", "tenants", ColText, false, false).
+			AddCol("Akun Pelanggan", "tenants", ColText, false, false).
 			AddCol("Status", "status", ColBadge, false, false).
 			AddCol("Registered At", "created_at", ColText, false, true)
 
@@ -464,10 +466,31 @@ func (e *Engine) mountSystemTools(server connect.Server) {
 		userCtrl.
 			AddForm("Full Name", "name", InputText, true, "e.g. John Doe").
 			AddForm("Email Address", "email", InputEmail, true, "admin@enterprise.com").
+			AddForm("Nomor WhatsApp", "phone", InputText, false, "e.g. +6281234567890 (opsional)").
 			AddForm("Profile Photo", "avatar", InputUpload, false, "").
 			AddForm("Password", "password", InputPassword, false, "Leave blank to keep current password").
 			AddSelect("Privilege Role", "role", true, "Select role...", roleOpts...).
-			AddForm("Workspaces", "tenants", InputText, false, "slug workspace, pisahkan koma (mis. toko-a, toko-b)").
+			AddMultiSelect("Akun Pelanggan", "tenants", false, func() []Option {
+				var all []*Tenant
+				if e.TenantManager != nil {
+					all = e.TenantManager.GetAll()
+				}
+				sort.Slice(all, func(i, j int) bool {
+					return strings.ToLower(all[i].Name) < strings.ToLower(all[j].Name)
+				})
+				opts := make([]Option, 0, len(all)+1)
+				opts = append(opts, Option{
+					Value: "*",
+					Label: "Semua akun — khusus superadmin",
+				})
+				for _, t := range all {
+					opts = append(opts, Option{
+						Value: t.Slug,
+						Label: fmt.Sprintf("%s (%s)", t.Name, t.Slug),
+					})
+				}
+				return opts
+			}).
 			AddSelect("Account Status", "status", true, "Select status...",
 				Option{Label: "Active", Value: "Active"},
 				Option{Label: "Suspended", Value: "Suspended"},

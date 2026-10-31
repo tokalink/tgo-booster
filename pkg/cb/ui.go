@@ -103,10 +103,11 @@ func init() {
 		"safeSchemaJSON": func(s string) template.JS {
 			return template.JS(sanitizeSchemaJSON(s))
 		},
-		"safeIcon":     SanitizeIcon,
-		"safeRichHTML": SanitizeRichHTML,
-		"isChecked":    isChecked,
-		"hasPrefix":    strings.HasPrefix,
+		"safeIcon":         SanitizeIcon,
+		"safeRichHTML":     SanitizeRichHTML,
+		"isChecked":        isChecked,
+		"isOptionSelected": isOptionSelected,
+		"hasPrefix":        strings.HasPrefix,
 	}
 
 	// 1. Load CSS from static/css/admin.css
@@ -459,4 +460,36 @@ func RenderDashboardContent(data map[string]interface{}) (template.HTML, error) 
 	var buf bytes.Buffer
 	execErr := tmpl.Execute(&buf, data)
 	return template.HTML(buf.String()), execErr
+}
+
+func isOptionSelected(currentVal interface{}, optVal string) bool {
+	if currentVal == nil {
+		return false
+	}
+	optVal = strings.TrimSpace(optVal)
+	if optVal == "" {
+		return false
+	}
+	switch v := currentVal.(type) {
+	case string:
+		parts := strings.Split(v, ",")
+		for _, p := range parts {
+			if strings.EqualFold(strings.TrimSpace(p), optVal) {
+				return true
+			}
+		}
+	case []string:
+		for _, s := range v {
+			if strings.EqualFold(strings.TrimSpace(s), optVal) {
+				return true
+			}
+		}
+	case []interface{}:
+		for _, item := range v {
+			if strings.EqualFold(strings.TrimSpace(fmt.Sprint(item)), optVal) {
+				return true
+			}
+		}
+	}
+	return false
 }

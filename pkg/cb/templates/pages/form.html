@@ -98,6 +98,26 @@
             </label>
           {{end}}
         </div>
+      {{else if eq .Type "multiselect"}}
+        <div class="cb-multiselect-wrap" id="ms_wrap_{{.Name}}">
+          <input type="hidden" name="__ms_present" value="{{.Name}}">
+          <div class="cb-search-wrap" style="width: 100%; margin-bottom: 0.5rem;">
+            <svg class="cb-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" class="cb-search cb-multiselect-search" placeholder="Cari..." onkeyup="filterMultiSelect(this, 'ms_list_{{.Name}}')" style="width: 100%;">
+          </div>
+          <div class="cb-multiselect-list" id="ms_list_{{.Name}}">
+            {{$fieldName := .Name}}
+            {{$currVal := .Value}}
+            {{range .Options}}
+              <label class="cb-multiselect-item">
+                <input type="checkbox" name="{{$fieldName}}" value="{{.Value}}" {{if isOptionSelected $currVal .Value}}checked{{end}}>
+                <span class="cb-multiselect-label">{{.Label}}</span>
+              </label>
+            {{else}}
+              <div class="cb-multiselect-empty">Tidak ada opsi tersedia</div>
+            {{end}}
+          </div>
+        </div>
       {{else if eq .Type "number"}}
         <input type="number" name="{{.Name}}" class="cb-input" placeholder="{{.Placeholder}}" value="{{.Value}}" {{if .Required}}required{{end}}>
       {{else if eq .Type "email"}}
@@ -214,6 +234,42 @@
     padding: 12px 14px;
     outline: none;
     resize: vertical;
+  }
+  .cb-multiselect-wrap {
+    width: 100%;
+  }
+  .cb-multiselect-list {
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cb-multiselect-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-main);
+  }
+  .cb-multiselect-item:hover {
+    background: var(--bg-subtle);
+  }
+  .cb-multiselect-item input[type="checkbox"] {
+    cursor: pointer;
+  }
+  .cb-multiselect-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
   }
 </style>
 
@@ -512,6 +568,17 @@
     const rows = document.querySelectorAll('#lovTableBody tr');
     rows.forEach(r => {
       r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function filterMultiSelect(searchInput, listId) {
+    const q = (searchInput.value || '').toLowerCase().trim();
+    const list = document.getElementById(listId);
+    if (!list) return;
+    const items = list.querySelectorAll('.cb-multiselect-item');
+    items.forEach(item => {
+      const label = item.textContent.toLowerCase();
+      item.style.display = label.includes(q) ? 'flex' : 'none';
     });
   }
 

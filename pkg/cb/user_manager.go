@@ -26,6 +26,7 @@ type UserAccount struct {
 	Email  string `json:"email"`
 	// Username: nama masuk opsional, unik se-platform (tanpa huruf besar, tanpa '@'). Login boleh memakai email atau username.
 	Username      string   `json:"username,omitempty"`
+	Phone         string   `json:"phone,omitempty"`
 	PasswordHash  string   `json:"password_hash"`
 	Salt          string   `json:"salt"`
 	RoleID        string   `json:"role_id"`
@@ -316,6 +317,30 @@ func (um *UserManager) SetUsername(id, username string) (string, error) {
 	}
 	target.Username = username
 	return username, um.saveUnlocked()
+}
+
+// SetPhone mengatur nomor WhatsApp akun pengguna berdasarkan email (atau ID) dan menyimpannya ke docstore.
+func (um *UserManager) SetPhone(email, phone string) error {
+	norm, err := NormalizePhone(phone)
+	if err != nil {
+		return err
+	}
+	um.mu.Lock()
+	defer um.mu.Unlock()
+
+	emailClean := strings.ToLower(strings.TrimSpace(email))
+	var target *UserAccount
+	for _, u := range um.users {
+		if strings.ToLower(strings.TrimSpace(u.Email)) == emailClean || u.ID == emailClean {
+			target = u
+			break
+		}
+	}
+	if target == nil {
+		return errors.New("user not found")
+	}
+	target.Phone = norm
+	return um.saveUnlocked()
 }
 
 // Authenticate verifies email or username and password against stored hash with rate limit checking
@@ -678,6 +703,7 @@ func (udp *UserDataProvider) FindAll(ctx *Context) ([]map[string]interface{}, er
 			"avatar":     u.Avatar,
 			"name":       u.Name,
 			"email":      u.Email,
+			"phone":      u.Phone,
 			"role":       u.Role,
 			"role_id":    u.RoleID,
 			"status":     u.Status,
@@ -703,6 +729,7 @@ func (udp *UserDataProvider) FindByID(ctx *Context, id string) (map[string]inter
 		"avatar":     u.Avatar,
 		"name":       u.Name,
 		"email":      u.Email,
+		"phone":      u.Phone,
 		"role":       u.Role,
 		"role_id":    u.RoleID,
 		"status":     u.Status,
@@ -734,6 +761,45 @@ func (um *UserManager) isAccountSuperadmin(u *UserAccount) bool {
 	return false
 }
 
+func (um *UserManager) isRoleNameOrIDSuperadmin(role string) bool {
+	rStr := strings.TrimSpace(role)
+	if rStr == "" {
+		return false
+	}
+	if um != nil && um.engine != nil {
+		// Peran yang tidak dikenal engine bukan superadmin (jangan menebak dari nama).
+		r := um.engine.FindRole(rStr)
+		return r != nil && r.IsSuperadmin
+	}
+	if rStr == "1" ||
+		strings.EqualFold(rStr, "Superadmin") ||
+		strings.EqualFold(rStr, "Super Admin") ||
+		strings.EqualFold(rStr, "Super Administrator") ||
+		strings.EqualFold(rStr, "Admin") ||
+		strings.EqualFold(rStr, "Administrator") {
+		return true
+	}
+	return false
+}
+
+func (udp *UserDataProvider) validateTenantList(tenantList []string, role string) error {
+	isSuperRole := udp.manager != nil && udp.manager.isRoleNameOrIDSuperadmin(role)
+	for _, slug := range tenantList {
+		if slug == "*" {
+			if !isSuperRole {
+				return errors.New("Akses semua akun (*) hanya untuk peran superadmin")
+			}
+			continue
+		}
+		if udp.manager != nil && udp.manager.engine != nil && udp.manager.engine.TenantManager != nil {
+			if udp.manager.engine.TenantManager.GetBySlug(slug) == nil {
+				return fmt.Errorf("Akun pelanggan %s tidak ditemukan", slug)
+			}
+		}
+	}
+	return nil
+}
+
 func validateTenantsForNonSuper(actor *User, list []string) error {
 	for _, slug := range list {
 		if slug == "*" {
@@ -761,8 +827,19 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 	avatar, _ := data["avatar"].(string)
 	status, _ := data["status"].(string)
 
+	phoneRaw := ""
+	if p, ok := data["phone"]; ok && p != nil {
+		phoneRaw = fmt.Sprint(p)
+	}
+	phone, err := NormalizePhone(phoneRaw)
+	if err != nil {
+		return err
+	}
+
 	var tenantList []string
+	hasTenants := false
 	if raw, ok := data["tenants"]; ok {
+		hasTenants = true
 		tenantList = parseTenantList(raw)
 	}
 
@@ -779,6 +856,12 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 		}
 	}
 
+	if hasTenants && len(tenantList) > 0 {
+		if err := udp.validateTenantList(tenantList, role); err != nil {
+			return err
+		}
+	}
+
 	roleID := ""
 	if udp.manager.engine != nil {
 		if r := udp.manager.engine.FindRole(role); r != nil {
@@ -790,6 +873,11 @@ func (udp *UserDataProvider) Create(ctx *Context, data map[string]interface{}) e
 	acc, err := udp.manager.CreateUser(name, email, password, role, roleID, avatar, status)
 	if err != nil {
 		return err
+	}
+	if phone != "" {
+		if err := udp.manager.SetPhone(acc.Email, phone); err != nil {
+			return err
+		}
 	}
 	if len(tenantList) > 0 {
 		return udp.manager.SetTenants(acc.ID, tenantList, tenantList[0])
@@ -805,20 +893,38 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 	avatar, _ := data["avatar"].(string)
 	status, _ := data["status"].(string)
 
-	if ctx != nil && ctx.User != nil && (udp.manager.engine == nil || !udp.manager.engine.IsUserSuperadmin(ctx.User)) {
-		target := udp.manager.FindByID(id)
-		if target == nil {
-			return errors.New("user not found")
+	target := udp.manager.FindByID(id)
+	if target == nil {
+		return errors.New("user not found")
+	}
+
+	roleKey := strings.TrimSpace(role)
+	if roleKey == "" { // UpdateUser mempertahankan peran lama bila role kosong
+		roleKey = target.Role
+		if roleKey == "" {
+			roleKey = target.RoleID
 		}
-		if err := udp.checkTargetForNonSuper(ctx.User, target); err != nil {
+	}
+
+	var tenantList []string
+	hasTenants := false
+	if raw, ok := data["tenants"]; ok {
+		hasTenants = true
+		tenantList = parseTenantList(raw)
+	}
+
+	var phoneToSet *string
+	if rawPhone, ok := data["phone"]; ok {
+		p, err := NormalizePhone(fmt.Sprint(rawPhone))
+		if err != nil {
 			return err
 		}
-		roleKey := strings.TrimSpace(role)
-		if roleKey == "" { // UpdateUser mempertahankan peran lama bila role kosong
-			roleKey = target.Role
-			if roleKey == "" {
-				roleKey = target.RoleID
-			}
+		phoneToSet = &p
+	}
+
+	if ctx != nil && ctx.User != nil && (udp.manager.engine == nil || !udp.manager.engine.IsUserSuperadmin(ctx.User)) {
+		if err := udp.checkTargetForNonSuper(ctx.User, target); err != nil {
+			return err
 		}
 		var r *Role
 		if udp.manager.engine != nil {
@@ -827,9 +933,23 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 		if r == nil || r.IsSuperadmin {
 			return errors.New("tidak boleh memberi peran superadmin")
 		}
-		if raw, ok := data["tenants"]; ok {
-			if err := validateTenantsForNonSuper(ctx.User, parseTenantList(raw)); err != nil {
+		if hasTenants {
+			if err := validateTenantsForNonSuper(ctx.User, tenantList); err != nil {
 				return err
+			}
+		}
+	}
+
+	if hasTenants {
+		if err := udp.validateTenantList(tenantList, roleKey); err != nil {
+			return err
+		}
+	} else {
+		if !udp.manager.isRoleNameOrIDSuperadmin(roleKey) {
+			for _, t := range target.Tenants {
+				if t == "*" {
+					return errors.New("Akses semua akun (*) hanya untuk peran superadmin")
+				}
 			}
 		}
 	}
@@ -845,13 +965,21 @@ func (udp *UserDataProvider) Update(ctx *Context, id string, data map[string]int
 	if err := udp.manager.UpdateUser(id, name, email, password, role, roleID, avatar, status); err != nil {
 		return err
 	}
-	if raw, ok := data["tenants"]; ok {
-		list := parseTenantList(raw)
-		def := ""
-		if len(list) > 0 {
-			def = list[0]
+	if phoneToSet != nil {
+		currEmail := email
+		if strings.TrimSpace(currEmail) == "" {
+			currEmail = target.Email
 		}
-		return udp.manager.SetTenants(id, list, def)
+		if err := udp.manager.SetPhone(currEmail, *phoneToSet); err != nil {
+			return err
+		}
+	}
+	if hasTenants {
+		def := ""
+		if len(tenantList) > 0 {
+			def = tenantList[0]
+		}
+		return udp.manager.SetTenants(id, tenantList, def)
 	}
 	return nil
 }

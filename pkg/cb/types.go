@@ -27,35 +27,36 @@ const (
 type InputType string
 
 const (
-	InputText     InputType = "text"
-	InputNumber   InputType = "number"
-	InputMoney    InputType = "money"
-	InputEmail    InputType = "email"
-	InputPassword InputType = "password"
-	InputTextarea InputType = "textarea"
-	InputWYSIWYG  InputType = "wysiwyg"
-	InputSelect   InputType = "select"
-	InputSelect2  InputType = "select2"
-	InputUpload   InputType = "upload"
-	InputDate     InputType = "date"
-	InputDateTime InputType = "datetime"
-	InputCheckbox InputType = "checkbox"
-	InputRadio    InputType = "radio"
-	InputHidden   InputType = "hidden"
-	InputLOV      InputType = "lov"
+	InputText        InputType = "text"
+	InputNumber      InputType = "number"
+	InputMoney       InputType = "money"
+	InputEmail       InputType = "email"
+	InputPassword    InputType = "password"
+	InputTextarea    InputType = "textarea"
+	InputWYSIWYG     InputType = "wysiwyg"
+	InputSelect      InputType = "select"
+	InputSelect2     InputType = "select2"
+	InputMultiSelect InputType = "multiselect"
+	InputUpload      InputType = "upload"
+	InputDate        InputType = "date"
+	InputDateTime    InputType = "datetime"
+	InputCheckbox    InputType = "checkbox"
+	InputRadio       InputType = "radio"
+	InputHidden      InputType = "hidden"
+	InputLOV         InputType = "lov"
 )
 
 // Column represents a Data Grid column
 type Column struct {
-	Label      string     `json:"label"`
-	Name       string     `json:"name"`
-	Type       ColumnType `json:"type"`
-	Searchable bool       `json:"searchable"`
-	Sortable   bool       `json:"sortable"`
-	Width      string     `json:"width,omitempty"`
-	JoinTable  string     `json:"join_table,omitempty"`
-	JoinKey    string     `json:"join_key,omitempty"`
-	JoinField  string     `json:"join_field,omitempty"`
+	Label      string                                                   `json:"label"`
+	Name       string                                                   `json:"name"`
+	Type       ColumnType                                               `json:"type"`
+	Searchable bool                                                     `json:"searchable"`
+	Sortable   bool                                                     `json:"sortable"`
+	Width      string                                                   `json:"width,omitempty"`
+	JoinTable  string                                                   `json:"join_table,omitempty"`
+	JoinKey    string                                                   `json:"join_key,omitempty"`
+	JoinField  string                                                   `json:"join_field,omitempty"`
 	Format     func(val interface{}, row map[string]interface{}) string `json:"-"`
 }
 
@@ -65,24 +66,28 @@ type Option struct {
 	Label string `json:"label"`
 }
 
+// FormField is an alias for Field
+type FormField = Field
+
 // Field represents a Form Input field
 type Field struct {
-	Label        string      `json:"label"`
-	Name         string      `json:"name"`
-	Type         InputType   `json:"type"`
-	Required     bool        `json:"required"`
-	Placeholder  string      `json:"placeholder,omitempty"`
-	DefaultValue string      `json:"default_value,omitempty"`
-	HelpText     string      `json:"help_text,omitempty"`
-	Options      []Option    `json:"options,omitempty"`
-	DataTable    string      `json:"datatable,omitempty"`     // e.g. "customers,name" or "categories,title,id"
-	DisplayValue string      `json:"display_value,omitempty"` // Resolved label for LOV
-	Format       string      `json:"format,omitempty"`        // e.g. "{code} - {name}" or "[code] - [name]"
-	DataQuery    string      `json:"data_query,omitempty"`
-	UploadPath   string      `json:"upload_path,omitempty"`
-	ReadOnly     bool        `json:"read_only,omitempty"`
-	Validation   string      `json:"validation,omitempty"`
-	Value        interface{} `json:"value,omitempty"`
+	Label        string          `json:"label"`
+	Name         string          `json:"name"`
+	Type         InputType       `json:"type"`
+	Required     bool            `json:"required"`
+	Placeholder  string          `json:"placeholder,omitempty"`
+	DefaultValue string          `json:"default_value,omitempty"`
+	HelpText     string          `json:"help_text,omitempty"`
+	Options      []Option        `json:"options,omitempty"`
+	OptionsFunc  func() []Option `json:"-"`
+	DataTable    string          `json:"datatable,omitempty"`     // e.g. "customers,name" or "categories,title,id"
+	DisplayValue string          `json:"display_value,omitempty"` // Resolved label for LOV
+	Format       string          `json:"format,omitempty"`        // e.g. "{code} - {name}" or "[code] - [name]"
+	DataQuery    string          `json:"data_query,omitempty"`
+	UploadPath   string          `json:"upload_path,omitempty"`
+	ReadOnly     bool            `json:"read_only,omitempty"`
+	Validation   string          `json:"validation,omitempty"`
+	Value        interface{}     `json:"value,omitempty"`
 }
 
 // MenuItem represents a dynamic sidebar menu item supporting groups and sub-menus
@@ -92,7 +97,7 @@ type MenuItem struct {
 	Type        string      `json:"type"` // "module", "url", "dropdown", "header"
 	Icon        string      `json:"icon"`
 	Path        string      `json:"path"`
-	Target      string      `json:"target,omitempty"`       // "_self", "_blank"
+	Target      string      `json:"target,omitempty"` // "_self", "_blank"
 	Badge       string      `json:"badge,omitempty"`
 	BadgeColor  string      `json:"badge_color,omitempty"` // "primary", "success", "warning", "danger", "purple"
 	ParentID    string      `json:"parent_id,omitempty"`
@@ -122,14 +127,15 @@ func (m MenuItem) BadgeColorClass() string {
 
 // User represents an authenticated admin user (cb_users)
 type User struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Email       string    `json:"email"`
-	Photo       string    `json:"photo"`
-	PrivilegeID string    `json:"privilege_id"`
-	RoleName     string    `json:"role_name"`
-	Tenants      []string  `json:"tenants,omitempty"`
-	ActiveTenant string    `json:"active_tenant,omitempty"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Email        string   `json:"email"`
+	Photo        string   `json:"photo"`
+	PrivilegeID  string   `json:"privilege_id"`
+	RoleName     string   `json:"role_name"`
+	Phone        string   `json:"phone,omitempty"`
+	Tenants      []string `json:"tenants,omitempty"`
+	ActiveTenant string   `json:"active_tenant,omitempty"`
 	// SwitchedRole: peran pratinjau pilihan superadmin (Privileges › switch). Hanya berlaku bila akun aslinya superadmin.
 	SwitchedRole string    `json:"switched_role,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -184,11 +190,11 @@ type WidgetCard struct {
 	Trend     string `json:"trend,omitempty"`
 	TrendType string `json:"trend_type,omitempty"` // "positive", "negative", "neutral"
 	Icon      string `json:"icon,omitempty"`
-	Color     string `json:"color,omitempty"`      // "blue", "green", "purple", "amber"
-	ColSpan   int    `json:"col_span,omitempty"`   // 1 to 12 (3 = 1/4 lebar, 4 = 1/3 lebar, 6 = 1/2 lebar, 12 = full)
-	Width     string `json:"width,omitempty"`      // "col-3", "col-4", "col-6", "col-12", "half", "full", "1/2", "1/3", "1/4"
-	Size      string `json:"size,omitempty"`       // "sm" (compact), "md" (default), "lg" (hero)
-	Style     string `json:"style,omitempty"`      // custom inline CSS styling
+	Color     string `json:"color,omitempty"`    // "blue", "green", "purple", "amber"
+	ColSpan   int    `json:"col_span,omitempty"` // 1 to 12 (3 = 1/4 lebar, 4 = 1/3 lebar, 6 = 1/2 lebar, 12 = full)
+	Width     string `json:"width,omitempty"`    // "col-3", "col-4", "col-6", "col-12", "half", "full", "1/2", "1/3", "1/4"
+	Size      string `json:"size,omitempty"`     // "sm" (compact), "md" (default), "lg" (hero)
+	Style     string `json:"style,omitempty"`    // custom inline CSS styling
 }
 
 // GetColSpan resolves the 12-column grid span for the widget card
@@ -251,7 +257,7 @@ type TopAction struct {
 // RowAction represents custom per-row action buttons (CRUDBooster addaction)
 type RowAction struct {
 	Label     string                                `json:"label"`
-	URL       string                                `json:"url,omitempty"`   // supports %v pattern e.g. "/admin/orders/invoice/%v"
+	URL       string                                `json:"url,omitempty"` // supports %v pattern e.g. "/admin/orders/invoice/%v"
 	Icon      string                                `json:"icon,omitempty"`
 	Color     string                                `json:"color,omitempty"` // "accent", "edit", "delete", "success", "warning"
 	Target    string                                `json:"target,omitempty"`
@@ -332,6 +338,3 @@ func (r *Role) CanAccess(moduleTable, action string) bool {
 		return matrix.CanRead
 	}
 }
-
-
-

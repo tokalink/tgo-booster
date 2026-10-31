@@ -182,6 +182,7 @@ func (a *AuthManager) ServeLogin(w http.ResponseWriter, r *http.Request) {
 			Photo:        acc.Avatar,
 			PrivilegeID:  acc.RoleID,
 			RoleName:     acc.Role,
+			Phone:        acc.Phone,
 			Tenants:      acc.Tenants,
 			ActiveTenant: acc.DefaultTenant,
 			CreatedAt:    time.Now(),

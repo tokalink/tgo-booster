@@ -206,6 +206,19 @@ func (c *Controller) AddSelect(label, name string, required bool, placeholder st
 	return c
 }
 
+// AddMultiSelect adds a multiselect checkbox list form input field fluently
+func (c *Controller) AddMultiSelect(label, name string, required bool, optionsFunc func() []Option, options ...Option) *Controller {
+	c.Forms = append(c.Forms, Field{
+		Label:       label,
+		Name:        name,
+		Type:        InputMultiSelect,
+		Required:    required,
+		OptionsFunc: optionsFunc,
+		Options:     options,
+	})
+	return c
+}
+
 // AddSelectTable adds a dropdown select whose options are automatically populated from another table (e.g. "customers,name" or "categories,title,id")
 func (c *Controller) AddSelectTable(label, name, dataTable string, required bool, placeholder ...string) *Controller {
 	ph := "Select " + label + "..."
@@ -547,7 +560,44 @@ func (c *Controller) resolveDynamicFormFields(r *http.Request, fields []Field) [
 	res := make([]Field, len(fields))
 	copy(res, fields)
 
+	var sessionUser *User
+	if c.Engine != nil && c.Engine.Auth != nil && r != nil {
+		sessionUser = c.Engine.Auth.GetSessionUser(r)
+	}
+	isSuper := sessionUser != nil && (c.Engine == nil || c.Engine.IsUserSuperadmin(sessionUser))
+
 	for i, f := range res {
+		if f.OptionsFunc != nil {
+			opts := f.OptionsFunc()
+			if !isSuper {
+				filtered := make([]Option, 0, len(opts))
+				for _, opt := range opts {
+					if opt.Value == "*" {
+						continue
+					}
+					filtered = append(filtered, opt)
+				}
+				opts = filtered
+			}
+			res[i].Options = opts
+		} else if !isSuper && len(res[i].Options) > 0 {
+			hasStar := false
+			for _, opt := range res[i].Options {
+				if opt.Value == "*" {
+					hasStar = true
+					break
+				}
+			}
+			if hasStar {
+				filtered := make([]Option, 0, len(res[i].Options))
+				for _, opt := range res[i].Options {
+					if opt.Value != "*" {
+						filtered = append(filtered, opt)
+					}
+				}
+				res[i].Options = filtered
+			}
+		}
 		if f.DataTable != "" && c.Engine != nil {
 			parts := strings.Split(f.DataTable, ",")
 			tbl := strings.TrimSpace(parts[0])
@@ -699,7 +749,11 @@ func (c *Controller) handleEditHTML(w http.ResponseWriter, r *http.Request, id s
 		editForms[i] = f
 		if record != nil {
 			if val, ok := record[f.Name]; ok && val != nil {
-				editForms[i].Value = formatFieldValue(f, val)
+				if f.Type == InputMultiSelect {
+					editForms[i].Value = val
+				} else {
+					editForms[i].Value = formatFieldValue(f, val)
+				}
 			}
 		}
 	}
@@ -841,6 +895,19 @@ func formatFieldValue(f Field, v interface{}) string {
 			}
 			return s
 		}
+	case InputMultiSelect:
+		switch tv := v.(type) {
+		case []string:
+			return strings.Join(tv, ", ")
+		case []interface{}:
+			strs := make([]string, len(tv))
+			for idx, item := range tv {
+				strs[idx] = fmt.Sprint(item)
+			}
+			return strings.Join(strs, ", ")
+		case string:
+			return tv
+		}
 	}
 	return fmt.Sprint(v)
 }
@@ -901,6 +968,7 @@ func resolveCheckboxSubmitValue(f Field, oldVal interface{}, hasOld bool, checke
 }
 
 func (c *Controller) normalizeSubmittedFormData(r *http.Request, data map[string]interface{}, oldRecord map[string]interface{}, isEdit bool) {
+	delete(data, "__ms_present") // penanda form multiselect, bukan kolom
 	for _, f := range c.Forms {
 		if f.ReadOnly || f.Name == "" {
 			continue
@@ -955,6 +1023,15 @@ func (c *Controller) normalizeSubmittedFormData(r *http.Request, data map[string
 					data[f.Name] = string(SanitizeRichHTML(s))
 				}
 			}
+
+		case InputMultiSelect:
+			if vals, exists := r.Form[f.Name]; exists {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if vals, exists := r.PostForm[f.Name]; exists {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if multiSelectRendered(r, f.Name) {
+				data[f.Name] = []string{}
+			}
 		}
 	}
 }
@@ -965,6 +1042,17 @@ func (c *Controller) handleCreateSubmit(w http.ResponseWriter, r *http.Request) 
 	for k, v := range r.PostForm {
 		if len(v) > 0 {
 			data[k] = v[0]
+		}
+	}
+	for _, f := range c.Forms {
+		if f.Type == InputMultiSelect {
+			if vals, ok := r.Form[f.Name]; ok {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if vals, ok := r.PostForm[f.Name]; ok {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if multiSelectRendered(r, f.Name) {
+				data[f.Name] = []string{}
+			}
 		}
 	}
 
@@ -1011,6 +1099,17 @@ func (c *Controller) handleEditSubmit(w http.ResponseWriter, r *http.Request, id
 	for k, v := range r.PostForm {
 		if len(v) > 0 {
 			data[k] = v[0]
+		}
+	}
+	for _, f := range c.Forms {
+		if f.Type == InputMultiSelect {
+			if vals, ok := r.Form[f.Name]; ok {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if vals, ok := r.PostForm[f.Name]; ok {
+				data[f.Name] = append([]string(nil), vals...)
+			} else if multiSelectRendered(r, f.Name) {
+				data[f.Name] = []string{}
+			}
 		}
 	}
 
@@ -1503,4 +1602,16 @@ func (c *Controller) AutoMigrate() error {
 		return sqlStore.AutoMigrate(c.Forms...)
 	}
 	return nil
+}
+
+// multiSelectRendered melaporkan apakah form yang dikirim memang menampilkan isian multiselect name (penanda
+// tersembunyi __ms_present). Tanpa penanda, isian yang tidak dikirim dibiarkan apa adanya: POST lain ke handler yang
+// sama tidak boleh mengosongkan daftar (mis. akses akun pelanggan pengguna).
+func multiSelectRendered(r *http.Request, name string) bool {
+	for _, v := range r.Form["__ms_present"] {
+		if v == name {
+			return true
+		}
+	}
+	return false
 }
