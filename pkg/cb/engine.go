@@ -182,9 +182,10 @@ func (e *Engine) registerCustomAdminPage(server connect.Server, page *CustomAdmi
 		}
 
 		// Handler yang sudah menulis respons sendiri (redirect, JSON, unduhan) tidak dibungkus layout.
+		// Status saja (mis. 404/422 lalu HTML dikembalikan) tetap dibungkus layout dengan status itu.
 		tw := &writeTracker{ResponseWriter: w}
 		contentHTML := page.Handler(tw, r)
-		if tw.wrote {
+		if tw.handled(contentHTML) {
 			return
 		}
 		e.RenderLayout(w, r, page.Title, contentHTML)
@@ -3182,20 +3183,32 @@ func (e *Engine) userMayUseTenantHeader(user *User, slug string) bool {
 	return len(user.Tenants) == 0 && strings.EqualFold(slug, "default")
 }
 
-// writeTracker mencatat apakah handler halaman kustom sudah menulis status atau isi respons.
+// writeTracker mencatat status dan isi yang ditulis handler halaman kustom. Handler yang hanya memanggil WriteHeader
+// lalu mengembalikan HTML (halaman galat) tetap dibungkus layout; yang menulis isi sendiri (JSON, unduhan) atau
+// mengalihkan (3xx) tidak.
 type writeTracker struct {
 	http.ResponseWriter
-	wrote bool
+	status    int
+	wroteBody bool
 }
 
 func (t *writeTracker) WriteHeader(code int) {
-	t.wrote = true
+	if t.status != 0 || t.wroteBody {
+		return
+	}
+	t.status = code
 	t.ResponseWriter.WriteHeader(code)
 }
 
 func (t *writeTracker) Write(b []byte) (int, error) {
-	t.wrote = true
+	t.wroteBody = true
 	return t.ResponseWriter.Write(b)
+}
+
+// handled: respons sudah selesai oleh handler (isi ditulis, pengalihan, atau status tanpa HTML), jadi layout tidak
+// dirender.
+func (t *writeTracker) handled(contentHTML template.HTML) bool {
+	return t.wroteBody || (t.status != 0 && (contentHTML == "" || t.status/100 == 3))
 }
 
 // Unwrap memberi akses ke ResponseWriter asli (http.ResponseController, Flush).

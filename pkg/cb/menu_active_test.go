@@ -1,6 +1,7 @@
 package cb
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -37,16 +38,36 @@ func TestKeepMostSpecificActive(t *testing.T) {
 func TestWriteTrackerSkipsLayout(t *testing.T) {
 	rec := httptest.NewRecorder()
 	tw := &writeTracker{ResponseWriter: rec}
-	if tw.wrote {
+	if tw.handled("<p>isi</p>") {
 		t.Fatal("belum menulis")
 	}
 	tw.Header().Set("Content-Type", "application/json")
-	if tw.wrote {
+	if tw.handled("<p>isi</p>") {
 		t.Fatal("hanya mengatur header tidak dihitung menulis")
 	}
 	_, _ = tw.Write([]byte(`{"url":"x"}`))
-	if !tw.wrote || rec.Body.String() != `{"url":"x"}` {
-		t.Fatalf("tracker: wrote=%v body=%q", tw.wrote, rec.Body.String())
+	if !tw.handled("") || rec.Body.String() != `{"url":"x"}` {
+		t.Fatalf("tracker: body=%v %q", tw.wroteBody, rec.Body.String())
+	}
+}
+
+func TestWriteTrackerStatusKeepsLayout(t *testing.T) {
+	// Status galat + HTML: layout tetap dirender dengan status itu (halaman tidak kosong).
+	rec := httptest.NewRecorder()
+	tw := &writeTracker{ResponseWriter: rec}
+	tw.WriteHeader(http.StatusNotFound)
+	tw.WriteHeader(http.StatusOK) // panggilan kedua diabaikan
+	if tw.handled("<p>Tidak ditemukan</p>") || rec.Code != http.StatusNotFound {
+		t.Fatalf("status 404 + HTML harus dibungkus layout: handled=%v code=%d", tw.handled("<p>x</p>"), rec.Code)
+	}
+	// Status tanpa HTML (mis. 405) dan pengalihan selesai tanpa layout.
+	if !tw.handled("") {
+		t.Fatal("status tanpa HTML tidak dibungkus layout")
+	}
+	redir := &writeTracker{ResponseWriter: httptest.NewRecorder()}
+	redir.WriteHeader(http.StatusSeeOther)
+	if !redir.handled("<p>x</p>") {
+		t.Fatal("pengalihan tidak dibungkus layout")
 	}
 }
 
